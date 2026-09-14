@@ -1,0 +1,4 @@
+# Giữ LF ở mọi nơi — CI chạy trên Linux, máy làm việc chạy Windows.
+* text=auto eol=lf
+*.png binary
+*.glb binary
