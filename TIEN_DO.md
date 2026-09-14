@@ -14,6 +14,26 @@ Sổ tiến độ theo 7 mốc ở mục 12 của `PROMPT_3D.md`.
 | 6 | Thế giới — 7 vùng, địa hình, streaming, đường tắt, shader "vùng bị xoá" | ⬜ chưa |
 | 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, animation thật | ⬜ chưa |
 
+## ĐANG LÀM DỞ — đọc trước khi viết gì mới
+
+Ba file vừa thêm, **chưa nối vào scene nào**, nên chạy game chưa thấy:
+
+| File | Trạng thái |
+|---|---|
+| `scripts/giao_dien/man_chung.gd` | xong — lớp gốc cho màn che toàn màn |
+| `scripts/giao_dien/man_hanh_trang.gd` | xong — màn hành trang với cơ chế `???` |
+| `scripts/luat/cau_hoi.gd` | xong — sinh đủ 10 dạng câu hỏi cho ngồi thiền |
+
+Việc còn thiếu để ba file trên sống được:
+
+1. `scripts/giao_dien/man_bia_da.gd` — bốn thẻ: ghép chữ / ngồi thiền (dùng
+   `CauHoi`) / khắc chữ / nâng chỉ số.
+2. `scripts/the_gioi/bia_da.gd` + `scenes/the_gioi/bia_da.tscn` — Area3D, bấm E
+   để nghỉ, gọi `TheGioi.nghi(ma)`.
+3. Nhét `ManHanhTrang` vào `phong_thu.tscn` và nối phím `hanh_trang` (I) để mở.
+4. `scripts/the_gioi/vat_roi.gd` — món đồ rơi ngoài đất, nhặt được.
+5. `scripts/the_gioi/vung_hon.gd` — vũng hồn chỗ chết, về nhặt lại (mục 4.5).
+
 ## Việc tiếp theo, theo thứ tự
 
 1. **Bia đá** (`scenes/the_gioi/bia_da.tscn` + giao diện bốn việc của mục 4.6:
