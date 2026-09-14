@@ -32,6 +32,9 @@ var _mau_tre := 1.0
 
 func _ready() -> void:
 	layer = 10
+	# Bia đá, món đồ rơi, vũng hồn đều nhắn qua đây. Tìm bằng nhóm chứ không
+	# bằng đường dẫn node, để đặt HUD ở đâu trong scene cũng được.
+	add_to_group("hud")
 	_ve = Control.new()
 	_ve.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_ve.mouse_filter = Control.MOUSE_FILTER_IGNORE

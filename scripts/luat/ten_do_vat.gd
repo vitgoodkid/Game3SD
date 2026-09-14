@@ -250,6 +250,37 @@ func gia_nang_bac(chu: String) -> int:
 	var giam := TriNho.hieu_luc(chu)
 	return maxi(1, int(round(float(gia) * (1.3 - 0.3 * giam))))
 
+# --- Khắc chữ (mục 4.6) ---------------------------------------------
+
+## Khắc thêm một chữ bổ nghĩa vào tên. Chữ mới đứng NGAY TRƯỚC trung tâm, tức
+## là chỗ bổ nghĩa chặt nhất — đó cũng là chỗ đóng góp nhiều nhất. Muốn nó bổ
+## nghĩa lỏng hơn thì tự đổi chỗ sau (doi_cho), và việc đổi chỗ ấy chính là
+## bài học về trật tự từ.
+func khac_them(ten: Array, chu: String) -> Array:
+	var moi := ten.duplicate()
+	moi.insert(maxi(moi.size() - 1, 0), chu)
+	return moi
+
+## Gỡ một chữ bổ nghĩa ra. Trung tâm không gỡ được — gỡ trung tâm thì món đồ
+## không còn là món đồ nào cả.
+func go_chu(ten: Array, vi_tri: int) -> Array:
+	var moi := ten.duplicate()
+	if vi_tri < 0 or vi_tri >= moi.size() - 1:
+		return moi
+	moi.remove_at(vi_tri)
+	return moi
+
+## Giá hồn để khắc thêm một chữ vào tên.
+##
+## Hai thứ làm nó đắt lên: chữ góp nhiều điểm thì đắt (đúng "độ hiếm = độ
+## khó"), và tên càng dài thì chữ tiếp theo càng đắt gấp bội. Vế sau quan
+## trọng hơn: không có nó thì cuối game ai cũng nhồi tám chữ vào một cây kiếm
+## và ngữ pháp tên món đồ thành cái danh sách, không còn là một câu.
+func gia_khac(ten: Array, chu: String) -> int:
+	var nen := 30 + VocabDB.cong_cua(chu) * 25
+	var da_co := maxi(ten.size() - 1, 0)
+	return int(round(float(nen) * pow(1.6, float(da_co))))
+
 ## Nâng một chữ trong tên lên bậc trên. Trả về tên MỚI, không sửa tên cũ —
 ## bên gọi tự quyết định có nhận hay không sau khi trừ nguyên liệu.
 func nang_bac(ten: Array, vi_tri: int) -> Array:

@@ -211,6 +211,7 @@ func bi_do_phan() -> void:
 func roi_do() -> void:
 	Tui.them_hon(int(d.get("hon", 10)))
 	TheGioi.danh_dau_ha(id_on_dinh)
+	_roi_mon_do()
 
 	var can_on := TriNho.chu_nen_roi()
 	if can_on != "" and randf() < 0.55:
@@ -226,3 +227,19 @@ func roi_do() -> void:
 func _bo_thu_cua(chu: String) -> Array:
 	var bt: Array = VocabDB.tu_cua(chu).get("bo_thu", [])
 	return bt if not bt.is_empty() else [chu]
+
+## Rơi một món đồ ra đất. Xác suất suy thẳng từ số hồn con này cho — con càng
+## hiếm càng hay rơi đồ — nên thêm quái mới vào quai.csv là có ngay tỉ lệ rơi
+## hợp lý, không phải khai thêm cột nào.
+func _roi_mon_do() -> void:
+	var ti := clampf(float(d.get("hon", 10)) / 900.0, 0.06, 0.45)
+	if randf() > ti:
+		return
+	var mon := SinhMonDo.sinh_mon(ma_vung)
+	var cha := get_parent()
+	if mon == null or cha == null:
+		return
+	# Thêm node giữa lúc chạy vật lý phải hoãn lại — Area3D dựng ngay tại đây
+	# là dựng trong lúc Jolt đang duyệt truy vấn va chạm.
+	cha.add_child.call_deferred(
+		VatRoi.tao(mon, global_position + Vector3(0, 0.05, 0)))

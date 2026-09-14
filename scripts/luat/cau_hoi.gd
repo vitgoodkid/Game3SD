@@ -28,7 +28,11 @@ const SO_LUA_CHON := 4
 ## Sinh một câu hỏi về `chu`. Dạng nào cũng được, nhưng chỉ chọn trong những
 ## dạng mà chữ này có đủ dữ liệu — chữ không khai `trai_nghia` thì không hỏi
 ## dạng trái nghĩa được, và bản 2D từng dựng ra màn hình trắng vì chuyện đó.
-static func sinh(chu: String, cac_kieu: Array = []) -> Dictionary:
+##
+## Tên là `sinh_cau` chứ không phải `sinh`: GDScript đã có sẵn hàm `sinh()`
+## (sin hyperbol), và lời gọi không có tiền tố trong chính file này rơi vào
+## hàm có sẵn ấy chứ không vào đây. Lỗi im lặng, mất buổi chiều mới tìm ra.
+static func sinh_cau(chu: String, cac_kieu: Array = []) -> Dictionary:
 	var tu := VocabDB.tu_cua(chu)
 	if tu.is_empty():
 		return {}
@@ -49,8 +53,8 @@ static func sinh_theo_lich_on() -> Dictionary:
 		var da_hoc := TriNho.so.keys()
 		if da_hoc.is_empty():
 			return {}
-		return sinh(String(da_hoc.pick_random()))
-	return sinh(String(ds[0]["chu"]))
+		return sinh_cau(String(da_hoc.pick_random()))
+	return sinh_cau(String(ds[0]["chu"]))
 
 static func _du_du_lieu(kieu: String, tu: Dictionary) -> bool:
 	match kieu:

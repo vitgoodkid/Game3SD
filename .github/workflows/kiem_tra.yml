@@ -64,6 +64,13 @@ jobs:
         # headless treo vô hạn chứ không báo lỗi.
         run: timeout 300 ./godot --headless --path . tools/kiem_tra.tscn
 
+      - name: Chạy thử vòng lặp souls
+        # Bộ kiểm tra ở trên chạy trong một khung hình và không nạp scene nào,
+        # nên nó không với tới được mốc 4: chết → rơi vũng hồn → đứng dậy ở bia
+        # → quái sống lại. Chuỗi ấy diễn ra theo thời gian qua nhiều node, và
+        # hỏng thì hỏng cả mốc. Bộ này nạp phòng thử thật rồi diễn lại nó.
+        run: timeout 300 ./godot --headless --path . tools/thu_vong_lap.tscn
+
       - name: Chạy thử game 600 khung hình
         # Bộ kiểm tra ở trên chỉ động tới tầng luật. Bước này nạp phòng thử
         # thật, cho nhân vật và quái chạy 10 giây, bắt lỗi lúc chạy mà test

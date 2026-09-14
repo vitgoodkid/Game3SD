@@ -140,21 +140,39 @@ func bot_bo_thu(chu: String, so_luong: int) -> bool:
 ## Cần đủ mọi bộ thủ khai ở cột `bo_thu` của tu_vung.csv. Chữ không khai bộ
 ## thủ nào (chữ độc thể như 木 人 口) thì cần đúng một mảnh của chính nó.
 func ghep_duoc(chu: String) -> bool:
-	for bt in _bo_thu_can(chu):
-		if so_bo_thu(String(bt)) <= 0:
-			return false
-	return true
+	return thieu_bo_thu(chu).is_empty()
 
-func _bo_thu_can(chu: String) -> Array:
+## Những bộ thủ cần để ghép một chữ. Chữ độc thể (木 人 口) không khai bộ thủ
+## nào thì cần đúng một mảnh của chính nó.
+##
+## Mảng này CÓ THỂ TRÙNG: 林 cần 木|木, tức hai mảnh 木 chứ không phải một.
+func bo_thu_can(chu: String) -> Array:
 	var bt: Array = VocabDB.tu_cua(chu).get("bo_thu", [])
 	return bt if not bt.is_empty() else [chu]
+
+## Còn thiếu bộ thủ nào để ghép chữ này: {"木": 1}. Rỗng = ghép được ngay.
+##
+## Phải đếm chứ không được chỉ hỏi "có không": 林 cần HAI mảnh 木. Hỏi có-không
+## thì cầm một mảnh cũng ghép ra rừng, mà bậc chồng bộ (mục 4.3) chết ngay tại
+## đó — 木 và 林 thành cùng một giá.
+func thieu_bo_thu(chu: String) -> Dictionary:
+	var can := {}
+	for bt in bo_thu_can(chu):
+		var k := String(bt)
+		can[k] = int(can.get(k, 0)) + 1
+	var thieu := {}
+	for k in can:
+		var con := int(can[k]) - so_bo_thu(String(k))
+		if con > 0:
+			thieu[k] = con
+	return thieu
 
 func ghep(chu: String) -> bool:
 	if TriNho.doc_duoc(chu):
 		return false
 	if not ghep_duoc(chu):
 		return false
-	for bt in _bo_thu_can(chu):
+	for bt in bo_thu_can(chu):
 		bot_bo_thu(String(bt), 1)
 	TriNho.hoc(chu)
 	doi_trang_bi.emit()  # mọi món đồ vừa đổi cách hiện
@@ -168,6 +186,77 @@ func chu_ghep_duoc() -> Array:
 		if not TriNho.doc_duoc(chu) and ghep_duoc(chu):
 			ds.append(chu)
 	return ds
+
+# --- Khắc chữ ở bia đá (mục 4.6) ------------------------------------
+#
+# Bốn việc, và chỉ có ở bia đá. Mọi hàm ở đây tự trừ giá và tự báo đổi trang
+# bị — giao diện chỉ gọi rồi vẽ lại, không tự tính tiền. Đặt ở đây chứ không
+# ở màn hình vì hồn và bộ thủ nằm ở đây; tách ra là chỗ để quên trừ.
+#
+# Luật chung: KHÔNG khắc được chữ mình chưa đọc được. Khắc chữ là viết, mà
+# không ai viết được cái chữ mình chưa thấy mặt bao giờ.
+
+## Khắc thêm một chữ bổ nghĩa vào món đồ. Tốn hồn.
+func khac_them(mon: MonDo, chu: String) -> bool:
+	if mon == null or not TriNho.doc_duoc(chu):
+		return false
+	if mon.ten.has(chu):
+		return false
+	var moi := TenDoVat.khac_them(mon.ten, chu)
+	if not bool(TenDoVat.kiem_ten(moi)["duoc"]):
+		return false
+	var gia := TenDoVat.gia_khac(mon.ten, chu)
+	if hon < gia:
+		return false
+	hon -= gia
+	mon.ten = moi
+	TriNho.gap_lai(chu)
+	doi_hon.emit(hon)
+	doi_trang_bi.emit()
+	return true
+
+## Gỡ một chữ bổ nghĩa ra. Không tốn gì, cũng không trả lại gì — cái mất đi là
+## công khắc, và người chơi cần được thử sai thoải mái ở chỗ này.
+func go_chu(mon: MonDo, vi_tri: int) -> bool:
+	if mon == null:
+		return false
+	var moi := TenDoVat.go_chu(mon.ten, vi_tri)
+	if moi.size() == mon.ten.size():
+		return false
+	mon.ten = moi
+	doi_trang_bi.emit()
+	return true
+
+## Đổi chỗ hai chữ bổ nghĩa. MIỄN PHÍ, cố ý: đây chính là bài học của mục 4.2,
+## mà bài học thì không được bắt trả tiền để thử.
+func doi_cho_chu(mon: MonDo, a: int, b: int) -> bool:
+	if mon == null:
+		return false
+	var moi := TenDoVat.doi_cho(mon.ten, a, b)
+	if moi == mon.ten:
+		return false
+	mon.ten = moi
+	doi_trang_bi.emit()
+	return true
+
+## Nâng một chữ trong tên lên bậc chồng bộ trên (木 → 林). Tốn bộ thủ của CHỮ
+## GỐC thang đó, và phải đọc được chữ mới.
+func nang_bac_chu(mon: MonDo, vi_tri: int) -> bool:
+	if mon == null or vi_tri < 0 or vi_tri >= mon.ten.size():
+		return false
+	var chu := String(mon.ten[vi_tri])
+	var tren := TenDoVat.bac_tren(chu)
+	if tren == "" or not TriNho.doc_duoc(tren):
+		return false
+	var goc := VocabDB.goc_thang_cua(chu)
+	var gia := TenDoVat.gia_nang_bac(chu)
+	if so_bo_thu(goc) < gia:
+		return false
+	bot_bo_thu(goc, gia)
+	mon.ten = TenDoVat.nang_bac(mon.ten, vi_tri)
+	TriNho.gap_lai(tren)
+	doi_trang_bi.emit()
+	return true
 
 # --- Kho và trang bị ------------------------------------------------
 

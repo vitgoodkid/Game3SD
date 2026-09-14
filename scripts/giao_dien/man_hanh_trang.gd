@@ -26,7 +26,13 @@ var _ds_mac: VBoxContainer = null
 var _chi_tiet: VBoxContainer = null
 var _chon: MonDo = null
 
+## Phím I mở thẳng, không cần đứng cạnh cái gì — xem hành trang là việc người
+## chơi làm giữa đường, không phải việc phải về bia đá mới làm được.
+func phim_mo_man() -> String:
+	return "hanh_trang"
+
 func dung_noi_dung(cha: MarginContainer) -> void:
+	add_to_group("man_hanh_trang")
 	dat_tieu_de("Hành trang")
 
 	var ngang := HBoxContainer.new()
@@ -62,9 +68,11 @@ func dung_noi_dung(cha: MarginContainer) -> void:
 	phai.add_child(_chi_tiet)
 
 func lam_moi() -> void:
+	ve_xong = false
 	_ve_dang_mac()
 	_ve_kho()
 	_ve_chi_tiet()
+	ve_xong = true
 
 # --- Cột trái -------------------------------------------------------
 

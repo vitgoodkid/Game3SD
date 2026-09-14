@@ -275,6 +275,15 @@ func vi_tri_cua(chu: String) -> String:
 func loai_nguyen_lieu_cua(chu: String) -> String:
 	return String(nguyen_lieu_cua(chu).get("loai", ""))
 
+## Mọi nguyên liệu đứng ở một tầng của tên món đồ: trung_tam hoặc bo_nghia.
+## Bộ sinh đồ rơi hỏi hàm này để khỏi biết chữ nào tồn tại (luật 1).
+func nguyen_lieu_theo_vi_tri(vi_tri: String) -> Array:
+	var ds: Array = []
+	for n in nguyen_lieu:
+		if String(n.get("vi_tri", "")) == vi_tri:
+			ds.append(n)
+	return ds
+
 # --- Truy vấn ngữ pháp ----------------------------------------------
 
 func loc_ngu_phap(kieu: String = "", cap: int = 0) -> Array[Dictionary]:

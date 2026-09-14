@@ -311,6 +311,30 @@ func mat_mau(n: int) -> void:
 		may.doi("chet")
 		da_chet.emit()
 
+## Đứng dậy ở bia đá sau khi chết. Gọi bởi VongHoiSinh, không gọi từ state —
+## state `chet` chỉ biết mình chết, không biết bia đá nằm đâu.
+##
+## Lưu ý thứ tự: `TheGioi.hoi_sinh_o_bia()` đã đổ đầy máu vào Tui trước khi tín
+## hiệu tới đây, nên chỗ này CHÉP từ Tui ra chứ không tự tính lại — tính lại là
+## chỗ hai con số máu bắt đầu trôi khỏi nhau.
+func song_lai(tai: Vector3) -> void:
+	global_position = tai
+	velocity = Vector3.ZERO
+	bat_tu = false
+	dang_do = false
+	dang_do_phan = false
+	mau_toi_da = Tui.mau_toi_da()
+	mau = Tui.mau
+	the_luc_max = Tui.the_luc_toi_da()
+	the_luc = the_luc_max
+	khung_tl = 0.0
+	hoi_lan = 0.0
+	tu_the = 0.0
+	dat_muc_tieu(null)
+	may.doi("dung")
+	doi_mau.emit(mau, mau_toi_da)
+	doi_the_luc.emit(the_luc, the_luc_max)
+
 func hoi_mau(n: float) -> void:
 	mau = minf(mau_toi_da, mau + n)
 	Tui.mau = mau

@@ -83,6 +83,9 @@ func hoi_sinh_o_bia() -> void:
 func co_vung_hon() -> bool:
 	return not vung_hon.is_empty()
 
+func so_hon_trong_vung() -> int:
+	return 0 if vung_hon.is_empty() else int(vung_hon["hon"])
+
 func vi_tri_vung_hon() -> Vector3:
 	if vung_hon.is_empty():
 		return Vector3.ZERO

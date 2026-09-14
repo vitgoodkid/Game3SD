@@ -15,6 +15,11 @@ extends CanvasLayer
 signal da_mo
 signal da_dong
 
+## Màn đang mở. Tĩnh vì luật là của cả game: mở được ĐÚNG MỘT màn cùng lúc.
+## Không có luật này thì đứng ở bia đá bấm I là hành trang chồng lên bia đá,
+## đóng một cái thì cái kia vẫn đó mà game đã chạy lại rồi.
+static var dang_mo_man: ManChung = null
+
 const MAU_NEN := Color(0.06, 0.06, 0.07, 0.94)
 const MAU_VIEN := Color(0.32, 0.30, 0.27)
 const MAU_CHU := Color(0.92, 0.90, 0.85)
@@ -22,6 +27,12 @@ const MAU_CHU_MO := Color(0.55, 0.53, 0.50)
 const MAU_NHAN := Color(0.72, 0.68, 0.60)
 
 var dang_mo := false
+## Lần vẽ gần nhất có chạy tới dòng cuối không.
+##
+## GDScript không ném lỗi: hàm vẽ gãy giữa chừng thì màn hình hiện một nửa và
+## trông y như bình thường, chỉ thiếu mấy dòng cuối. Cờ này là thứ duy nhất
+## giúp bộ kiểm tra phân biệt "vẽ xong" với "vẽ được một nửa rồi chết".
+var ve_xong := false
 var khung: MarginContainer = null
 var _nen: ColorRect = null
 var _tieu_de: Label = null
@@ -76,6 +87,11 @@ func dung_noi_dung(_cha: MarginContainer) -> void:
 func lam_moi() -> void:
 	pass
 
+## Phím tự mở màn này. Để rỗng thì màn chỉ mở bằng code — bia đá mở lúc bấm E
+## đứng cạnh bia, nó không có phím riêng.
+func phim_mo_man() -> String:
+	return ""
+
 func dat_tieu_de(s: String) -> void:
 	if _tieu_de != null:
 		_tieu_de.text = s
@@ -85,7 +101,11 @@ func dat_tieu_de(s: String) -> void:
 func mo() -> void:
 	if dang_mo:
 		return
+	# Đang mở màn khác thì thôi — xem dang_mo_man ở đầu file.
+	if dang_mo_man != null and is_instance_valid(dang_mo_man):
+		return
 	dang_mo = true
+	dang_mo_man = self
 	visible = true
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -96,6 +116,8 @@ func dong() -> void:
 	if not dang_mo:
 		return
 	dang_mo = false
+	if dang_mo_man == self:
+		dang_mo_man = null
 	visible = false
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -107,10 +129,21 @@ func bat_tat() -> void:
 	else:
 		mo()
 
+## Màn bị xoá lúc đang mở (đổi scene) thì phải nhả game ra, không thì scene sau
+## nạp lên trong trạng thái dừng và không ai biết vì sao.
+func _exit_tree() -> void:
+	if dang_mo_man == self:
+		dang_mo_man = null
+		get_tree().paused = false
+
 func _unhandled_input(su_kien: InputEvent) -> void:
+	var phim := phim_mo_man()
 	if not dang_mo:
+		if phim != "" and su_kien.is_action_pressed(phim) and dang_mo_man == null:
+			mo()
+			get_viewport().set_input_as_handled()
 		return
-	if su_kien.is_action_pressed("thoat") or su_kien.is_action_pressed("hanh_trang"):
+	if su_kien.is_action_pressed("thoat") or (phim != "" and su_kien.is_action_pressed(phim)):
 		dong()
 		# Nuốt phím, không thì Esc rơi xuống camera và thả luôn chuột.
 		get_viewport().set_input_as_handled()
@@ -151,6 +184,11 @@ func cuon(con: Control) -> ScrollContainer:
 	return s
 
 ## Xoá sạch con của một node. Dùng lúc lam_moi() dựng lại danh sách.
+##
+## Gỡ khỏi cây TRƯỚC rồi mới queue_free: queue_free chỉ đánh dấu, node vẫn còn
+## nằm đó tới hết khung hình. Chỉ gọi queue_free thì trong khung hình đó
+## container xếp cả hàng cũ lẫn hàng mới, và danh sách nhấp nháy đôi.
 func don(cha: Node) -> void:
 	for c in cha.get_children():
+		cha.remove_child(c)
 		c.queue_free()

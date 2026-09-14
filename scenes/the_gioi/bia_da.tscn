@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/the_gioi/bia_da.gd" id="1_bia"]
+
+[sub_resource type="SphereShape3D" id="Sphere_tam"]
+radius = 2.8
+
+[node name="BiaDa" type="Area3D"]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_bia")
+tam_voi = 2.8
+
+[node name="Hinh" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("Sphere_tam")

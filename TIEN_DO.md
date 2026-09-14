@@ -8,41 +8,27 @@ Sổ tiến độ theo 7 mốc ở mục 12 của `PROMPT_3D.md`.
 |---|---|---|
 | 1 | Đi lại — nhân vật 3D, state machine, camera F5 ba chế độ, một phòng thử | ✅ xong |
 | 2 | **Combat lõi** — thể lực, lăn i-frame, đòn nhẹ/nặng, cam kết đòn, khoá mục tiêu, quái đánh trả | ✅ xong, **chưa tune** |
-| 3 | Trang bị + đọc chữ — khe, tải trọng, cơ chế `???`, nối VocabDB | 🟡 tầng luật xong, chưa có giao diện |
-| 4 | Vòng lặp souls — bia đá, chết rơi chữ, nhặt lại, hồi sinh quái, ghép chữ, ngồi thiền | 🟡 tầng luật xong, chưa có bia đá trong scene |
+| 3 | Trang bị + đọc chữ — khe, tải trọng, cơ chế `???`, nối VocabDB | ✅ xong — màn hành trang bấm I là mở |
+| 4 | Vòng lặp souls — bia đá, chết rơi chữ, nhặt lại, hồi sinh quái, ghép chữ, ngồi thiền | ✅ xong trong phòng thử |
 | 5 | Ngũ hành + boss — tương sinh tương khắc, thang chồng bộ, boss hai giai đoạn | 🟡 ngũ hành + thang xong, chưa có boss |
 | 6 | Thế giới — 7 vùng, địa hình, streaming, đường tắt, shader "vùng bị xoá" | ⬜ chưa |
 | 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, animation thật | ⬜ chưa |
 
 ## ĐANG LÀM DỞ — đọc trước khi viết gì mới
 
-Ba file vừa thêm, **chưa nối vào scene nào**, nên chạy game chưa thấy:
-
-| File | Trạng thái |
-|---|---|
-| `scripts/giao_dien/man_chung.gd` | xong — lớp gốc cho màn che toàn màn |
-| `scripts/giao_dien/man_hanh_trang.gd` | xong — màn hành trang với cơ chế `???` |
-| `scripts/luat/cau_hoi.gd` | xong — sinh đủ 10 dạng câu hỏi cho ngồi thiền |
-
-Việc còn thiếu để ba file trên sống được:
-
-1. `scripts/giao_dien/man_bia_da.gd` — bốn thẻ: ghép chữ / ngồi thiền (dùng
-   `CauHoi`) / khắc chữ / nâng chỉ số.
-2. `scripts/the_gioi/bia_da.gd` + `scenes/the_gioi/bia_da.tscn` — Area3D, bấm E
-   để nghỉ, gọi `TheGioi.nghi(ma)`.
-3. Nhét `ManHanhTrang` vào `phong_thu.tscn` và nối phím `hanh_trang` (I) để mở.
-4. `scripts/the_gioi/vat_roi.gd` — món đồ rơi ngoài đất, nhặt được.
-5. `scripts/the_gioi/vung_hon.gd` — vũng hồn chỗ chết, về nhặt lại (mục 4.5).
+Không còn file nào treo lơ lửng. Mọi thứ trong repo đều nối vào phòng thử và có
+test canh.
 
 ## Việc tiếp theo, theo thứ tự
 
-1. **Bia đá** (`scenes/the_gioi/bia_da.tscn` + giao diện bốn việc của mục 4.6:
-   ghép chữ / ngồi thiền / khắc chữ / nâng chỉ số). Đây là chỗ việc học thật sự
-   diễn ra — không có nó thì mốc 4 chỉ là nửa vời.
-2. **Màn hành trang** — hiện `???` cho chữ chưa đọc được (mục 4.1). Tầng luật đã
-   xong (`TenDoVat.dong_mo_ta`), chỉ thiếu phần vẽ.
-3. **Boss hai giai đoạn** — dữ liệu đã có trong `data/boss.csv`, thiếu scene và
-   state machine riêng (đổi moveset khi máu dưới `nguong_gd2`).
+1. **Boss hai giai đoạn** (mốc 5). Dữ liệu đã có trong `data/boss.csv`, thiếu
+   scene và state machine riêng — đổi moveset khi máu dưới `nguong_gd2`. Đây là
+   việc lớn tiếp theo làm được mà không cần máy có màn hình.
+2. **Địa hình vùng đầu** (mốc 6). Tự viết, không dùng Terrain3D — xem mục "Đã
+   đổi so với bản yêu cầu" bên dưới. Bắt đầu bằng `ria_bien`: `vung.csv` đã khai
+   sẵn hạt giống, cao độ, độ gồ ghề, mật độ cây đá.
+3. **Đổi phòng thử thành vùng thật.** `phong_thu.gd` đặt quái bằng một mảng
+   hằng; vùng thật phải đọc `quai.csv` theo cột `vung`.
 4. **Tune ba con số của mục 5.2.** Việc này **phải làm bằng tay, trên máy có màn
    hình** — không agent nào thay được. Xem mục "Cần người" bên dưới.
 
@@ -66,11 +52,35 @@ Việc còn thiếu để ba file trên sống được:
   phản, thanh trạng thái tích dần, thiên can 甲乙丙丁戊.
 - `ngu_hanh.gd` — cả vòng suy ra từ một mảng năm phần tử, không có bảng khai tay.
 - `ten_do_vat.gd` — **cơ chế xương sống**. 冰金剑 và 金冰剑 ra hai món khác nhau.
+  Thêm phần khắc chữ: lắp / tháo / giá khắc tăng theo độ dài tên.
 - `tri_nho.gd` — bốn mức thuần thục, lịch ôn SM-2 rút gọn (1→3→7→16→35 ngày).
+- `cau_hoi.gd` — mười dạng câu hỏi, 41 câu ngữ pháp, tách hẳn khỏi giao diện.
+- `sinh_mon_do.gd` — sinh đồ rơi từ CSV, không một chữ Hán nào nằm trong code.
+  Trung tâm lấy từ `nguyen_lieu.csv`, bổ nghĩa trộn thêm chữ theo chủ đề vùng,
+  nên đi sâu là gặp chữ khó hơn.
 
 ### Chơi được
-Chạy `godot --path .` là vào thẳng phòng thử: chạy quanh, đổi camera bằng F5,
-khoá mục tiêu, đánh bốn con quái. Quái đuổi, đánh trả, vỡ tư thế, chết, rơi hồn.
+Chạy `godot --path .` là vào thẳng phòng thử. Làm được trọn vòng souls:
+
+- chạy quanh, đổi camera F5, khoá mục tiêu, đánh bốn con quái
+- nhặt đồ dưới đất (bấm **E**), mở hành trang (bấm **I**) — chữ chưa đọc được
+  hiện `□`, chỉ số hiện `???`
+- bấm **E** ở bia đá: bật bia, hồi đầy máu và bình, quái sống lại hết, mở màn
+  bốn thẻ — **ghép chữ / ngồi thiền / khắc chữ / nâng chỉ số**
+- chết: rơi hết hồn chưa tiêu thành **vũng hồn** tại chỗ, đứng dậy ở bia đá, về
+  nhặt lại được. Chết lần nữa trước khi nhặt là mất vĩnh viễn.
+
+### Kiểm tra
+Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
+
+| Lệnh | Kiểm gì |
+|---|---|
+| `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 171 test trong một khung hình |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls trong phòng thử thật, 45 test theo thời gian |
+| `python tools/kiem_csv.py` | CSV, không cần Godot |
+
+Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
+qua nhiều node**, tầng luật không với tới được.
 
 ## Cần người, agent không làm thay được
 
@@ -82,6 +92,9 @@ khoá mục tiêu, đánh bốn con quái. Quái đuổi, đánh trả, vỡ tư
    thẳng là AI làm dở việc này. Vùng hoang dã thì sinh tự động được.
 3. **Kho model.** Chưa có file `.glb` nào. Xem mục "Quy ước" trong `CLAUDE.md`
    về chuẩn cần đạt.
+4. **Đọc thử tên đồ rơi ra.** Bộ sinh đồ ghép chữ theo đúng ngữ pháp, nhưng
+   nghĩa thì có cái hay (战斧 chiến phủ) có cái ngô nghê. Cần người đọc một loạt
+   rồi quyết xem có cần lọc chữ nào ra khỏi kho bổ nghĩa không.
 
 ## Đã đổi so với bản yêu cầu
 
@@ -99,3 +112,24 @@ Ghi lại để không ai tưởng là quên:
   chữ trung tâm khi không bổ nghĩa nào có hành. Nếu để trung tâm tham gia cùng
   vòng quét thì nó luôn thắng (nó gần trung tâm nhất — nó *là* trung tâm) và mọi
   cây kiếm đều thành hệ Kim bất kể khắc chữ gì. Test bắt được đúng lỗi này.
+- **Đổi thứ tự chữ ở bàn khắc là MIỄN PHÍ.** Đó là bài học của mục 4.2, mà bài
+  học thì không được bắt trả tiền để thử. Khắc thêm chữ mới thì tốn hồn.
+- **Xác suất quái rơi đồ suy từ cột `hon`** chứ không thêm cột mới: con cho nhiều
+  hồn là con hiếm, con hiếm thì hay rơi đồ. Thêm quái vào `quai.csv` là có ngay
+  tỉ lệ hợp lý, không phải khai thêm gì.
+
+## Bẫy đã dính, ghi lại cho đỡ dính lần nữa
+
+- **`sinh()` là hàm có sẵn của GDScript** (sin hyperbol). Hàm tĩnh tên `sinh`
+  trong class của mình sẽ bị hàm có sẵn ăn mất mọi lời gọi không có tiền tố,
+  *trong chính file đó*. Lỗi này nằm im trong `cau_hoi.gd` cả một mốc vì chưa
+  file nào dùng tới `CauHoi` nên Godot chưa từng biên dịch nó. Giờ tên là
+  `CauHoi.sinh_cau()` và `SinhMonDo.sinh_mon()`.
+- **`Array.shuffle()` bốc từ RNG toàn cục**, không từ `RandomNumberGenerator`
+  đã gieo hạt. Trộn hai thứ vào một hàm là mất tính tất định của hạt giống.
+- **Script không gắn vào scene nào thì Godot không biên dịch.** CI xanh không có
+  nghĩa là file đó chạy được. Cách duy nhất để chắc: nối nó vào scene, hoặc gọi
+  nó trong bộ kiểm tra.
+- **`queue_free()` chỉ đánh dấu**, node vẫn nằm trong cây tới hết khung hình. Dựng
+  lại danh sách giao diện thì phải `remove_child()` trước, không thì container
+  xếp cả hàng cũ lẫn hàng mới.

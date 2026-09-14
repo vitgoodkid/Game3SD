@@ -20,10 +20,24 @@ const DAT_QUAI := [
 	{"ma": "bo_cat", "tai": Vector3(-14, 0, 6)},
 ]
 
+## Đồ đặt sẵn dưới đất cho lần chơi đầu. Hạt giống cố định nên chạy lại bao
+## nhiêu lần cũng ra đúng ba món ấy — cần thế để tune, và để bắt được lỗi
+## "món này sinh ra sai" mà không phải đánh quái mười lần cầu may.
+const DAT_DO := [
+	{"hat": 20260914, "tai": Vector3(2.5, 0, 2.0)},
+	{"hat": 777001, "tai": Vector3(-3.0, 0, 1.0)},
+	{"hat": 424242, "tai": Vector3(-1.0, 0, -3.0)},
+]
+
 func _ready() -> void:
 	_dung_san()
 	_dung_cot()
 	_dat_quai()
+	_dat_do()
+	# Nghỉ ở bia và hồi sinh sau khi chết đều làm quái sống lại hết — đó là
+	# luật souls, và cũng là cái giá của việc được cứu (mục 4.5).
+	TheGioi.nghi_bia_da.connect(func(_ma: String) -> void: _dat_lai_quai())
+	TheGioi.hoi_sinh.connect(_dat_lai_quai)
 
 func _dung_san() -> void:
 	var than := StaticBody3D.new()
@@ -93,3 +107,19 @@ func _dat_quai() -> void:
 		q.ma_vung = "thi_tran"
 		q.position = d["tai"]
 		add_child(q)
+
+## Xoá sạch quái đang có rồi đặt lại từ đầu. Phải xoá trước: TheGioi vừa quên
+## hết bảng "đã hạ", nên con đang còn sống cũng sẽ được sinh thêm một bản nữa.
+func _dat_lai_quai() -> void:
+	for q in get_tree().get_nodes_in_group("quai"):
+		q.queue_free()
+	_dat_quai()
+
+## Ba món nằm sẵn dưới đất. Không có chúng thì người chơi vào phòng thử với hai
+## bàn tay không, mà tay không thì màn hành trang trống trơn và cả cơ chế ???
+## không có gì để hiện.
+func _dat_do() -> void:
+	for d in DAT_DO:
+		var mon := SinhMonDo.sinh_mon("thi_tran", int(d["hat"]))
+		if mon != null:
+			add_child(VatRoi.tao(mon, d["tai"]))

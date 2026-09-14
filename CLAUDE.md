@@ -43,8 +43,12 @@ Sửa file đó thì chạy lại test ngay.
 Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.exe`).
 
 ```bash
-# kiểm tầng luật — 129 test, thoát mã 1 nếu hỏng
+# kiểm tầng luật — 171 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
+
+# kiểm vòng lặp souls — 45 test, nạp phòng thử thật và diễn lại: chết, rơi
+# vũng hồn, đứng dậy ở bia, quái sống lại. Chạy mất ~12 giây vì phải đợi thật.
+godot --headless --path . tools/thu_vong_lap.tscn
 
 # chạy thử game 10 giây, bắt lỗi lúc chạy
 godot --headless --path . --quit-after 600
@@ -53,12 +57,20 @@ godot --headless --path . --quit-after 600
 python tools/kiem_csv.py
 ```
 
-GitHub Actions chạy cả ba mỗi lần đẩy code (`.github/workflows/kiem_tra.yml`).
+GitHub Actions chạy cả bốn mỗi lần đẩy code (`.github/workflows/kiem_tra.yml`).
 **Không có Godot thì vẫn sửa được CSV và tầng luật** — đẩy lên rồi đọc kết quả
 Actions.
 
-Một cái bẫy đã gặp: nếu script của scene chính không biên dịch được, Godot
-headless **treo vô hạn** chứ không báo lỗi. Luôn bọc lệnh chạy bằng `timeout`.
+Hai cái bẫy đã gặp:
+
+- Nếu script của scene chính không biên dịch được, Godot headless **treo vô hạn**
+  chứ không báo lỗi. Luôn bọc lệnh chạy bằng `timeout`.
+- **Script không gắn vào scene nào thì Godot không biên dịch nó.** CI xanh không
+  có nghĩa là file đó chạy được — `cau_hoi.gd` từng nằm trong repo cả một mốc
+  với một lỗi biên dịch mà CI không thấy. Viết file mới xong thì phải nối nó vào
+  scene hoặc gọi nó trong bộ kiểm tra, không thì coi như chưa viết.
+
+Danh sách bẫy đầy đủ nằm cuối `TIEN_DO.md`.
 
 ## Bản đồ code
 
@@ -72,12 +84,15 @@ scripts/
                    ngu_hanh.gd    vòng tương sinh tương khắc
                    ten_do_vat.gd  NGỮ PHÁP TÊN MÓN ĐỒ — cơ chế xương sống
                    mon_do.gd      một món đồ = một mảng chữ
+                   cau_hoi.gd     10 dạng câu hỏi cho ngồi thiền
+                   sinh_mon_do.gd sinh đồ rơi từ CSV, không biết chữ nào tồn tại
   he_thong/      autoload có trạng thái: vocab_db, tui, tri_nho, the_gioi
   nhan_vat/      người chơi, camera ba chế độ, khoá mục tiêu, máy trạng thái
     trang_thai/  mỗi state một file
   quai/          quái + state machine riêng
-  the_gioi/      phòng thử, (sau này) địa hình và streaming
-  giao_dien/     HUD
+  the_gioi/      phòng thử, bia đá, đồ rơi, vũng hồn, vòng hồi sinh
+                   tuong_tac_duoc.gd  lớp gốc mọi thứ bấm E được
+  giao_dien/     HUD + màn che toàn màn (hành trang, bia đá)
 scenes/          .tscn
 tools/           kiểm tra + sinh dữ liệu
 ```

@@ -39,6 +39,16 @@ func _ready() -> void:
 	_moveset()
 	_nhom("Souls-like")
 	_souls()
+	_nhom("Ghép chữ ở bia đá")
+	_ghep_chu()
+	_nhom("Mười dạng câu hỏi")
+	_cau_hoi()
+	_nhom("Khắc chữ")
+	_khac_chu()
+	_nhom("Đồ rơi")
+	_do_roi()
+	_nhom("Màn hình")
+	_man_hinh()
 
 	print("")
 	print("====== %d qua, %d HONG ======" % [_qua, _hong])
@@ -320,3 +330,173 @@ func _souls() -> void:
 	_dung(not th.them(60.0), "tích 60 chưa bùng")
 	_dung(th.them(50.0), "tích thêm 50 thì bùng")
 	_dung(th.nguong > 100.0, "bùng xong ngưỡng lần sau cao hơn — không khoá cứng")
+
+func _ghep_chu() -> void:
+	# Bộ thủ TRÙNG phải đếm cho đúng: 林 cần 木|木, tức HAI mảnh. Đếm hụt thì
+	# một mảnh 木 cũng ra rừng, và cả thang chồng bộ (mục 4.3) mất ý nghĩa vì
+	# bậc trên rẻ ngang bậc dưới.
+	Tui.bo_thu.clear()
+	Tui.them_bo_thu("木", 1)
+	_dung(not Tui.ghep_duoc("林"), "một mảnh 木 chưa ghép được 林 — nó cần hai")
+	_bang(int(Tui.thieu_bo_thu("林").get("木", 0)), 1, "báo đúng còn thiếu một mảnh 木")
+	Tui.them_bo_thu("木", 1)
+	_dung(Tui.ghep_duoc("林"), "đủ hai mảnh thì ghép được 林")
+	_dung(Tui.ghep("林"), "ghép 林 xong xuôi")
+	_bang(Tui.so_bo_thu("木"), 0, "ghép xong trừ đủ HAI mảnh, không phải một")
+	_dung(TriNho.doc_duoc("林"), "ghép xong là đọc được ngay")
+	_dung(not Tui.ghep("林"), "chữ đã biết thì không ghép lại")
+
+	# Chữ độc thể (không khai bộ thủ nào) cần đúng một mảnh của chính nó.
+	Tui.bo_thu.clear()
+	Tui.them_bo_thu("口", 1)
+	_dung(Tui.chu_ghep_duoc().has("口"), "chữ độc thể ghép bằng một mảnh của chính nó")
+
+func _cau_hoi() -> void:
+	TriNho.khoi_dau(Tui.CHU_BAN_DAU)
+	# Cả mười dạng đều phải dựng được từ dữ liệu ĐANG CÓ. Dạng nào không dựng
+	# nổi là dạng chết — bản 2D từng ra màn hình trắng đúng vì chuyện này.
+	var chet: Array[String] = []
+	for kieu in CauHoi.MOI_KIEU:
+		var duoc := false
+		for i in 300:
+			var tu := VocabDB.lay_ngau_nhien()
+			if tu.is_empty():
+				continue
+			if _cau_hop_le(CauHoi.sinh_cau(String(tu["chu"]), [String(kieu)])):
+				duoc = true
+				break
+		if not duoc:
+			chet.append(String(kieu))
+	_dung(chet.is_empty(), "cả 10 dạng câu hỏi đều dựng được%s"
+		% ("" if chet.is_empty() else " — chết: " + " ".join(chet)))
+
+	# Ngồi thiền phải LUÔN ra được câu hỏi. Bấm vào thấy màn trống là lỗi nặng
+	# hơn câu hỏi dở, vì người chơi tưởng game hỏng.
+	var hong := 0
+	for i in 80:
+		if not _cau_hop_le(CauHoi.sinh_theo_lich_on()):
+			hong += 1
+	_bang(hong, 0, "80 lần ngồi thiền đều ra câu hỏi hợp lệ")
+
+	# Trả lời đúng phải đẩy lịch ôn ra xa, sai thì kéo về gần (SM-2).
+	TriNho.khoi_dau(["剑"])
+	var lan_dau := int(TriNho.so["剑"]["lan"])
+	TriNho.on_tap("剑", true)
+	_dung(int(TriNho.so["剑"]["lan"]) > lan_dau, "trả lời đúng thì lịch ôn giãn ra")
+	TriNho.on_tap("剑", false)
+	_bang(int(TriNho.so["剑"]["lan"]), lan_dau, "trả lời sai thì lịch ôn co lại")
+
+## Câu hỏi dùng được: có đề, có ít nhất hai lựa chọn, và đáp án đúng nằm trong
+## danh sách. Thiếu một trong ba là giao diện dựng ra thứ không bấm được.
+func _cau_hop_le(c: Dictionary) -> bool:
+	if c.is_empty() or String(c.get("de", "")).strip_edges().is_empty():
+		return false
+	var lc: Array = c.get("lua_chon", [])
+	var d := int(c.get("dung", -1))
+	if lc.size() < 2 or d < 0 or d >= lc.size():
+		return false
+	return not String(c.get("chu", "")).is_empty()
+
+func _khac_chu() -> void:
+	TriNho.khoi_dau(["剑", "冰", "金", "木", "林"])
+	Tui.hon = 5000
+	var mon := MonDo.new(["剑"])
+	var gia := TenDoVat.gia_khac(mon.ten, "冰")
+	_dung(Tui.khac_them(mon, "冰"), "khắc 冰 lên 剑")
+	_bang(mon.chuoi(), "冰剑", "chữ mới đứng ngay TRƯỚC trung tâm")
+	_bang(Tui.hon, 5000 - gia, "khắc xong trừ đúng giá")
+	_dung(TenDoVat.gia_khac(mon.ten, "金") > TenDoVat.gia_khac(["剑"], "金"),
+		"tên càng dài thì khắc thêm càng đắt — không cho nhồi mười chữ")
+	_dung(not Tui.khac_them(mon, "冰"), "không khắc hai lần cùng một chữ")
+	_dung(not Tui.khac_them(mon, "森"), "không khắc được chữ chưa đọc được")
+
+	# Đổi chỗ là ĐỔI MÓN (mục 4.2) — và phải miễn phí, vì đó là bài học.
+	_dung(Tui.khac_them(mon, "金"), "khắc thêm 金")
+	_bang(mon.chuoi(), "冰金剑", "chữ mới vẫn chen vào sát trung tâm")
+	var hanh_truoc := mon.ngu_hanh()
+	var hon_truoc := Tui.hon
+	_dung(Tui.doi_cho_chu(mon, 0, 1), "đổi chỗ hai chữ bổ nghĩa")
+	_bang(mon.chuoi(), "金冰剑", "đổi chỗ xong tên đổi")
+	_bang(Tui.hon, hon_truoc, "đổi thứ tự KHÔNG tốn hồn")
+	_dung(mon.ngu_hanh() != hanh_truoc,
+		"đổi thứ tự là đổi món — hành đi từ %s sang %s" % [hanh_truoc, mon.ngu_hanh()])
+	_dung(not Tui.doi_cho_chu(mon, 0, 2), "không đổi chỗ được với trung tâm")
+	_dung(not Tui.go_chu(mon, 2), "không gỡ được chữ trung tâm")
+	_dung(Tui.go_chu(mon, 0), "gỡ được chữ bổ nghĩa")
+
+	# Nâng bậc chồng bộ: tốn bộ thủ của chữ GỐC thang, và phải đọc được chữ mới.
+	var m2 := MonDo.new(["木", "剑"])
+	var can := TenDoVat.gia_nang_bac("木")
+	Tui.bo_thu.clear()
+	_dung(not Tui.nang_bac_chu(m2, 0), "thiếu bộ thủ thì không nâng bậc được")
+	Tui.them_bo_thu("木", can)
+	_dung(Tui.nang_bac_chu(m2, 0), "đủ %d mảnh 木 thì nâng được 木 → 林" % can)
+	_bang(m2.chuoi(), "林剑", "nâng bậc xong tên đổi")
+	_bang(Tui.so_bo_thu("木"), 0, "nâng bậc trừ đúng số mảnh")
+
+func _do_roi() -> void:
+	var a := SinhMonDo.sinh_mon("ria_bien", 12345)
+	var b := SinhMonDo.sinh_mon("ria_bien", 12345)
+	_dung(a != null and b != null, "sinh được món đồ")
+	if a != null and b != null:
+		_bang(a.chuoi(), b.chuoi(), "cùng hạt giống thì ra đúng cùng một món")
+
+	# Mọi món rơi ra phải đọc được như một câu: trung tâm đứng cuối, và trung
+	# tâm phải là chữ ĐỨNG TRUNG TÂM ĐƯỢC. Sai là món đồ không moveset.
+	var hong: Array[String] = []
+	var so_mon := 0
+	for v in VocabDB.vung:
+		for i in 20:
+			var m := SinhMonDo.sinh_mon(String(v["ma"]), 1000 + i * 7)
+			if m == null:
+				hong.append("(null)")
+				continue
+			so_mon += 1
+			if not bool(TenDoVat.kiem_ten(m.ten)["duoc"]):
+				hong.append(m.chuoi())
+			elif VocabDB.vi_tri_cua(m.trung_tam()) != "trung_tam":
+				hong.append(m.chuoi())
+	_dung(hong.is_empty(), "%d món sinh ra đều đúng ngữ pháp tên%s"
+		% [so_mon, "" if hong.is_empty() else " — hỏng: " + " ".join(hong)])
+	_dung(SinhMonDo.kho_bo_nghia("ria_bien").size()
+		> SinhMonDo.kho_bo_nghia("thi_tran").size(),
+		"vùng có chủ đề thì kho chữ bổ nghĩa rộng hơn — đi sâu là gặp chữ lạ hơn")
+
+## Màn hình vẽ được tới dòng cuối không. GDScript không ném lỗi: hàm vẽ gãy
+## giữa chừng thì màn hình vẫn hiện một nửa và trông như bình thường. Ba file
+## màn hình từng nằm trong repo cả một mốc mà chưa ai chạy thử lần nào.
+func _man_hinh() -> void:
+	TriNho.khoi_dau(Tui.CHU_BAN_DAU)
+	Tui.kho.clear()
+	Tui.hon = 3000
+	Tui.bo_thu.clear()
+	Tui.them_bo_thu("木", 2)
+	var mon := SinhMonDo.sinh_mon("thi_tran", 20260914)
+	if mon != null:
+		Tui.nhat(mon)
+
+	var bia := ManBiaDa.new()
+	add_child(bia)
+	for i in ManBiaDa.TEN_THE.size():
+		bia._the = i
+		bia.lam_moi()
+		_dung(bia.ve_xong, "màn bia đá vẽ trọn thẻ '%s'" % String(ManBiaDa.TEN_THE[i]))
+
+	# Thẻ khắc chữ chỉ vẽ hết phần thú vị khi đã chọn món và chọn chữ.
+	if not Tui.kho.is_empty():
+		bia._the = 2
+		bia._mon = Tui.kho[0]
+		bia._vi_tri = 0
+		bia.lam_moi()
+		_dung(bia.ve_xong, "màn bia đá vẽ trọn phần việc với một chữ đang chọn")
+	bia.queue_free()
+
+	var hanh_trang = load("res://scripts/giao_dien/man_hanh_trang.gd").new()
+	add_child(hanh_trang)
+	hanh_trang.lam_moi()
+	_dung(hanh_trang.ve_xong, "màn hành trang vẽ trọn lúc chưa chọn món nào")
+	if not Tui.kho.is_empty():
+		hanh_trang._chon = Tui.kho[0]
+		hanh_trang.lam_moi()
+		_dung(hanh_trang.ve_xong, "màn hành trang vẽ trọn bảng chỉ số của một món")
+	hanh_trang.queue_free()
