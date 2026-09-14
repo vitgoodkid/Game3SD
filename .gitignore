@@ -1,0 +1,16 @@
+# Godot sinh ra, không đưa vào repo
+.godot/
+/android/
+*.translation
+
+# Bản xuất
+/xuat/
+/build/
+
+# Hệ điều hành
+Thumbs.db
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc

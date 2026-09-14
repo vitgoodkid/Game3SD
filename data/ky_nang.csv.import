@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cs0mkarb7mboy"
+
+[deps]
+
+files=["res://data/ky_nang.hieu.translation", "res://data/ky_nang.gia.translation", "res://data/ky_nang.so.translation", "res://data/ky_nang.ten.translation", "res://data/ky_nang.mo.translation"]
+
+source_file="res://data/ky_nang.csv"
+dest_files=["res://data/ky_nang.hieu.translation", "res://data/ky_nang.gia.translation", "res://data/ky_nang.so.translation", "res://data/ky_nang.ten.translation", "res://data/ky_nang.mo.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

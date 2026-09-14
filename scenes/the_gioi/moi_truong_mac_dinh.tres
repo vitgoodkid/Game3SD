@@ -1,0 +1,62 @@
+[gd_resource type="Environment" load_steps=3 format=3]
+
+; Môi trường mặc định. Mục 7.4 của bản yêu cầu nói thẳng: chỗ đáng đầu tư để
+; "đẹp" là ÁNH SÁNG, không phải hình khối. Một quả đồi đơn giản + ánh sáng tốt
+; đẹp hơn hẳn quả đồi chi tiết + ánh sáng mặc định. Và ánh sáng là thứ chỉnh
+; được bằng số.
+;
+; Mỗi vùng có WorldEnvironment riêng, sinh từ data/vung.csv lúc chạy
+; (xem scripts/the_gioi/moi_truong_vung.gd). File này là nền chung.
+
+[sub_resource type="ProceduralSkyMaterial" id="Bau_troi"]
+sky_top_color = Color(0.29, 0.37, 0.5, 1)
+sky_horizon_color = Color(0.56, 0.58, 0.58, 1)
+sky_curve = 0.18
+ground_bottom_color = Color(0.13, 0.12, 0.12, 1)
+ground_horizon_color = Color(0.56, 0.58, 0.58, 1)
+sun_angle_max = 24.0
+
+[sub_resource type="Sky" id="Troi"]
+sky_material = SubResource("Bau_troi")
+
+[resource]
+background_mode = 2
+sky = SubResource("Troi")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 3
+tonemap_white = 6.0
+ssr_enabled = false
+ssao_enabled = true
+ssao_radius = 1.4
+ssao_intensity = 2.4
+ssil_enabled = true
+ssil_radius = 4.0
+ssil_intensity = 1.0
+sdfgi_enabled = true
+sdfgi_use_occlusion = true
+sdfgi_cascades = 5
+sdfgi_min_cell_size = 0.2
+sdfgi_energy = 1.1
+glow_enabled = true
+glow_intensity = 0.55
+glow_strength = 1.0
+glow_bloom = 0.08
+glow_blend_mode = 1
+glow_hdr_threshold = 1.05
+fog_enabled = true
+fog_light_color = Color(0.58, 0.63, 0.68, 1)
+fog_light_energy = 1.0
+fog_density = 0.004
+fog_sky_affect = 0.45
+fog_height = -8.0
+fog_height_density = 0.04
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.016
+volumetric_fog_albedo = Color(0.72, 0.76, 0.8, 1)
+volumetric_fog_length = 96.0
+volumetric_fog_gi_inject = 0.8
+adjustment_enabled = true
+adjustment_brightness = 1.02
+adjustment_contrast = 1.06
+adjustment_saturation = 0.94

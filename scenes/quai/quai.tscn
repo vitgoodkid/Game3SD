@@ -1,0 +1,67 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/quai/quai.gd" id="1_q"]
+[ext_resource type="Script" path="res://scripts/quai/than_quai.gd" id="2_than"]
+[ext_resource type="Script" path="res://scripts/quai/quai_hop_don.gd" id="3_hop"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/may_trang_thai.gd" id="4_may"]
+[ext_resource type="Script" path="res://scripts/quai/trang_thai/quai_dung.gd" id="5_dung"]
+[ext_resource type="Script" path="res://scripts/quai/trang_thai/quai_ve_cho.gd" id="6_ve"]
+[ext_resource type="Script" path="res://scripts/quai/trang_thai/quai_duoi.gd" id="7_duoi"]
+[ext_resource type="Script" path="res://scripts/quai/trang_thai/quai_danh.gd" id="8_danh"]
+[ext_resource type="Script" path="res://scripts/quai/trang_thai/quai_trung_don.gd" id="9_td"]
+[ext_resource type="Script" path="res://scripts/quai/trang_thai/quai_vo_the.gd" id="10_vt"]
+[ext_resource type="Script" path="res://scripts/quai/trang_thai/quai_chet.gd" id="11_chet"]
+
+[sub_resource type="CapsuleShape3D" id="Capsule_q"]
+radius = 0.5
+height = 1.8
+
+[sub_resource type="BoxShape3D" id="Box_don_q"]
+size = Vector3(2, 1.8, 2)
+
+[node name="Quai" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_q")
+
+[node name="Hinh" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("Capsule_q")
+
+[node name="Than" type="Node3D" parent="."]
+script = ExtResource("2_than")
+
+[node name="HopDon" type="Area3D" parent="Than"]
+monitoring = false
+monitorable = false
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("3_hop")
+
+[node name="Hinh" type="CollisionShape3D" parent="Than/HopDon"]
+shape = SubResource("Box_don_q")
+
+[node name="May" type="Node" parent="."]
+script = ExtResource("4_may")
+trang_thai_dau = "quai_dung"
+
+[node name="quai_dung" type="Node" parent="May"]
+script = ExtResource("5_dung")
+
+[node name="quai_ve_cho" type="Node" parent="May"]
+script = ExtResource("6_ve")
+
+[node name="quai_duoi" type="Node" parent="May"]
+script = ExtResource("7_duoi")
+
+[node name="quai_danh" type="Node" parent="May"]
+script = ExtResource("8_danh")
+
+[node name="quai_trung_don" type="Node" parent="May"]
+script = ExtResource("9_td")
+
+[node name="quai_vo_the" type="Node" parent="May"]
+script = ExtResource("10_vt")
+
+[node name="quai_chet" type="Node" parent="May"]
+script = ExtResource("11_chet")

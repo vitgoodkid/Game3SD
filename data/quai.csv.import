@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bwuhjswgmb763"
+
+[deps]
+
+files=["res://data/quai.ten.translation", "res://data/quai.ten.translation", "res://data/quai.vung.translation", "res://data/quai.mau.translation", "res://data/quai.giap.translation", "res://data/quai.ngu.translation", "res://data/quai.the.translation", "res://data/quai.cao.translation", "res://data/quai.ban.translation", "res://data/quai.toc.translation", "res://data/quai.toc.translation", "res://data/quai.tam.translation", "res://data/quai.tam.translation", "res://data/quai.moveset.translation", "res://data/quai.hon.translation", "res://data/quai.rot.translation"]
+
+source_file="res://data/quai.csv"
+dest_files=["res://data/quai.ten.translation", "res://data/quai.ten.translation", "res://data/quai.vung.translation", "res://data/quai.mau.translation", "res://data/quai.giap.translation", "res://data/quai.ngu.translation", "res://data/quai.the.translation", "res://data/quai.cao.translation", "res://data/quai.ban.translation", "res://data/quai.toc.translation", "res://data/quai.toc.translation", "res://data/quai.tam.translation", "res://data/quai.tam.translation", "res://data/quai.moveset.translation", "res://data/quai.hon.translation", "res://data/quai.rot.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

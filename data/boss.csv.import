@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://wn2geixett36"
+
+[deps]
+
+files=["res://data/boss.ten.translation", "res://data/boss.ten.translation", "res://data/boss.vung.translation", "res://data/boss.mau.translation", "res://data/boss.giap.translation", "res://data/boss.ngu.translation", "res://data/boss.the.translation", "res://data/boss.cao.translation", "res://data/boss.ban.translation", "res://data/boss.toc.translation", "res://data/boss.moveset.translation", "res://data/boss.moveset.translation", "res://data/boss.nguong.translation", "res://data/boss.thuong.translation", "res://data/boss.thuong.translation", "res://data/boss.loi.translation"]
+
+source_file="res://data/boss.csv"
+dest_files=["res://data/boss.ten.translation", "res://data/boss.ten.translation", "res://data/boss.vung.translation", "res://data/boss.mau.translation", "res://data/boss.giap.translation", "res://data/boss.ngu.translation", "res://data/boss.the.translation", "res://data/boss.cao.translation", "res://data/boss.ban.translation", "res://data/boss.toc.translation", "res://data/boss.moveset.translation", "res://data/boss.moveset.translation", "res://data/boss.nguong.translation", "res://data/boss.thuong.translation", "res://data/boss.thuong.translation", "res://data/boss.loi.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://f6d2lt1ge2it"
+
+[deps]
+
+files=["res://data/don_quai.ten.translation", "res://data/don_quai.t.translation", "res://data/don_quai.t.translation", "res://data/don_quai.t.translation", "res://data/don_quai.t.translation", "res://data/don_quai.sat.translation", "res://data/don_quai.pha.translation", "res://data/don_quai.tam.translation", "res://data/don_quai.goc.translation", "res://data/don_quai.lao.translation", "res://data/don_quai.huong.translation"]
+
+source_file="res://data/don_quai.csv"
+dest_files=["res://data/don_quai.ten.translation", "res://data/don_quai.t.translation", "res://data/don_quai.t.translation", "res://data/don_quai.t.translation", "res://data/don_quai.t.translation", "res://data/don_quai.sat.translation", "res://data/don_quai.pha.translation", "res://data/don_quai.tam.translation", "res://data/don_quai.goc.translation", "res://data/don_quai.lao.translation", "res://data/don_quai.huong.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

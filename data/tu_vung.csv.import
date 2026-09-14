@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cymsprb1woowd"
+
+[deps]
+
+files=["res://data/tu_vung.pinyin.translation", "res://data/tu_vung.pinyin.translation", "res://data/tu_vung.thanh.translation", "res://data/tu_vung.han.translation", "res://data/tu_vung.nghia.translation", "res://data/tu_vung.nghia.translation", "res://data/tu_vung.bo.translation", "res://data/tu_vung.nhieu.translation", "res://data/tu_vung.chu.translation", "res://data/tu_vung.cap.translation", "res://data/tu_vung.vi.translation", "res://data/tu_vung.vi.translation", "res://data/tu_vung.dong.translation", "res://data/tu_vung.trai.translation", "res://data/tu_vung.so.translation", "res://data/tu_vung.ngu.translation", "res://data/tu_vung.thang.translation", "res://data/tu_vung.thang.translation", "res://data/tu_vung.tan.translation"]
+
+source_file="res://data/tu_vung.csv"
+dest_files=["res://data/tu_vung.pinyin.translation", "res://data/tu_vung.pinyin.translation", "res://data/tu_vung.thanh.translation", "res://data/tu_vung.han.translation", "res://data/tu_vung.nghia.translation", "res://data/tu_vung.nghia.translation", "res://data/tu_vung.bo.translation", "res://data/tu_vung.nhieu.translation", "res://data/tu_vung.chu.translation", "res://data/tu_vung.cap.translation", "res://data/tu_vung.vi.translation", "res://data/tu_vung.vi.translation", "res://data/tu_vung.dong.translation", "res://data/tu_vung.trai.translation", "res://data/tu_vung.so.translation", "res://data/tu_vung.ngu.translation", "res://data/tu_vung.thang.translation", "res://data/tu_vung.thang.translation", "res://data/tu_vung.tan.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

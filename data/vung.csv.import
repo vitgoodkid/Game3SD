@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://dprb7kljkdnht"
+
+[deps]
+
+files=["res://data/vung.ten.translation", "res://data/vung.ten.translation", "res://data/vung.chu.translation", "res://data/vung.cap.translation", "res://data/vung.ngu.translation", "res://data/vung.mo.translation", "res://data/vung.hat.translation", "res://data/vung.cao.translation", "res://data/vung.do.translation", "res://data/vung.mat.translation", "res://data/vung.mat.translation", "res://data/vung.mau.translation", "res://data/vung.mau.translation", "res://data/vung.dam.translation", "res://data/vung.goc.translation", "res://data/vung.cuong.translation", "res://data/vung.bi.translation"]
+
+source_file="res://data/vung.csv"
+dest_files=["res://data/vung.ten.translation", "res://data/vung.ten.translation", "res://data/vung.chu.translation", "res://data/vung.cap.translation", "res://data/vung.ngu.translation", "res://data/vung.mo.translation", "res://data/vung.hat.translation", "res://data/vung.cao.translation", "res://data/vung.do.translation", "res://data/vung.mat.translation", "res://data/vung.mat.translation", "res://data/vung.mau.translation", "res://data/vung.mau.translation", "res://data/vung.dam.translation", "res://data/vung.goc.translation", "res://data/vung.cuong.translation", "res://data/vung.bi.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

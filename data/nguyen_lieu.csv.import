@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c5owte336rnms"
+
+[deps]
+
+files=["res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.han.translation", "res://data/nguyen_lieu.nghia.translation", "res://data/nguyen_lieu.khe.translation", "res://data/nguyen_lieu.cong.translation", "res://data/nguyen_lieu.loai.translation", "res://data/nguyen_lieu.bo.translation", "res://data/nguyen_lieu.hiem.translation", "res://data/nguyen_lieu.vi.translation", "res://data/nguyen_lieu.ngu.translation"]
+
+source_file="res://data/nguyen_lieu.csv"
+dest_files=["res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.han.translation", "res://data/nguyen_lieu.nghia.translation", "res://data/nguyen_lieu.khe.translation", "res://data/nguyen_lieu.cong.translation", "res://data/nguyen_lieu.loai.translation", "res://data/nguyen_lieu.bo.translation", "res://data/nguyen_lieu.hiem.translation", "res://data/nguyen_lieu.vi.translation", "res://data/nguyen_lieu.ngu.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

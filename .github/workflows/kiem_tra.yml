@@ -1,0 +1,82 @@
+name: Kiểm tra
+
+# Vì sao có file này: chủ dự án làm việc từ điện thoại, máy có Godot thì tắt.
+# Không có CI thì mọi thay đổi ở tầng luật đều là đoán mò. Mỗi lần đẩy code
+# lên là job này chạy đúng bộ kiểm tra mà máy bàn chạy, và trả lời được câu
+# "có gãy gì không" mà không cần mở Godot.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # Đổi phiên bản Godot ở ĐÚNG MỘT chỗ này.
+  PHIEN_BAN: 4.7.2
+
+jobs:
+  kiem-tra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tải Godot headless
+        run: |
+          set -e
+          TEN="Godot_v${PHIEN_BAN}-stable_linux.x86_64"
+          # Bản mới nằm ở godot-builds, bản cũ ở repo chính. Thử cả hai.
+          for GOC in \
+            "https://github.com/godotengine/godot-builds/releases/download/${PHIEN_BAN}-stable" \
+            "https://github.com/godotengine/godot/releases/download/${PHIEN_BAN}-stable"
+          do
+            if curl -fsSL -o godot.zip "${GOC}/${TEN}.zip"; then
+              echo "Tải được từ ${GOC}"
+              break
+            fi
+          done
+          test -s godot.zip || { echo "KHONG TAI DUOC GODOT ${PHIEN_BAN}"; exit 1; }
+          unzip -q godot.zip
+          mv "${TEN}" godot
+          chmod +x godot
+          ./godot --version
+
+      - name: Nhập tài nguyên
+        # Lần chạy đầu Godot phải dựng .godot/ — tách riêng để lỗi nhập tài
+        # nguyên không lẫn vào lỗi của bộ kiểm tra.
+        run: timeout 600 ./godot --headless --path . --import 2>&1 | tee nhap.log
+
+      - name: Không được có lỗi biên dịch script
+        run: |
+          # Script hỏng thì Godot vẫn thoát mã 0 ở bước --import, nên phải tự
+          # dò trong log. Đây từng là chỗ lỗi trôi qua CI mà không ai thấy.
+          if grep -qE "SCRIPT ERROR|Parse Error|Failed to load script" nhap.log; then
+            echo "::error::Có script không biên dịch được"
+            grep -E "SCRIPT ERROR|Parse Error|Failed to load script" -A2 nhap.log
+            exit 1
+          fi
+
+      - name: Chạy bộ kiểm tra
+        # Bộ kiểm tra tự thoát mã 1 nếu có cái hỏng (xem tools/kiem_tra.gd).
+        # timeout để phòng trường hợp scene không nạp được — khi đó Godot
+        # headless treo vô hạn chứ không báo lỗi.
+        run: timeout 300 ./godot --headless --path . tools/kiem_tra.tscn
+
+      - name: Chạy thử game 600 khung hình
+        # Bộ kiểm tra ở trên chỉ động tới tầng luật. Bước này nạp phòng thử
+        # thật, cho nhân vật và quái chạy 10 giây, bắt lỗi lúc chạy mà test
+        # tĩnh không thấy: node null, tín hiệu nối hụt, chia cho 0.
+        run: |
+          timeout 300 ./godot --headless --path . --quit-after 600 2>&1 | tee chay.log
+          if grep -qE "SCRIPT ERROR|Parse Error" chay.log; then
+            echo "::error::Có lỗi lúc chạy"
+            grep -E "SCRIPT ERROR|Parse Error" -A6 chay.log
+            exit 1
+          fi
+
+      - name: Dữ liệu sinh lại phải khớp
+        # tools/sinh_du_lieu.py cần bản 2D nên không chạy được trên CI. Thay
+        # vào đó kiểm những bất biến mà tay người dễ phá nhất khi sửa CSV.
+        run: python3 tools/kiem_csv.py

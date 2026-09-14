@@ -1,0 +1,116 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/nhan_vat/nguoi_choi.gd" id="1_nc"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/than_khoi.gd" id="2_than"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/vu_khi_hop_don.gd" id="3_hop"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/camera_ba_che_do.gd" id="4_cam"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/khoa_muc_tieu.gd" id="5_khoa"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/may_trang_thai.gd" id="6_may"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/dung.gd" id="7_dung"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/di.gd" id="8_di"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/chay_nhanh.gd" id="9_chay"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/lan.gd" id="10_lan"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/nhay.gd" id="11_nhay"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/danh.gd" id="12_danh"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/do_don.gd" id="13_do"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/do_phan.gd" id="14_dp"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/trung_don.gd" id="15_td"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/vo_the.gd" id="16_vt"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/uong.gd" id="17_uong"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/chet.gd" id="18_chet"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/ket_lieu.gd" id="19_kl"]
+
+[sub_resource type="CapsuleShape3D" id="Capsule_nc"]
+radius = 0.36
+height = 1.8
+
+[sub_resource type="BoxShape3D" id="Box_don"]
+size = Vector3(1.4, 1.4, 2.0)
+
+[node name="NguoiChoi" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_nc")
+
+[node name="Hinh" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("Capsule_nc")
+
+[node name="Than" type="Node3D" parent="."]
+script = ExtResource("2_than")
+
+[node name="ThanNguoi" type="Node3D" parent="Than"]
+
+[node name="GanTayPhai" type="Node3D" parent="Than"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 1.08, 0)
+
+[node name="HopDon" type="Area3D" parent="Than/GanTayPhai"]
+monitoring = false
+monitorable = false
+collision_layer = 0
+collision_mask = 4
+script = ExtResource("3_hop")
+
+[node name="Hinh" type="CollisionShape3D" parent="Than/GanTayPhai/HopDon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1)
+shape = SubResource("Box_don")
+
+[node name="GiaCamera" type="Node3D" parent="."]
+script = ExtResource("4_cam")
+
+[node name="Tay" type="SpringArm3D" parent="GiaCamera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0, 0)
+collision_mask = 1
+spring_length = 4.2
+margin = 0.3
+
+[node name="Camera" type="Camera3D" parent="GiaCamera/Tay"]
+fov = 72.0
+near = 0.08
+far = 900.0
+
+[node name="Khoa" type="Node" parent="."]
+script = ExtResource("5_khoa")
+
+[node name="May" type="Node" parent="."]
+script = ExtResource("6_may")
+trang_thai_dau = "dung"
+
+[node name="dung" type="Node" parent="May"]
+script = ExtResource("7_dung")
+
+[node name="di" type="Node" parent="May"]
+script = ExtResource("8_di")
+
+[node name="chay_nhanh" type="Node" parent="May"]
+script = ExtResource("9_chay")
+
+[node name="lan" type="Node" parent="May"]
+script = ExtResource("10_lan")
+
+[node name="nhay" type="Node" parent="May"]
+script = ExtResource("11_nhay")
+
+[node name="danh" type="Node" parent="May"]
+script = ExtResource("12_danh")
+
+[node name="do_don" type="Node" parent="May"]
+script = ExtResource("13_do")
+
+[node name="do_phan" type="Node" parent="May"]
+script = ExtResource("14_dp")
+
+[node name="trung_don" type="Node" parent="May"]
+script = ExtResource("15_td")
+
+[node name="vo_the" type="Node" parent="May"]
+script = ExtResource("16_vt")
+
+[node name="uong" type="Node" parent="May"]
+script = ExtResource("17_uong")
+
+[node name="chet" type="Node" parent="May"]
+script = ExtResource("18_chet")
+
+[node name="ket_lieu" type="Node" parent="May"]
+script = ExtResource("19_kl")

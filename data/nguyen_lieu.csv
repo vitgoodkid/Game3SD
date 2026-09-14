@@ -1,0 +1,39 @@
+chu,pinyin,pinyin_go,han_viet,nghia,khe,cong,loai,bo_phan,hiem,vi_tri,ngu_hanh
+头,tóu,tou,đầu,cái đầu,vat_lieu,1,,,thuong,bo_nghia,
+盔,kuī,kui,khôi,mũ giáp,nen,4,giap,dau,thuong,trung_tam,
+战,zhàn,zhan,chiến,chiến đấu,vat_lieu,2,,,thuong,bo_nghia,
+甲,jiǎ,jia,giáp,áo giáp,nen,5,giap,than,hiem,trung_tam,金
+手,shǒu,shou,thủ,bàn tay,vat_lieu,1,,,thuong,bo_nghia,
+套,tào,tao,sáo,bao / bộ,nen,2,giap,tay,thuong,trung_tam,
+皮,pí,pi,bì,da,vat_lieu,1,,,thuong,bo_nghia,
+鞋,xié,xie,hài,giày,nen,3,giap,chan,thuong,trung_tam,
+长,cháng,chang,trường,dài,pho_tu,1,,,hiem,bo_nghia,
+裤,kù,ku,khố,quần,nen,3,giap,quan,hiem,trung_tam,
+宝,bǎo,bao,bảo,báu vật,vat_lieu,3,,,su_thi,bo_nghia,
+剑,jiàn,jian,kiếm,thanh kiếm,nen,8,vukhi,vu_khi,quy,trung_tam,金
+弓,gōng,gong,cung,cái cung,nen,6,vukhi,vu_khi,quy,trung_tam,
+箭,jiàn,jian,tiễn,mũi tên,vat_lieu,2,,,quy,bo_nghia,
+斧,fǔ,fu,phủ,cái rìu,nen,10,vukhi,vu_khi,huyen_thoai,trung_tam,金
+药,yào,yao,dược,thuốc,nen,40,tieu_hao,hoi_mau,quy,trung_tam,木
+水,shuǐ,shui,thủy,nước,nguyen_to,1,,,hiem,bo_nghia,水
+面,miàn,mian,diện,mì / mặt,,0,,,thuong,bo_nghia,
+包,bāo,bao,bao,bánh bao / gói,,0,,,thuong,bo_nghia,
+饮,yǐn,yin,ẩm,uống,,0,,,hiem,bo_nghia,
+料,liào,liao,liệu,nguyên liệu,vat_lieu,1,,,hiem,bo_nghia,
+红,hóng,hong,hồng,màu đỏ,nguyen_to,1,,,quy,bo_nghia,火
+苹,píng,ping,bình,quả táo (trong 苹果),,0,,,thuong,bo_nghia,木
+果,guǒ,guo,quả,trái cây,,0,,,thuong,bo_nghia,木
+汁,zhī,zhi,trấp,nước ép,,0,,,hiem,bo_nghia,水
+金,jīn,jin,kim,kim loại / vàng,vat_lieu,4,,,hiem,bo_nghia,金
+毒,dú,du,độc,chất độc,nguyen_to,2,,,quy,bo_nghia,
+魔,mó,mo,ma,yêu ma / phép thuật,nguyen_to,5,,,su_thi,bo_nghia,
+铠,kǎi,kai,khải,giáp trụ,nen,7,giap,than,hiem,trung_tam,金
+珠,zhū,zhu,châu,ngọc trai / hạt châu,vat_lieu,3,,,hiem,bo_nghia,
+帽,mào,mao,mạo,mũ,nen,3,giap,dau,quy,trung_tam,
+冠,guān,guan,quan,mũ miện / vương miện,nen,12,giap,dau,huyen_thoai,trung_tam,
+刀,dāo,dao,đao,con dao,nen,6,vukhi,vu_khi,thuong,trung_tam,金
+极,jí,ji,cực,cực kỳ / rất,pho_tu,2,,,su_thi,bo_nghia,
+最,zuì,zui,tối,nhất / hơn cả,pho_tu,3,,,su_thi,bo_nghia,
+火,huǒ,huo,hoả,lửa,nguyen_to,3,,,hiem,bo_nghia,火
+冰,bīng,bing,băng,băng,nguyen_to,3,,,quy,bo_nghia,水
+石,shí,shi,thạch,đá,nguyen_to,2,,,thuong,bo_nghia,土

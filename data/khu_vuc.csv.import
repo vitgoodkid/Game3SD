@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cfao8whd8xua5"
+
+[deps]
+
+files=["res://data/khu_vuc.chu.translation", "res://data/khu_vuc.cap.translation", "res://data/khu_vuc.so.translation", "res://data/khu_vuc.x.translation", "res://data/khu_vuc.y.translation", "res://data/khu_vuc.rong.translation", "res://data/khu_vuc.cao.translation", "res://data/khu_vuc.boss.translation", "res://data/khu_vuc.mo.translation"]
+
+source_file="res://data/khu_vuc.csv"
+dest_files=["res://data/khu_vuc.chu.translation", "res://data/khu_vuc.cap.translation", "res://data/khu_vuc.so.translation", "res://data/khu_vuc.x.translation", "res://data/khu_vuc.y.translation", "res://data/khu_vuc.rong.translation", "res://data/khu_vuc.cao.translation", "res://data/khu_vuc.boss.translation", "res://data/khu_vuc.mo.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

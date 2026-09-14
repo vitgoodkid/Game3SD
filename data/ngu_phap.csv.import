@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://dpsdc1ksre2ih"
+
+[deps]
+
+files=["res://data/ngu_phap.cau.translation", "res://data/ngu_phap.dap.translation", "res://data/ngu_phap.nhieu.translation", "res://data/ngu_phap.sua.translation", "res://data/ngu_phap.nghia.translation", "res://data/ngu_phap.diem.translation", "res://data/ngu_phap.chu.translation", "res://data/ngu_phap.cap.translation"]
+
+source_file="res://data/ngu_phap.csv"
+dest_files=["res://data/ngu_phap.cau.translation", "res://data/ngu_phap.dap.translation", "res://data/ngu_phap.nhieu.translation", "res://data/ngu_phap.sua.translation", "res://data/ngu_phap.nghia.translation", "res://data/ngu_phap.diem.translation", "res://data/ngu_phap.chu.translation", "res://data/ngu_phap.cap.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

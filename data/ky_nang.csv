@@ -1,0 +1,20 @@
+chu,hieu_ung,gia_tri,so_luot,ten,mo_ta
+明,loai_bot,2,3,Soi sáng,Xoá bớt 2 đáp án sai
+星,loai_bot,1,4,Ánh sao,Xoá bớt 1 đáp án sai
+好,hoi_mau,20,3,Lành lại,"Bệnh lành, hồi 20 máu"
+花,hoi_mau,20,3,Hoa thuốc,"Hoa cỏ làm thuốc, hồi 20 máu"
+家,chan_don,1,2,Trú ẩn,"Về nhà trú ẩn, chặn trọn 1 đòn"
+安,chan_don,1,3,Bình an,"Bình yên, chặn 1 lần mất máu"
+草,hoi_mau,15,3,Cỏ thuốc,"Cỏ thuốc dại, hồi 15 máu"
+林,don_manh,10,4,Vụt khúc gỗ,"Vung khúc gỗ, câu đúng sau +10 sát thương"
+森,don_manh,25,3,Vụt thân cây,"Vung thân cây, câu đúng sau +25 sát thương"
+男,don_manh,10,4,Sức vóc,Câu đúng tiếp theo gây thêm 10 sát thương
+早,danh_truoc,20,3,Ra tay sớm,Gây ngay 20 sát thương
+休,bo_qua,0,2,Nghỉ ngơi,Bỏ qua câu này — không ai mất máu
+吃,hoi_mau,30,2,Ăn no,"Ăn một bữa no, hồi 30 máu"
+喝,hoi_mau,15,3,Uống ngụm,"Uống ngụm nước, hồi 15 máu"
+饭,hoi_mau,35,2,Bữa cơm,"Ăn bữa cơm, hồi 35 máu"
+茶,hoi_mau,20,2,Nhấp trà,"Nhấp ngụm trà, hồi 20 máu"
+看,loai_bot,2,2,Nhìn thấu,"Nhìn thấu, xoá 2 đáp án sai"
+答,loai_bot,1,3,Lộ đáp,"Hé lộ, xoá 1 đáp án sai"
+跑,danh_truoc,15,2,Lao tới,Lao tới đánh trước 15 máu

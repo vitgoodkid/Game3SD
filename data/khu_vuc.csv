@@ -1,0 +1,8 @@
+ten,chu_de,cap,so_quai,x,y,rong,cao,boss,mo_khi
+Thị trấn,,0,0,600,800,520,340,0,
+Rìa biển,so|phuong|thien_nhien,1,5,40,800,520,340,1,
+Sa mạc,an|do_vat,1,5,1720,800,520,340,1,Rìa biển
+Làng bỏ hoang,dongtu|nguoi,2,5,1160,1180,520,340,1,Sa mạc
+Núi Băng,gia_dinh|than_the,2,5,1720,420,520,340,1,Làng bỏ hoang
+Đầm lầy,mau|thoigian|tinh_tu,3,5,1160,420,520,340,1,Núi Băng
+Vùng đất bị nguyền rủa,hoc|thu|rung,3,4,1160,40,520,340,1,Đầm lầy

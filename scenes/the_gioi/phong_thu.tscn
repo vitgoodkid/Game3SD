@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/the_gioi/phong_thu.gd" id="1_phong"]
+[ext_resource type="Environment" path="res://scenes/the_gioi/moi_truong_mac_dinh.tres" id="2_mt"]
+[ext_resource type="PackedScene" path="res://scenes/nhan_vat/nguoi_choi.tscn" id="3_nc"]
+[ext_resource type="Script" path="res://scripts/giao_dien/hud.gd" id="4_hud"]
+
+[node name="PhongThu" type="Node3D"]
+script = ExtResource("1_phong")
+
+[node name="MoiTruong" type="WorldEnvironment" parent="."]
+environment = ExtResource("2_mt")
+
+[node name="MatTroi" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.35, 0.357, 0, 0.714, 0.7, -0.5, -0.606, 0.618, 0, 22, 0)
+light_energy = 1.1
+light_angular_distance = 0.6
+shadow_enabled = true
+directional_shadow_mode = 2
+directional_shadow_max_distance = 120.0
+
+[node name="NguoiChoi" parent="." instance=ExtResource("3_nc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 4)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("4_hud")

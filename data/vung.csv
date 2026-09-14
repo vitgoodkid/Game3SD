@@ -1,0 +1,8 @@
+ma,ten,ten_chu,chu_de,cap,ngu_hanh,mo_khi,hat_giong,cao_do,do_go_ghe,mat_do_cay,mat_do_da,mau_troi,mau_suong,dam_suong,goc_mat_troi,cuong_do_troi,bi_xoa
+thi_tran,Thị trấn Bia Đá,石城,,0,土,,101,18,0.20,0.10,0.35,4a5c78,8fa6b8,0.0030,-42,1.10,0.00
+ria_bien,Rìa biển,海边,so|phuong|thien_nhien,1,水,thi_tran,202,26,0.45,0.22,0.30,6b93b8,b9cede,0.0060,-35,1.00,0.15
+sa_mac,Sa mạc Vàng,金沙,an|do_vat,1,金,ria_bien,303,34,0.55,0.04,0.45,c9a86a,e3cfa2,0.0042,-60,1.30,0.25
+lang_bo_hoang,Làng bỏ hoang,荒村,dongtu|nguoi,2,木,sa_mac,404,22,0.38,0.55,0.18,6f6a58,9a9283,0.0075,-28,0.80,0.45
+nui_bang,Núi Băng,冰山,gia_dinh|than_the,2,水,lang_bo_hoang,505,120,0.85,0.18,0.60,9fc2e0,dfeef8,0.0090,-22,1.15,0.35
+dam_lay,Đầm lầy Độc,毒沼,mau|thoigian|tinh_tu,3,木,nui_bang,606,12,0.30,0.70,0.12,5d6b4a,7f9a6b,0.0130,-18,0.55,0.60
+vung_bi_nguyen,Vùng đất bị nguyền rủa,无名之地,hoc|thu|rung,3,火,dam_lay,707,58,0.70,0.12,0.50,3a2d3f,6a5470,0.0110,-12,0.45,0.90

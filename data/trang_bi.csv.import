@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://xpil0daij37k"
+
+[deps]
+
+files=["res://data/trang_bi.pinyin.translation", "res://data/trang_bi.pinyin.translation", "res://data/trang_bi.han.translation", "res://data/trang_bi.nghia.translation", "res://data/trang_bi.loai.translation", "res://data/trang_bi.bo.translation", "res://data/trang_bi.gia.translation", "res://data/trang_bi.thanh.translation"]
+
+source_file="res://data/trang_bi.csv"
+dest_files=["res://data/trang_bi.pinyin.translation", "res://data/trang_bi.pinyin.translation", "res://data/trang_bi.han.translation", "res://data/trang_bi.nghia.translation", "res://data/trang_bi.loai.translation", "res://data/trang_bi.bo.translation", "res://data/trang_bi.gia.translation", "res://data/trang_bi.thanh.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

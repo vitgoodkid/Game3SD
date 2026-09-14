@@ -1,0 +1,14 @@
+ma,ten,ten_chu,vung,mau,giap,ngu_hanh,the_dung,cao,ban_kinh,toc_do_di,toc_do_duoi,tam_phat_hien,tam_danh,moveset,hon,rot_bo_thu
+bu_nhin,Bù nhìn tập,木人,thi_tran,120,0,木,10,1.8,0.45,0.0,0.0,6,2.2,bo_cham,5,木
+soi_bien,Sói biển,海狼,ria_bien,180,2,水,12,1.1,0.40,3.2,5.4,14,2.0,cau_xe|lao_toi,42,水|口
+linh_ria,Lính rìa biển,边兵,ria_bien,240,5,金,22,1.8,0.45,2.6,4.4,16,2.4,chem_ngang|dam_thang,68,金|人
+bo_cat,Bọ cát,沙虫,sa_mac,300,4,土,18,1.4,0.55,2.4,4.8,13,2.6,hup_cat|dam_dau,90,土|石
+xac_kho,Xác khô,干尸,sa_mac,380,8,火,30,1.9,0.50,2.0,3.8,15,2.2,vo_tay|nhay_bo,120,火|日
+dan_lang,Dân làng mất tên,无名村民,lang_bo_hoang,420,6,木,24,1.8,0.45,2.8,5.0,18,2.3,cao_xe|nem_da,150,木|人|口
+cho_dai,Chó dại,狂犬,lang_bo_hoang,320,3,木,14,1.0,0.38,3.6,6.2,20,1.9,cau_xe,135,口|人
+nguoi_bang,Người băng,冰人,nui_bang,560,14,水,45,2.1,0.50,2.2,3.6,17,2.5,dam_bang|vut_gai,220,冰|水
+de_nui,Dê núi,山羊,nui_bang,440,6,土,35,1.6,0.50,3.0,5.8,16,2.2,huc_dau,190,土|山
+coc_doc,Cóc độc,毒蛙,dam_lay,500,7,木,20,1.5,0.60,2.4,4.2,15,2.8,liem_doc|nhay_de,240,毒|水
+re_song,Rễ sống,活根,dam_lay,680,16,木,60,2.6,0.70,1.4,2.2,12,3.0,quat_re|troi_chan,300,木|林
+bong_chu,Bóng chữ,字影,vung_bi_nguyen,720,10,,40,1.9,0.45,3.4,6.0,22,2.4,xe_toac|nhan_ban,420,口|品
+ke_xoa,Kẻ Xoá,抹者,vung_bi_nguyen,900,20,,80,2.4,0.60,2.6,4.6,20,2.6,chem_doi|xoa_ten,560,魔|无

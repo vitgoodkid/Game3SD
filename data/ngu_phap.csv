@@ -1,0 +1,42 @@
+kieu,cau,dap_an,nhieu,sua,nghia,diem,chu_de,cap
+dien,他＿高。,很,是|的|了,,Anh ấy cao.,Tính từ đi với 很 chứ không dùng 是,cauban,1
+dien,我＿学生。,是,很|的|在,,Tôi là học sinh.,Trước danh từ phải dùng 是,cauban,1
+dien,这是我＿书。,的,很|是|了,,Đây là sách của tôi.,的 nối người sở hữu với đồ vật,cauban,1
+dien,下雨＿。,了,的|很|吗,,Mưa rồi.,了 báo việc vừa xảy ra,cauban,1
+dien,他＿家。,在,是|很|的,,Anh ấy ở nhà.,在 chỉ nơi chốn,cauban,1
+dien,你好＿？,吗,了|的|很,,Bạn khỏe không?,吗 đặt cuối câu để thành câu hỏi,nghivan,1
+dien,这是＿？,什么,谁|哪儿|几,,Đây là cái gì?,什么 nghĩa là cái gì,nghivan,1
+dien,那是一＿人。,个,只|本|张,,Đó là một người.,个 là lượng từ chung dùng cho người,luongtu,1
+dien,他＿我高。,比,很|是|在,,Anh ấy cao hơn tôi.,比 dùng để so sánh hai bên,sosanh,2
+dien,我昨天＿去。,没,不|了|很,,Hôm qua tôi không đi.,Việc đã qua thì phủ định bằng 没,phudinh,2
+dien,我＿想去。,不,没|了|很,,Tôi không muốn đi.,Ý muốn thì phủ định bằng 不,phudinh,2
+dien,我们＿是学生。,都,很|的|在,,Chúng tôi đều là học sinh.,都 đứng trước động từ,trattu,2
+dien,我＿很好。,也,都|的|了,,Tôi cũng rất khỏe.,也 đứng trước 很,trattu,2
+dien,太好＿！,了,的|吗|很,,Tuyệt quá!,Mẫu câu 太...了 dùng để khen,cauban,2
+dien,我＿学校学习。,在,是|的|了,,Tôi học ở trường.,在 cùng nơi chốn đứng TRƯỚC động từ,trattu,2
+dien,你有＿个哥哥？,几,什么|谁|哪儿,,Bạn có mấy anh trai?,几 hỏi số lượng nhỏ,nghivan,2
+dien,你去＿？,哪儿,什么|谁|几,,Bạn đi đâu?,哪儿 nghĩa là ở đâu,nghivan,2
+dien,我＿去学校。,明天,学校|很|了,,Mai tôi đi học.,Thời gian đứng trước động từ,trattu,2
+dien,这是＿的书？,谁,什么|哪儿|几,,Đây là sách của ai?,谁 nghĩa là ai,nghivan,2
+dien,我有两＿手。,只,个|本|张,,Tôi có hai bàn tay.,只 dùng cho tay chân và động vật,luongtu,3
+dung_sai,我是学生。,dung,,,Tôi là học sinh.,Trước danh từ dùng 是 là đúng,cauban,1
+dung_sai,他是高。,sai,,他很高。,Anh ấy cao.,Tính từ không dùng 是 mà dùng 很,cauban,1
+dung_sai,天很蓝。,dung,,,Trời rất xanh.,Tính từ đi với 很 là đúng,cauban,1
+dung_sai,我很学生。,sai,,我是学生。,Tôi là học sinh.,Danh từ phải dùng 是 chứ không dùng 很,cauban,1
+dung_sai,这是我书。,sai,,这是我的书。,Đây là sách của tôi.,Thiếu 的 giữa người sở hữu và đồ vật,cauban,1
+dung_sai,你好吗？,dung,,,Bạn khỏe không?,吗 cuối câu tạo câu hỏi là đúng,nghivan,1
+dung_sai,下雨了。,dung,,,Mưa rồi.,了 báo việc vừa xảy ra là đúng,cauban,1
+dung_sai,那是一个人。,dung,,,Đó là một người.,Số đếm đi kèm lượng từ 个 là đúng,luongtu,1
+dung_sai,我在家。,dung,,,Tôi ở nhà.,在 chỉ nơi chốn là đúng,cauban,1
+dung_sai,那是一人。,sai,,那是一个人。,Đó là một người.,Số đếm phải đi kèm lượng từ,luongtu,2
+dung_sai,你是好吗？,sai,,你好吗？,Bạn khỏe không?,Không thêm 是 trước tính từ,nghivan,2
+dung_sai,他比我很高。,sai,,他比我高。,Anh ấy cao hơn tôi.,Câu có 比 thì bỏ 很,sosanh,2
+dung_sai,我昨天不去学校。,sai,,我昨天没去学校。,Hôm qua tôi không đến trường.,Việc đã qua dùng 没 chứ không dùng 不,phudinh,2
+dung_sai,我们都是学生。,dung,,,Chúng tôi đều là học sinh.,都 đứng trước 是 là đúng,trattu,2
+dung_sai,我们是都学生。,sai,,我们都是学生。,Chúng tôi đều là học sinh.,都 phải đứng trước động từ,trattu,2
+dung_sai,我也很好。,dung,,,Tôi cũng rất khỏe.,也 đứng trước 很 là đúng,trattu,2
+dung_sai,我很也好。,sai,,我也很好。,Tôi cũng rất khỏe.,也 phải đứng trước 很,trattu,2
+dung_sai,太好了！,dung,,,Tuyệt quá!,Mẫu câu 太...了 là đúng,cauban,2
+dung_sai,他去学校明天。,sai,,他明天去学校。,Mai anh ấy đến trường.,Thời gian phải đứng trước động từ,trattu,2
+dung_sai,我在学校学习。,dung,,,Tôi học ở trường.,在 cùng nơi chốn đứng trước động từ là đúng,trattu,3
+dung_sai,我学习在学校。,sai,,我在学校学习。,Tôi học ở trường.,在 cùng nơi chốn phải đứng trước động từ,trattu,3
