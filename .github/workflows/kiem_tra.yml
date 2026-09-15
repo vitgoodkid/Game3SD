@@ -71,6 +71,13 @@ jobs:
         # hỏng thì hỏng cả mốc. Bộ này nạp phòng thử thật rồi diễn lại nó.
         run: timeout 300 ./godot --headless --path . tools/thu_vong_lap.tscn
 
+      - name: Chạy thử thế giới
+        # Mốc 6 sinh cả một vùng từ CSV rồi nạp/huỷ ô theo chân người chơi.
+        # Cái hỏng ở đây là loại hỏng hai bộ trên không với tới: đất thủng,
+        # cây mọc trên vách, ô nạp rồi không huỷ, đi lại một chỗ hai lần thấy
+        # hai cảnh khác nhau.
+        run: timeout 300 ./godot --headless --path . tools/thu_the_gioi.tscn
+
       - name: Chạy thử game 600 khung hình
         # Bộ kiểm tra ở trên chỉ động tới tầng luật. Bước này nạp phòng thử
         # thật, cho nhân vật và quái chạy 10 giây, bắt lỗi lúc chạy mà test

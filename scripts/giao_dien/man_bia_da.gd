@@ -1,12 +1,14 @@
 class_name ManBiaDa
 extends ManChung
 
-## Bia đá — ba việc (mục 4.6).
+## Bia đá — bốn việc (mục 4.6 + mốc 6).
 ##
 ##   Ghép chữ     bộ thủ nhặt được → chữ. Ghép xong là BIẾT, và mọi món đồ cũ
 ##                trong túi sáng ra cùng lúc. Đây là cái lò rèn của game này.
 ##   Khắc chữ     lắp / tháo / đổi thứ tự / nâng bậc chồng bộ (mục 4.2 + 4.3).
 ##   Nâng chỉ số  tiêu hồn tăng 体韧力巧智心.
+##   Du hành      đi sang vùng khác (mốc 6). Bảy vùng nối thành một chuỗi,
+##                khai ở cột `mo_khi` của vung.csv.
 ##
 ## KHÔNG có thẻ hỏi-đáp. Từng có một thẻ "Ngồi thiền" bắn câu hỏi trắc nghiệm;
 ## chủ dự án bỏ đi vì ngồi trả lời hết câu này tới câu khác là quá mất thì giờ
@@ -23,7 +25,7 @@ extends ManChung
 ## Màn này KHÔNG dạy chữ bằng cách chặn đường. Đóng nó lại và đi đánh tiếp thì
 ## game vẫn chạy bình thường — chỉ là món đồ trong túi vẫn còn đầy □.
 
-const TEN_THE := ["Ghép chữ", "Khắc chữ", "Nâng chỉ số"]
+const TEN_THE := ["Ghép chữ", "Khắc chữ", "Nâng chỉ số", "Du hành"]
 ## Hiện nhiều nhất bấy nhiêu chữ "sắp ghép được" — đủ để biết đang thiếu gì,
 ## không nhiều tới mức thành bảng tra cứu.
 const SAP_GHEP_TOI_DA := 12
@@ -89,6 +91,7 @@ func _ve_the() -> void:
 		0: _ve_ghep_chu()
 		1: _ve_khac_chu()
 		2: _ve_nang_chi_so()
+		3: _ve_du_hanh()
 	ve_xong = true
 
 # --- Thẻ 1: ghép chữ ------------------------------------------------
@@ -378,3 +381,36 @@ func _bao(dong: String) -> void:
 	var h := get_tree().get_first_node_in_group("hud")
 	if h != null and h.has_method("bao"):
 		h.call("bao", dong)
+
+# --- Thẻ 4: du hành -------------------------------------------------
+
+func _ve_du_hanh() -> void:
+	_noi_dung.add_child(chu("Đi tới vùng khác", 20, MAU_NHAN))
+	_noi_dung.add_child(chu(
+		"Vùng mở dần theo chuỗi — tới được vùng này thì vùng sau hiện ra.",
+		15, MAU_CHU_MO))
+	_noi_dung.add_child(HSeparator.new())
+
+	for v in DuHanh.danh_sach():
+		var ma := String(v["ma"])
+		var ten := String(v["ten"])
+		# Tên chữ Hán của vùng cũng theo luật ???: chữ chưa đọc được hiện □.
+		# Đi tới nơi rồi học chữ ở đó thì tên vùng sáng ra — cùng một cơ chế
+		# với tên món đồ, đặt lên bản đồ.
+		var tc := ""
+		for c in String(v["ten_chu"]):
+			tc += c if TriNho.doc_duoc(c) else TenDoVat.CHU_MO
+		var nhan := "%s   %s" % [tc, ten]
+		if bool(v["dang_o"]):
+			_noi_dung.add_child(chu("▸ " + nhan + "   (đang ở đây)", 18,
+				Color(0.85, 0.80, 0.55)))
+			continue
+		if not bool(v["mo"]):
+			_noi_dung.add_child(chu("   " + TenDoVat.CHU_MO + TenDoVat.CHU_MO
+				+ "   — chưa tới được", 17, MAU_CHU_MO))
+			continue
+		_noi_dung.add_child(nut(nhan, _di_toi.bind(ma)))
+
+func _di_toi(ma: String) -> void:
+	if DuHanh.di_toi(ma):
+		dong()

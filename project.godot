@@ -26,6 +26,7 @@ TenDoVat="*res://scripts/luat/ten_do_vat.gd"
 TriNho="*res://scripts/he_thong/tri_nho.gd"
 Tui="*res://scripts/he_thong/tui.gd"
 TheGioi="*res://scripts/he_thong/the_gioi.gd"
+DuHanh="*res://scripts/the_gioi/du_hanh.gd"
 
 [display]
 

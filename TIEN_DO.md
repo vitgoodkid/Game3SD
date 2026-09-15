@@ -11,7 +11,7 @@ Sổ tiến độ theo 7 mốc ở mục 12 của `PROMPT_3D.md`.
 | 3 | Trang bị + đọc chữ — khe, tải trọng, cơ chế `???`, nối VocabDB | ✅ xong — màn hành trang bấm I là mở |
 | 4 | Vòng lặp souls — bia đá, chết rơi chữ, nhặt lại, hồi sinh quái, ghép chữ | ✅ xong trong phòng thử |
 | 5 | Ngũ hành + boss — tương sinh tương khắc, thang chồng bộ, boss hai giai đoạn | ✅ xong |
-| 6 | Thế giới — 7 vùng, địa hình, streaming, đường tắt, shader "vùng bị xoá" | ⬜ chưa |
+| 6 | Thế giới — 7 vùng, địa hình, streaming, du hành, "vùng bị xoá" | ✅ xong |
 | 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, animation thật | ⬜ chưa |
 
 ## ĐANG LÀM DỞ — đọc trước khi viết gì mới
@@ -90,6 +90,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 196 test trong một khung hình |
 | `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + boss trong phòng thử thật, 147 test theo thời gian |
+| `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới: địa hình, rải cây đá, streaming, 7 vùng, vùng bị xoá — 37 test |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian

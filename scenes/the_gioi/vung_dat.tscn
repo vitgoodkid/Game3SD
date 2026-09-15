@@ -1,0 +1,22 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/the_gioi/vung_dat.gd" id="1_vung"]
+[ext_resource type="PackedScene" path="res://scenes/nhan_vat/nguoi_choi.tscn" id="2_nc"]
+[ext_resource type="Script" path="res://scripts/giao_dien/hud.gd" id="3_hud"]
+[ext_resource type="Script" path="res://scripts/giao_dien/man_hanh_trang.gd" id="4_ht"]
+[ext_resource type="Script" path="res://scripts/giao_dien/man_bia_da.gd" id="5_bd"]
+
+[node name="VungDat" type="Node3D"]
+script = ExtResource("1_vung")
+
+[node name="NguoiChoi" parent="." instance=ExtResource("2_nc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 6)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("3_hud")
+
+[node name="ManHanhTrang" type="CanvasLayer" parent="."]
+script = ExtResource("4_ht")
+
+[node name="ManBiaDa" type="CanvasLayer" parent="."]
+script = ExtResource("5_bd")

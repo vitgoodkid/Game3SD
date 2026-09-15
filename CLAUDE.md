@@ -56,6 +56,10 @@ godot --headless --path . tools/kiem_tra.tscn
 # Chạy mất ~45 giây vì phải đợi thật.
 godot --headless --path . tools/thu_vong_lap.tscn
 
+# kiểm thế giới — 37 test, sinh một vùng thật từ CSV rồi đi lại trong đó:
+# địa hình, rải cây đá, streaming ô, bảy bảng màu, vùng bị xoá, chuỗi du hành
+godot --headless --path . tools/thu_the_gioi.tscn
+
 # chạy thử game 10 giây, bắt lỗi lúc chạy
 godot --headless --path . --quit-after 600
 
@@ -63,7 +67,7 @@ godot --headless --path . --quit-after 600
 python tools/kiem_csv.py
 ```
 
-GitHub Actions chạy cả bốn mỗi lần đẩy code (`.github/workflows/kiem_tra.yml`).
+GitHub Actions chạy cả năm mỗi lần đẩy code (`.github/workflows/kiem_tra.yml`).
 **Không có Godot thì vẫn sửa được CSV và tầng luật** — đẩy lên rồi đọc kết quả
 Actions.
 
@@ -105,7 +109,8 @@ scripts/
   nhan_vat/      người chơi, camera ba chế độ, khoá mục tiêu, máy trạng thái
     trang_thai/  mỗi state một file
   quai/          quái + boss hai giai đoạn, state machine riêng
-  the_gioi/      phòng thử, bia đá, đồ rơi, vũng hồn, vòng hồi sinh
+  the_gioi/      phòng thử, VÙNG THẬT (địa hình + streaming + du hành),
+                   bia đá, đồ rơi, vũng hồn, vòng hồi sinh
                    tuong_tac_duoc.gd  lớp gốc mọi thứ bấm E được
   giao_dien/     HUD + màn che toàn màn (hành trang, bia đá)
 scenes/          .tscn
