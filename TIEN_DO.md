@@ -68,9 +68,12 @@ test canh.
 ### Chơi được
 Chạy `godot --path .` là vào thẳng phòng thử. Làm được trọn vòng souls:
 
+- vào phòng là **đã cầm sẵn 长剑 và 长盾** (hiện `□□` — phát đồ sẵn không tắt
+  cơ chế ???). Đổi `HAT_VU_KHI` trong `phong_thu.gd` là đổi vũ khí khởi đầu.
 - chạy quanh, đổi camera F5, khoá mục tiêu, đánh bốn con quái. Phím đánh:
   **bấm chuột trái** = đòn nhẹ, **giữ chuột trái** = đòn nặng rồi đòn nạp,
-  **chuột phải** = đỡ phản, Space = lăn (giữ = chạy), Q = giơ khiên
+  **chuột phải** = đỡ phản (cần khiên), Space = lăn (giữ = chạy),
+  Q = giơ khiên → đỡ trúng rồi giữ chuột trái = **đòn phản đỡ**
 - nhặt đồ dưới đất (bấm **E**), mở hành trang (bấm **I**) — chữ chưa đọc được
   hiện `□`, chỉ số hiện `???`
 - bấm **E** ở bia đá: bật bia, hồi đầy máu và bình, quái sống lại hết, mở màn
@@ -84,7 +87,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 171 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 102 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 107 test theo thời gian |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian

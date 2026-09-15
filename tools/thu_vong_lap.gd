@@ -123,6 +123,20 @@ func _dat_canh() -> void:
 	_nhom("Phòng thử dựng lên đủ thứ")
 	_dung(_nc != null, "có người chơi")
 	_dung(_bia() != null, "có bia đá")
+	# Phòng thử phát sẵn một vũ khí và một khiên. Không có khiên thì nửa hệ
+	# phòng thủ (parry, đòn phản đỡ, vỡ đỡ) không thử tay được.
+	_dung(Tui.vu_khi_dang_cam() != null, "vào phòng là đã cầm sẵn vũ khí")
+	_dung(Tui.tay_trai_dang_cam() != null, "và đã cầm sẵn khiên")
+	var kh_ = Tui.tay_trai_dang_cam()
+	_bang(kh_.loai() if kh_ != null else "?", "khien", "món tay trái đúng là khiên")
+	_dung(Tui.moveset_dang_dung() != "拳",
+		"moveset theo vũ khí đang cầm chứ không phải tay không (%s)"
+		% Tui.moveset_dang_dung())
+	# Chữ trên đồ vẫn CHƯA đọc được — phát đồ sẵn không được phép tắt cơ chế ???
+	var vk_ = Tui.vu_khi_dang_cam()
+	_dung(vk_ != null and vk_.ten_hien().contains(TenDoVat.CHU_MO),
+		"đồ phát sẵn vẫn hiện □, không tự dạy chữ kèm theo (%s)"
+		% (vk_.ten_hien() if vk_ != null else "?"))
 	_bang(_dem_nhom("quai"), 4, "bốn con quái đứng sẵn")
 	_dung(_dem_nhom("vat_roi") >= 3, "có đồ nằm sẵn dưới đất (%d món)"
 		% _dem_nhom("vat_roi"))
@@ -196,8 +210,10 @@ func _the_luc_va_nut_danh() -> void:
 	_nc.the_luc = _nc.the_luc_max
 	_nc.tre_hoi = 0.0
 	truoc = _nc.the_luc
-	# Elden Ring KHÔNG cho parry tay không. Thử trần trước.
-	_dung(not _nc.co_khien(), "phép thử chạy với tay trái đang trống")
+	# Elden Ring KHÔNG cho parry tay không. Phòng thử giờ phát sẵn khiên, nên
+	# phải cởi ra mới thử được vế "tay không thì không parry".
+	_dat_khien(false)
+	_dung(not _nc.co_khien(), "cởi khiên ra thì tay trái trống")
 	await _bam("do_phan")
 	await _hai_khung()
 	_bang(_nc.may.ten_hien_tai, "dung", "tay không thì chuột phải KHÔNG ra đỡ phản")

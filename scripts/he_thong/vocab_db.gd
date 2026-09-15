@@ -304,6 +304,15 @@ func lay_ngu_phap_ngau_nhien(kieu: String = "", cap: int = 0) -> Dictionary:
 
 # --- Nguyên liệu / trang bị / kỹ năng -------------------------------
 
+## Nguyên liệu trung tâm của một LOẠI trang bị: vukhi / khien / giap / tieu_hao.
+## Dùng để đặt đồ khởi đầu mà không phải viết chữ Hán nào vào code (luật 1).
+func nguyen_lieu_theo_loai(loai: String) -> Array:
+	var ds: Array = []
+	for n in nguyen_lieu:
+		if String(n.get("loai", "")) == loai 				and String(n.get("vi_tri", "")) == "trung_tam":
+			ds.append(n)
+	return ds
+
 func nguyen_lieu_cua(chu: String) -> Dictionary:
 	return _nl_theo_chu.get(chu, {})
 

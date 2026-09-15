@@ -8,7 +8,7 @@ extends Node3D
 ## quái đứng cách nhau để thử khoá mục tiêu.
 ##
 ## Ba con số cần tune ở đây nằm trong souls_like.gd (mục 5.2):
-##   iframe_lan, khung_the_luc, và t_hoi của đòn nặng trong data/moveset.csv.
+##   iframe_lan, tre_hoi_the_luc, và t_hoi của đòn nặng trong data/moveset.csv.
 
 const CANH_QUAI := preload("res://scenes/quai/quai.tscn")
 
@@ -29,11 +29,30 @@ const DAT_DO := [
 	{"hat": 424242, "tai": Vector3(-1.0, 0, -3.0)},
 ]
 
+## Đồ mặc sẵn cho lần chơi đầu: một vũ khí và một khiên, hạt cố định.
+##
+## Không có khiên thì KHÔNG THỬ ĐƯỢC nửa hệ phòng thủ — parry cần khiên, đòn
+## phản đỡ cần đỡ trúng trước, vỡ đỡ cần có gì đó để đỡ. Mà vào phòng thử tay
+## không thì muốn thử mấy cái đó phải nhặt đồ dưới đất rồi cầu may nó rơi ra
+## đúng khiên. Đây là PHÒNG THỬ, không phải chỗ mở đầu của game thật — vùng
+## thật sau này đừng chép đoạn này.
+##
+## Hai chữ trung tâm không viết trong code: `sinh_theo_loai` bốc chúng từ
+## nguyen_lieu.csv theo cột `loai` (luật 1 của CLAUDE.md).
+## Hạt cố định, chọn tay: hạt này cho ra KIẾM chứ không phải rìu hay cung.
+## Kiếm là nhịp trung tính — rìu quá chậm để cảm được cửa sổ né, cung thì
+## không thử được đòn cận chiến nào. Đổi hạt là đổi vũ khí khởi đầu; muốn thử
+## SIÊU GIÁP cho rõ thì đổi sang hạt ra rìu (31337), vì rìu là lớp duy nhất có
+## siêu giáp ngay cả ở đòn nhẹ.
+const HAT_VU_KHI := 1000
+const HAT_KHIEN := 1000
+
 func _ready() -> void:
 	_dung_san()
 	_dung_cot()
 	_dat_quai()
 	_dat_do()
+	_trang_bi_san()
 	# Nghỉ ở bia và hồi sinh sau khi chết đều làm quái sống lại hết — đó là
 	# luật souls, và cũng là cái giá của việc được cứu (mục 4.5).
 	TheGioi.nghi_bia_da.connect(func(_ma: String) -> void: _dat_lai_quai())
@@ -123,3 +142,22 @@ func _dat_do() -> void:
 		var mon := SinhMonDo.sinh_mon("thi_tran", int(d["hat"]))
 		if mon != null:
 			add_child(VatRoi.tao(mon, d["tai"]))
+
+## Nhét sẵn một vũ khí và một khiên vào túi rồi mặc lên.
+##
+## KHÔNG dạy chữ kèm theo. Vũ khí hiện tên đầy □ và chỉ số ???, và nó PHẢI như
+## thế — đó là cơ chế xương sống của game (mục 4.1), không phải thứ được tắt đi
+## cho tiện thử. Đồ vẫn đánh được bình thường: chữ chưa đọc được chỉ giấu phần
+## CỘNG THÊM, không đụng vào chỉ số gốc (luật 4).
+func _trang_bi_san() -> void:
+	# Chơi tiếp một ván cũ thì đã có đồ rồi, đừng nhét thêm mỗi lần vào phòng.
+	if Tui.vu_khi_dang_cam() != null or Tui.tay_trai_dang_cam() != null:
+		return
+	var vk := SinhMonDo.sinh_theo_loai("vukhi", "thi_tran", HAT_VU_KHI)
+	if vk != null:
+		Tui.nhat(vk)
+		Tui.mac_vao(vk, "vu_khi")
+	var kh := SinhMonDo.sinh_theo_loai("khien", "thi_tran", HAT_KHIEN)
+	if kh != null:
+		Tui.nhat(kh)
+		Tui.mac_vao(kh, "tay_trai")

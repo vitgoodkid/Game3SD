@@ -43,6 +43,32 @@ static func sinh_mon(ma_vung: String = "", hat: int = 0) -> MonDo:
 		return null
 	var tt := String(nen[r.randi() % nen.size()]["chu"])
 
+	return _dung_mon(tt, ma_vung, r)
+
+## Sinh một món thuộc ĐÚNG một loại trang bị (vukhi / khien / giap). Khác
+## `sinh_mon` ở chỗ chữ trung tâm không bốc ngẫu nhiên trong cả bảng mà chỉ
+## bốc trong đám có `loai` đó.
+##
+## Vẫn không có chữ Hán nào trong file này: "vukhi" và "khien" là tên LOẠI
+## trong nguyen_lieu.csv, không phải nội dung từ vựng. Đổi khiên trong game
+## thành chữ khác chỉ cần sửa CSV, file này không biết.
+static func sinh_theo_loai(loai: String, ma_vung: String = "", hat: int = 0) -> MonDo:
+	var nen := VocabDB.nguyen_lieu_theo_loai(loai)
+	if nen.is_empty():
+		return null
+	var r := RandomNumberGenerator.new()
+	if hat != 0:
+		r.seed = hat
+	else:
+		r.randomize()
+	var tt := String(nen[r.randi() % nen.size()]["chu"])
+
+	return _dung_mon(tt, ma_vung, r)
+
+## Dựng món đồ quanh một chữ trung tâm đã chọn: bốc thêm mấy chữ bổ nghĩa của
+## vùng rồi xếp trung tâm xuống cuối. Hai hàm sinh ở trên chỉ khác nhau ở cách
+## CHỌN chữ trung tâm; phần còn lại dùng chung ở đây.
+static func _dung_mon(tt: String, ma_vung: String, r: RandomNumberGenerator) -> MonDo:
 	var kho := kho_bo_nghia(ma_vung)
 	var ten: Array = []
 	var so: int = SO_BO_NGHIA[r.randi() % SO_BO_NGHIA.size()]
