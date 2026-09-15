@@ -29,6 +29,9 @@ var _da_tat := false
 var _nap := false        ## còn giữ chuột trái để nạp tiếp thành đòn nạp
 var _t_nap := 0.0
 var _giu_dinh := false   ## đã vung lên tới đỉnh và đang giữ ở đó
+## Đòn này ra từ một cú nạp. Phần nhìn cần biết để vẽ cung vung TỪ ĐỈNH xuống
+## chứ không vẽ lại từ đầu — tay đã giơ sẵn trên đó rồi.
+var _tu_nap := false
 ## Đã đệm sẵn đòn kế tiếp của combo chưa.
 var _noi := ""
 
@@ -44,6 +47,7 @@ func vao(du_lieu: Dictionary = {}) -> void:
 	# Đòn phản đỡ không nạp được — nó là một nhát dứt khoát, không phải đòn nặng.
 	_nap = _don == "nang" and nc.dang_giu_danh()
 	_giu_dinh = false
+	_tu_nap = false
 	_t_nap = 0.0
 	nc.dang_do = false
 	nc.ton_the_luc(float(_m.get("the_luc", 15)))
@@ -140,6 +144,7 @@ func _chay_nap(delta: float, t_vung: float) -> void:
 	var ra_don := "nang_nap" if _t_nap >= T_NAP_TOI_DA * 0.55 else "nang"
 	_nap = false
 	_giu_dinh = false
+	_tu_nap = true
 	if ra_don != _don:
 		_don = ra_don
 		_m = VocabDB.don_cua(_chu_mv, ra_don)
@@ -174,17 +179,38 @@ func _tat_hop_don() -> void:
 
 ## Đang nạp thì báo "nap" chứ không báo tên đòn: dáng nạp là dáng ĐỨNG GIỮ,
 ## khác hẳn dáng vung.
+## Báo "nap" cho SUỐT cú nạp, kể cả lúc còn đang giơ tay lên.
+##
+## Bản đầu chỉ báo "nap" khi đã giữ tới đỉnh, còn lúc giơ lên thì báo "nang" —
+## và thế là phần nhìn vẽ cung vung của đòn nặng ngay từ khung đầu. Tay quét
+## tới trước 68° rồi GIẬT NGƯỢC về dáng giữ. Nhìn ra đúng như một đòn thường
+## vung hụt trước khi đòn nặng bắt đầu, và đó là thứ người chơi báo lỗi.
 func ten_dien() -> String:
-	# Chỉ báo "nap" khi đã GIỮ ở đỉnh. Lúc còn đang vung tay lên thì vẫn là
-	# dáng vung của đòn nặng, không phải dáng đứng giữ.
-	return "nap" if _giu_dinh else _don
+	return "nap" if _nap else _don
 
+## Tiến độ cho phần nhìn. Ba đoạn, và phải tách ra đúng ba đoạn:
+##
+##   đang nạp, chưa tới đỉnh   0 → 1 theo khung VUNG TAY  ⇒ giơ lên
+##   đang giữ ở đỉnh           1.0                        ⇒ đứng giữ
+##   đã nhả / đòn thường       0 → 1 theo cung vung       ⇒ chém xuống
+##
+## Đoạn ba đo TỪ `t_vung` nếu đòn ra từ cú nạp: tay đã giơ sẵn trên đỉnh rồi,
+## đo lại từ 0 thì cung vung bắt đầu ở lưng chừng và tay nhảy một phát 112°.
 func tien_do() -> float:
-	if _giu_dinh:
-		return clampf(_t_nap / T_NAP_TOI_DA, 0.0, 1.0)
+	var t_vung := float(_m.get("t_vung", 0.2))
+	if _nap:
+		if _giu_dinh:
+			return 1.0
+		return clampf(t / maxf(t_vung, 0.01), 0.0, 1.0)
 	var t_den := float(_m.get("t_dam_den", 0.3))
 	var het := t_den + float(_m.get("t_hoi", 0.5))
-	return clampf(t / maxf(het, 0.01), 0.0, 1.0)
+	var dau := t_vung if _tu_nap else 0.0
+	return clampf((t - dau) / maxf(het - dau, 0.01), 0.0, 1.0)
+
+## Nạp được bao nhiêu phần (0→1). Phần nhìn dùng để rung mạnh dần và phình vũ
+## khí to dần — người chơi phải thấy được mình đã nạp tới đâu.
+func muc_nap() -> float:
+	return clampf(_t_nap / T_NAP_TOI_DA, 0.0, 1.0)
 
 ## CAM KẾT ĐÒN ĐÁNH. Đã vung là không huỷ.
 ##

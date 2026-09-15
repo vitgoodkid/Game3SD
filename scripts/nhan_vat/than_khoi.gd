@@ -33,6 +33,9 @@ var _diem_gan: Node3D = null
 
 ## Nhịp bước chân, để chân đung đưa khi đi.
 var _nhip := 0.0
+## Nhịp rung lúc nạp đòn, và mức nạp để rung mạnh dần.
+var _nhip_nap := 0.0
+var _muc_nap := 0.0
 
 func _ready() -> void:
 	_than_nguoi = get_node_or_null("ThanNguoi")
@@ -183,7 +186,10 @@ func _cap_nhat_khien() -> void:
 ## Không có animation thật thì xoay khớp bằng tay. Xấu, nhưng đủ để ĐỌC được
 ## đòn đánh — mà đọc được đòn mới là thứ quyết định ở mốc 2.
 func dien(trang_thai: String, tien_do: float, dang_di: bool, delta: float,
-		kieu: String = "") -> void:
+		kieu: String = "", muc_nap: float = 0.0) -> void:
+	_muc_nap = muc_nap
+	if kieu == "nap":
+		_nhip_nap += delta * 34.0
 	match trang_thai:
 		"danh":
 			_dien_danh(kieu, tien_do)
@@ -232,13 +238,21 @@ func _dien_danh(kieu: String, tien_do: float) -> void:
 	_vu_khi.scale = Vector3.ONE
 
 	if kieu == "nap":
-		# ĐANG NẠP: giơ ngược ra sau đầu rồi GIỮ NGUYÊN, rung nhẹ, vũ khí to
-		# dần. Đây là khung người chơi đọc "sắp ra đòn to" — và cũng là khung
-		# đối phương đọc được, nên nạp phải có rủi ro nhìn thấy được.
-		_tay_phai.rotation_degrees.x = -172.0 + sin(t * 46.0) * 3.5
-		_tay_trai.rotation_degrees.x = -28.0
-		_than_nguoi.rotation_degrees.x = 7.0
-		_vu_khi.scale = Vector3.ONE * (1.0 + t * 0.35)
+		# ĐANG NẠP, hai chặng trong một dáng:
+		#
+		#   t < 1   GIƠ tay ngược ra sau đầu — đi MỘT CHIỀU từ tư thế nghỉ lên
+		#           đỉnh, không quét tới trước cái nào
+		#   t = 1   giữ ở đỉnh, rung dần, vũ khí phình to theo mức nạp
+		#
+		# Chặng một phải một chiều: bản đầu vẽ cung vung của đòn nặng ngay từ
+		# khung đầu, tay quét tới trước 68° rồi giật ngược về đỉnh — nhìn hệt
+		# một đòn thường vung hụt trước khi đòn nặng bắt đầu.
+		var len_ := lerpf(-25.0, -174.0, t * t * (3.0 - 2.0 * t))
+		var nap := _muc_nap
+		_tay_phai.rotation_degrees.x = len_ + (sin(_nhip_nap) * 3.5 * nap if t >= 0.999 else 0.0)
+		_tay_trai.rotation_degrees.x = lerpf(0.0, -28.0, t)
+		_than_nguoi.rotation_degrees.x = lerpf(0.0, 7.0, t)
+		_vu_khi.scale = Vector3.ONE * (1.0 + nap * 0.35)
 		return
 
 	if kieu == "phan_do":

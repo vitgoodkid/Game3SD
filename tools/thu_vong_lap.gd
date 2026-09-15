@@ -468,6 +468,46 @@ func _phan_nhin() -> void:
 		"nhả ra thì báo đòn nặng (%s)" % _nc.may.hien_tai.ten_dien())
 	await _cho(1.6)
 
+	# --- NẠP ĐÒN KHÔNG ĐƯỢC VUNG HỤT MỘT NHÁT TRƯỚC ---
+	#
+	# Bản đầu: lúc giơ tay lên, phần nhìn vẫn báo "nang" nên nó vẽ CUNG VUNG
+	# của đòn nặng ngay từ khung đầu — tay quét tới trước 68° rồi giật ngược
+	# về dáng giữ. Nhìn hệt một đòn thường vung hụt trước khi đòn nặng bắt
+	# đầu, và chủ dự án báo đúng như vậy.
+	#
+	# Canh bằng GÓC TAY: suốt cú nạp tay chỉ được đi MỘT CHIỀU ra sau. Quay
+	# ngược ra trước dù một khung hình là hỏng.
+	_lam_moi_nguoi_choi()
+	var than_nap := _nc.than as ThanKhoi
+	if than_nap == null:
+		_dung(false, "không có thân khối để đo góc tay")
+	else:
+		await _nut("don_nhe", true)
+		var truoc := 999.0
+		var lui := 0.0
+		var goc_max := -999.0
+		for i in 48:
+			await get_tree().physics_frame
+			var g: float = than_nap._tay_phai.rotation_degrees.x
+			if truoc < 900.0 and g > truoc + 0.5:
+				lui = maxf(lui, g - truoc)
+			goc_max = maxf(goc_max, absf(g))
+			truoc = g
+		_dung(goc_max > 150.0, "nạp đòn: giơ tay lên tới đỉnh (%.0f°)" % goc_max)
+		_dung(lui < 6.0,
+			"suốt cú nạp tay đi MỘT CHIỀU, không vung hụt rồi giật lại (lùi %.1f°)"
+			% lui)
+		_bang(_nc.may.hien_tai.ten_dien(), "nap", "và phần nhìn báo ĐANG NẠP từ đầu")
+
+		var g_giu: float = than_nap._tay_phai.rotation_degrees.x
+		await _nut("don_nhe", false)
+		var g_sau: float = than_nap._tay_phai.rotation_degrees.x
+		_dung(absf(g_sau - g_giu) < 25.0,
+			"nhả ra thì chém tiếp từ chỗ đang giữ, không nhảy (%.0f° → %.0f°)"
+			% [g_giu, g_sau])
+		await _cho(2.2)
+		_lam_moi_nguoi_choi()
+
 	# --- ĐÒN PHẢI TRÚNG THẬT, và đòn nặng phải đau hơn đòn nhẹ ---
 	#
 	# Phép thử này canh cái bẫy vừa dính: hộp đòn TỪNG bị kéo theo cánh tay

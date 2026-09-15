@@ -132,7 +132,10 @@ func _dien_hinh(delta: float) -> void:
 		return
 	var td := may.hien_tai.tien_do() if may.hien_tai != null else 0.0
 	var kieu := may.hien_tai.ten_dien() if may.hien_tai != null else ""
-	tk.dien(may.ten_hien_tai, td, huong_nhap != Vector3.ZERO, delta, kieu)
+	var nap := 0.0
+	if may.hien_tai != null and may.hien_tai.has_method("muc_nap"):
+		nap = may.hien_tai.call("muc_nap")
+	tk.dien(may.ten_hien_tai, td, huong_nhap != Vector3.ZERO, delta, kieu, nap)
 
 func _unhandled_input(su_kien: InputEvent) -> void:
 	# Ghi đệm phím TRƯỚC khi đưa cho state: state đang bận hồi đòn vẫn phải
