@@ -17,6 +17,10 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
 
+; AmThanh đứng ĐẦU vì nó không phụ thuộc autoload nào. Autoload nạp theo
+; thứ tự trong danh sách này, và một cái hỏng là mọi cái SAU nó không
+; đăng ký được — đã dính: du_hanh.gd gãy kéo AmThanh mất theo, cả game đỏ.
+AmThanh="*res://scripts/he_thong/am_thanh.gd"
 VocabDB="*res://scripts/he_thong/vocab_db.gd"
 ChienDau="*res://scripts/luat/chien_dau.gd"
 DoHiem="*res://scripts/luat/do_hiem.gd"
@@ -27,7 +31,6 @@ TriNho="*res://scripts/he_thong/tri_nho.gd"
 Tui="*res://scripts/he_thong/tui.gd"
 TheGioi="*res://scripts/he_thong/the_gioi.gd"
 DuHanh="*res://scripts/the_gioi/du_hanh.gd"
-AmThanh="*res://scripts/he_thong/am_thanh.gd"
 
 [display]
 

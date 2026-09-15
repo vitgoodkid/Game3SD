@@ -18,6 +18,7 @@ Chi kiem nhung BAT BIEN ma tay nguoi de pha nhat khi them noi dung moi:
 import csv
 import io
 import os
+import re
 import sys
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -156,11 +157,96 @@ def kiem_moveset():
         loi.append("moveset.csv thieu moveset tay khong (拳)")
 
 
+# Ranh gioi tu cho regex. Dung chr() chu khong go thang: dau gach cheo
+# nguoc di qua may lop cong cu bi nuot thanh ky tu backspace, va regex
+# mat ranh gioi ma khong ai thay — dung phep thu nay tung im lang hong.
+RANH = chr(92) + "b"
+CHAM = chr(92) + "."
+
+
+def kiem_autoload():
+    """Autoload khong duoc nhac ten mot lop `class_name` ma file cua lop do lai
+    goi nguoc lai mot autoload.
+
+    Vi sao can kiem: Godot phai phan giai lop do NGAY LUC NAP AUTOLOAD, ma
+    autoload thi chua dang ky xong. Vong tron autoload -> lop -> autoload lam
+    ca game do ruc:
+
+        vung_dat.gd - Identifier "DuHanh" not declared
+        du_hanh.gd  - Failed to compile depended scripts
+
+    Va hong roi thi moi autoload SAU no cung khong dang ky duoc.
+
+    Chay HEADLESS KHONG TAI HIEN DUOC — phai chay that moi thay. Nen phai bat
+    bang kiem tinh o day, chay khong can Godot, truoc khi ai kip chay game.
+    """
+    goc = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    pg = os.path.join(goc, "project.godot")
+    if not os.path.exists(pg):
+        return
+    with io.open(pg, encoding="utf-8") as f:
+        noi_dung = f.read()
+    if "[autoload]" not in noi_dung:
+        return
+    phan = noi_dung[noi_dung.index("[autoload]"):]
+    ket = phan.find(chr(10) + "[", 1)
+    if ket > 0:
+        phan = phan[:ket]
+    al = re.findall(r'^(\w+)="\*res://([^"]+)"', phan, re.M)
+    if not al:
+        return
+
+    # Ban do: class_name -> duong dan file
+    lop = {}
+    for thu_muc, _, ten_file in os.walk(os.path.join(goc, "scripts")):
+        for t in ten_file:
+            if not t.endswith(".gd"):
+                continue
+            dd = os.path.join(thu_muc, t)
+            with io.open(dd, encoding="utf-8") as f:
+                dau = f.read(400)
+            m = re.search(r"^class_name\s+(\w+)", dau, re.M)
+            if m:
+                lop[m.group(1)] = dd
+
+    ten_al = [a for a, _ in al]
+    for i, (ten, dd) in enumerate(al):
+        duong = os.path.join(goc, dd)
+        if not os.path.exists(duong):
+            loi.append("project.godot: autoload '%s' tro toi file khong co" % ten)
+            continue
+        with io.open(duong, encoding="utf-8") as f:
+            than = chr(10).join(d for d in f.read().split(chr(10))
+                                if not d.strip().startswith("#"))
+        for ten_lop, file_lop in lop.items():
+            if not re.search(RANH + ten_lop + RANH, than):
+                continue
+            with io.open(file_lop, encoding="utf-8") as f:
+                than_lop = chr(10).join(d for d in f.read().split(chr(10))
+                                        if not d.strip().startswith("#"))
+            # Chi nguy hiem khi lop do goi nguoc lai CHINH autoload nay, hoac
+            # goi mot autoload dang ky SAU no. Goi autoload dang ky TRUOC thi
+            # khong sao — cai do da san sang roi.
+            #
+            # Vi du that: Tui nhac lop MonDo, mon_do.gd goi VocabDB — VocabDB
+            # dang ky truoc Tui nen chay tot bao lau nay. Con DuHanh nhac lop
+            # VungDat, ma vung_dat.gd goi chinh DuHanh — do moi la cai gay.
+            nguoc = [a for j, a in enumerate(ten_al)
+                     if j >= i and re.search(RANH + a + RANH + CHAM, than_lop)]
+            if nguoc:
+                loi.append(
+                    "autoload '%s' nhac lop '%s', ma %s lai goi autoload %s "
+                    "(dang ky cung luc hoac sau) — vong tron luc nap, chay that "
+                    "se do, headless KHONG thay"
+                    % (ten, ten_lop, os.path.basename(file_lop), "/".join(nguoc)))
+
+
 if __name__ == "__main__":
     co_chu = kiem_tu_vung()
     kiem_nguyen_lieu(co_chu)
     kiem_quai_boss()
     kiem_moveset()
+    kiem_autoload()
 
     for c in canh:
         print("  canh bao: %s" % c)

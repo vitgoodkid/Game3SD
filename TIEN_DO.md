@@ -245,6 +245,23 @@ Ghi lại để không ai tưởng là quên:
 
 ## Bẫy đã dính, ghi lại cho đỡ dính lần nữa
 
+- **Autoload → lớp `class_name` → autoload là vòng tròn chết, và headless
+  không thấy.** `du_hanh.gd` (autoload) ép kiểu `as VungDat`; `vung_dat.gd`
+  gọi `DuHanh`. Godot phải phân giải lớp `VungDat` ngay lúc nạp autoload
+  `DuHanh`, mà lúc đó `DuHanh` chưa đăng ký xong. Kết quả: `DuHanh` không đăng
+  ký được, **kéo theo mọi autoload đứng sau nó** (`AmThanh`) cũng mất, và hơn
+  ba chục dòng `Identifier not declared` đổ ra khắp nơi.
+
+  Đáng sợ nhất là **cả bốn bộ kiểm tra đều xanh**: headless phân giải lớp theo
+  đường khác nên không tái hiện. Chỉ chạy game thật mới thấy. Giờ
+  `tools/kiem_csv.py` có `kiem_autoload()` canh tĩnh — và nó chỉ báo khi lớp
+  gọi ngược về CHÍNH autoload đó hoặc một autoload đăng ký sau, vì gọi autoload
+  đăng ký trước thì vô hại (`Tui` nhắc `MonDo`, `mon_do.gd` gọi `VocabDB` —
+  vẫn chạy tốt bao lâu nay).
+
+  Bài học rộng hơn: **bộ kiểm tra chạy trong một môi trường khác môi trường
+  chơi thật thì có những lớp lỗi nó không bao giờ với tới.**
+
 - **Cái xác nhặt được hồn của chính nó.** `TuongTacDuoc` chỉ hỏi "có phải thứ
   gần nhất không", không hỏi "người chơi còn đứng được không". Mà vũng hồn mọc
   ĐÚNG chỗ ngã xuống, nên cái xác nằm trọn trong tầm với của nó suốt 2.8 giây

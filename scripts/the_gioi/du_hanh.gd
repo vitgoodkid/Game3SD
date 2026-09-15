@@ -79,22 +79,34 @@ func di_toi(ma: String) -> bool:
 	return true
 
 func _doi_canh(ma: String) -> void:
-	var cay := get_tree()
 	var canh := load(CANH_VUNG) as PackedScene
 	if canh == null:
 		return
 	# Đổi scene phải hoãn: hàm này gọi từ trong một nút bấm của màn bia đá, mà
 	# màn đó là con của scene sắp bị huỷ.
-	cay.paused = false
+	get_tree().paused = false
 	_doi_that.call_deferred(canh, ma)
 
+## KHÔNG ép kiểu về `VungDat` ở đây, và đừng ai thêm vào.
+##
+## File này là AUTOLOAD. Nhắc tên một lớp `class_name` trong autoload là buộc
+## Godot phải phân giải lớp đó NGAY LÚC NẠP AUTOLOAD — mà `vung_dat.gd` lại
+## gọi `DuHanh`, thứ chưa đăng ký xong vì đang nạp dở chính nó. Vòng tròn
+## autoload → lớp → autoload, và Godot gãy ở đó:
+##
+##     vung_dat.gd:58 - Identifier "DuHanh" not declared
+##     du_hanh.gd:0   - Failed to compile depended scripts
+##
+## Gãy rồi thì DuHanh không đăng ký được, kéo theo mọi autoload sau nó (AmThanh)
+## cũng mất, và cả game đỏ rực. Chạy headless KHÔNG tái hiện được — phải chạy
+## thật mới thấy. Đặt thuộc tính bằng `set()` thì không cần biết lớp nào cả.
 func _doi_that(canh: PackedScene, ma: String) -> void:
 	var cay := get_tree()
-	var cu := cay.current_scene
-	var moi := canh.instantiate() as VungDat
+	var moi := canh.instantiate()
 	if moi == null:
 		return
-	moi.ma_vung = ma
+	moi.set("ma_vung", ma)
+	var cu := cay.current_scene
 	if cu != null:
 		cay.root.remove_child(cu)
 		cu.queue_free()

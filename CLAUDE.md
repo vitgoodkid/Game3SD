@@ -72,7 +72,7 @@ GitHub Actions chạy cả năm mỗi lần đẩy code (`.github/workflows/kiem
 **Không có Godot thì vẫn sửa được CSV và tầng luật** — đẩy lên rồi đọc kết quả
 Actions.
 
-Bốn cái bẫy đã gặp:
+Năm cái bẫy đã gặp:
 
 - Nếu script của scene chính không biên dịch được, Godot headless **treo vô hạn**
   chứ không báo lỗi. Luôn bọc lệnh chạy bằng `timeout`.
@@ -84,6 +84,13 @@ Bốn cái bẫy đã gặp:
   cục (`.godot/`) không nằm trong git, nên `class_name` mới kéo về Godot chưa
   biết — và nó treo đúng như bẫy đầu tiên, không báo gì cả:
   `timeout 300 godot --headless --path . --import`
+- **Autoload KHÔNG được nhắc tên một `class_name` mà file của lớp đó gọi
+  ngược lại autoload.** Godot phải phân giải lớp ngay lúc nạp autoload, mà
+  autoload thì chưa đăng ký xong ⇒ gãy, và gãy rồi thì **mọi autoload sau nó
+  cũng mất**, cả game đỏ rực. Đã dính: `du_hanh.gd` ép kiểu `as VungDat`, mà
+  `vung_dat.gd` gọi `DuHanh`. Cách né: dùng `set("thuoc_tinh", ...)` thay vì ép
+  kiểu. **Chạy headless KHÔNG tái hiện được** — chỉ chạy thật mới thấy, nên
+  `tools/kiem_csv.py` có phép kiểm tĩnh canh đúng chuyện này.
 - **`.tres` và `project.godot` do Godot sở hữu.** Chạy Godot một lần là nó viết
   lại theo định dạng chuẩn của nó: xoá comment `;`, xoá dòng trùng giá trị mặc
   định, tự thêm `uid`. Đừng đặt tài liệu vào đó — comment sẽ biến mất, mà uid
