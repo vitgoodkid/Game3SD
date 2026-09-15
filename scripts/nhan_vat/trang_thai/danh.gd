@@ -133,6 +133,11 @@ func _tat_hop_don() -> void:
 	_da_tat = true
 	nc.hop_don.monitoring = false
 
+## Đang nạp thì báo "nap" chứ không báo tên đòn: dáng nạp là dáng ĐỨNG GIỮ,
+## khác hẳn dáng vung.
+func ten_dien() -> String:
+	return "nap" if _nap else _don
+
 func tien_do() -> float:
 	if _nap:
 		return clampf(_t_nap / T_NAP_TOI_DA, 0.0, 1.0) * 0.35

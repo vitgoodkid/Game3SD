@@ -1,5 +1,10 @@
-; Game3SD — souls-like 3D học chữ Hán.
-; File này sinh bởi tools/ — sửa tay được, nhưng input map nên sửa trong editor.
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -130,11 +135,9 @@ thoat={
 
 [physics]
 
-common/physics_ticks_per_second=60
 3d/physics_engine="Jolt Physics"
 
 [rendering]
 
-renderer/rendering_method="forward_plus"
 anti_aliasing/quality/msaa_3d=2
 environment/defaults/default_environment="res://scenes/the_gioi/moi_truong_mac_dinh.tres"

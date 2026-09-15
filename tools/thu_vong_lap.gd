@@ -38,6 +38,7 @@ func _ready() -> void:
 	await _the_luc_va_nut_danh()
 	await _cam_ket_va_iframe()
 	await _sieu_giap_va_phan_do()
+	await _phan_nhin()
 	await _phim_hanh_trang()
 	await _quai_roi_do()
 	await _nghi_bia_da()
@@ -400,6 +401,106 @@ func _sieu_giap_va_phan_do() -> void:
 	_dat_khien(false)
 	_lam_moi_nguoi_choi()
 	_bit_mat_quai(false)
+
+## Phần NHÌN. Hai lỗi chơi thật mới lộ ra, cả hai đều không phải lỗi luật —
+## luật chạy đúng, chỉ là màn hình không nói ra:
+##
+##   · khiên mặc rồi mà thân nhân vật không vẽ ⇒ tưởng chưa mặc được
+##   · bảy loại đòn dùng chung một cung vung ⇒ giữ chuột ra đòn nặng mà nhìn
+##     y hệt đòn nhẹ, tưởng giữ không ăn thua
+##
+## Thứ không nhìn thấy thì coi như không có, dù con số bên dưới đã đúng.
+func _phan_nhin() -> void:
+	_nhom("Phần nhìn: khiên và dáng đòn")
+	if _nc == null:
+		_dung(false, "không có người chơi để thử")
+		return
+	var tk := _nc.than as ThanKhoi
+	if tk == null:
+		_dung(false, "không có thân khối")
+		return
+	_bit_mat_quai(true)
+	_lam_moi_nguoi_choi()
+
+	# --- Khiên phải HIỆN khi mặc, TẮT khi cởi ---
+	_dat_khien(false)
+	await _hai_khung()
+	_dung(not tk._khien.visible, "cởi khiên thì thân không vẽ khiên")
+	_dat_khien(true)
+	await _hai_khung()
+	_dung(tk._khien.visible, "mặc khiên vào thì thân VẼ khiên ra")
+
+	# --- Mỗi loại đòn một dáng riêng ---
+	await _giu("don_nhe", 0.05)
+	await _hai_khung()
+	_bang(_nc.may.hien_tai.ten_dien(), "nhe_1", "bấm nhanh: phần nhìn biết là đòn nhẹ")
+	await _cho(1.4)
+
+	# Giữ chuột: phải báo "nap" trong lúc còn giữ, không phải tên đòn.
+	var e := InputEventAction.new()
+	e.action = "don_nhe"
+	e.pressed = true
+	Input.parse_input_event(e)
+	await _cho(NguoiChoi.NGUONG_GIU_NANG + 0.25)
+	_bang(_nc.may.hien_tai.ten_dien(), "nap",
+		"còn giữ chuột thì phần nhìn báo ĐANG NẠP — dáng giữ, không phải dáng vung")
+	e = InputEventAction.new()
+	e.action = "don_nhe"
+	e.pressed = false
+	Input.parse_input_event(e)
+	await _hai_khung()
+	_dung(_nc.may.hien_tai.ten_dien().begins_with("nang"),
+		"nhả ra thì báo đòn nặng (%s)" % _nc.may.hien_tai.ten_dien())
+	await _cho(1.6)
+
+	# --- ĐÒN PHẢI TRÚNG THẬT, và đòn nặng phải đau hơn đòn nhẹ ---
+	#
+	# Phép thử này canh cái bẫy vừa dính: hộp đòn TỪNG bị kéo theo cánh tay
+	# diễn hoạt ảnh, nên thêm một cái nghiêng người cho đòn nặng trông nặng
+	# hơn là cả game hết trúng đòn — im lặng, không lỗi nào, test luật vẫn
+	# xanh vì luật có sai đâu. Giờ hộp đòn đứng yên ở ngực; nếu ai gắn lại nó
+	# vào khớp bị xoay thì phép thử này đỏ ngay.
+	_lam_moi_nguoi_choi()
+	var q := _quai_de_danh()
+	if q == null:
+		_dung(false, "không có quái để thử trúng đòn")
+	else:
+		var mat_nhe := await _danh_thu(q, 0.05)
+		_dung(mat_nhe > 0.0, "bấm nhanh: đòn TRÚNG thật (%.0f máu)" % mat_nhe)
+		var mat_nang := await _danh_thu(q, NguoiChoi.NGUONG_GIU_NANG + 0.13)
+		_dung(mat_nang > 0.0, "giữ chuột: đòn TRÚNG thật (%.0f máu)" % mat_nang)
+		_dung(mat_nang > mat_nhe, "và đòn giữ ĐAU HƠN đòn bấm nhanh (%.0f > %.0f)"
+			% [mat_nang, mat_nhe])
+
+	_lam_moi_nguoi_choi()
+	_bit_mat_quai(false)
+
+## Kéo một con quái còn sống ra làm bao cát, và tắt não nó đi.
+func _quai_de_danh() -> Quai:
+	for n in get_tree().get_nodes_in_group("quai"):
+		var q := n as Quai
+		if q != null and q.con_song():
+			q.nguoi_choi = null
+			q.may.doi("quai_dung")
+			return q
+	return null
+
+## Đặt quái ngay trước mặt rồi vung một đòn, trả về số máu nó mất.
+func _danh_thu(q: Quai, giu: float) -> float:
+	q.mau = q.mau_toi_da
+	q.global_position = _nc.global_position + _nc.huong_mat() * 1.4
+	_nc.the_luc = _nc.the_luc_max
+	_nc.tre_hoi = 0.0
+	await _hai_khung()
+	await _giu("don_nhe", giu)
+	for i in 150:
+		await get_tree().physics_frame
+		if q.mau < q.mau_toi_da:
+			break
+	var mat := q.mau_toi_da - q.mau
+	q.mau = q.mau_toi_da
+	await _cho(1.5)
+	return mat
 
 ## Máy trạng thái quái. Chạy CUỐI CÙNG vì nó xê dịch và hạ quái — mấy nhóm
 ## trước đếm đúng bốn con.

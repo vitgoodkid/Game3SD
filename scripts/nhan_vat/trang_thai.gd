@@ -28,6 +28,12 @@ func nhap(_su_kien: InputEvent) -> void:
 func tien_do() -> float:
 	return 0.0
 
+## Tên chi tiết của thứ đang diễn, cho phần NHÌN. Tên state là "danh" với cả
+## bảy loại đòn, mà đòn nhẹ và đòn nạp phải trông khác hẳn nhau — không thì
+## người chơi giữ chuột mà không biết mình vừa ra đòn gì.
+func ten_dien() -> String:
+	return ""
+
 ## State này có cho hồi thể lực trong lúc nó đang chạy không.
 ##
 ## MẶC ĐỊNH LÀ CHO. Bốn state nói không: đánh, lăn, chạy, giơ khiên — đúng như

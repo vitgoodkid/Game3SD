@@ -46,7 +46,7 @@ Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.
 # kiểm tầng luật — 171 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + combat — 107 test, nạp phòng thử thật và diễn lại:
+# kiểm vòng lặp souls + combat — 115 test, nạp phòng thử thật và diễn lại:
 # đánh, thể lực, cam kết đòn, i-frame, siêu giáp, đòn phản đỡ, vỡ đỡ, đỡ phản,
 # state machine quái, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại.
 # Chạy mất ~45 giây vì phải đợi thật.
@@ -144,6 +144,10 @@ tools/           kiểm tra + sinh dữ liệu
 - Chưa có model nào. Nhân vật và quái dựng bằng khối hộp sinh trong code
   (`than_khoi.gd`, `than_quai.gd`). Thay bằng `.glb` sau: giữ tên điểm gắn
   `GanTayPhai`, nhân vật cao 1.8m, gốc toạ độ dưới chân.
+- **`than_khoi.gd` thuần là chỗ để NHÌN — giữ cho đúng như vậy.** Đừng gắn hộp
+  đòn (hay bất cứ thứ gì tầng luật đọc) vào khớp bị `dien()` xoay. Đã dính một
+  lần: hộp đòn bám theo cánh tay, và một thay đổi thuần trang trí làm cả game
+  hết trúng đòn mà không báo lỗi gì. Xem mục bẫy cuối `TIEN_DO.md`.
 
 ## Lớp va chạm
 

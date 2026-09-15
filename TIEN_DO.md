@@ -87,7 +87,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 171 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 107 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 115 test theo thời gian |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
@@ -189,6 +189,16 @@ Ghi lại để không ai tưởng là quên:
   tỉ lệ hợp lý, không phải khai thêm gì.
 
 ## Bẫy đã dính, ghi lại cho đỡ dính lần nữa
+
+- **Hộp đòn từng bị kéo theo cánh tay diễn hoạt ảnh.** `than_khoi.gd` tự nhận
+  là "thuần chỗ để nhìn", nhưng nó gắn một `RemoteTransform3D` kéo `GanTayPhai`
+  — node mang hộp đòn — theo `_tay_phai`. Nghĩa là HỘP ĐÒN nằm ở đâu do dáng
+  vung tay quyết định. Thêm một cái nghiêng người 4° cho đòn nặng trông nặng
+  hơn là **cả game hết trúng đòn**: không lỗi nào, không cảnh báo nào, 112 test
+  vẫn xanh vì tầng luật có sai đâu. Giờ điểm gắn đứng yên ở ngực và chỉ quay
+  theo thân, nên `tam_voi` / `goc_quet` của `moveset.csv` mới thật sự là tầm
+  với. Có test canh ở `_phan_nhin()`: đòn phải trúng thật và đòn giữ phải đau
+  hơn đòn bấm nhanh.
 
 - **`cho_doi()` từng là đồ trang trí.** Sáu state cài nó cẩn thận, `CLAUDE.md`
   gọi nó là cơ chế xương sống của cam kết đòn — mà `xin_doi()`, hàm duy nhất

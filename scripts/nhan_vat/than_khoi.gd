@@ -9,8 +9,11 @@ extends Node3D
 ## không.
 ##
 ## Thay model thật về sau: giấu node này đi, nạp .glb vào cùng chỗ, giữ nguyên
-## tên điểm gắn `GanTayPhai` (mục 11 của bản yêu cầu). Không có dòng luật nào
-## nằm trong file này — đây thuần là chỗ để nhìn.
+## tên điểm gắn `GanTayPhai` (mục 11 của bản yêu cầu).
+##
+## KHÔNG CÓ DÒNG LUẬT NÀO trong file này, và câu đó phải giữ cho đúng: đừng
+## gắn hộp đòn vào bất cứ khớp nào bị `dien()` xoay. Từng gắn một lần và một
+## thay đổi thuần trang trí làm cả game hết trúng đòn mà không báo lỗi gì.
 
 ## Cao 1.8m, đúng chuẩn mục 11. Sai cỡ là hỏng toàn bộ tune combat.
 const CAO := 1.8
@@ -24,6 +27,7 @@ var _tay_trai: Node3D = null
 var _chan_trai: Node3D = null
 var _chan_phai: Node3D = null
 var _vu_khi: MeshInstance3D = null
+var _khien: MeshInstance3D = null
 var _than_nguoi: Node3D = null
 var _diem_gan: Node3D = null
 
@@ -53,13 +57,23 @@ func _dung_hinh() -> void:
 	_chan_phai = _chi(_than_nguoi, Vector3(-0.15, 0.76, 0), Vector3(0.21, 0.76, 0.21), mau_than)
 	_chan_trai = _chi(_than_nguoi, Vector3(0.15, 0.76, 0), Vector3(0.21, 0.76, 0.21), mau_than)
 
-	# Điểm gắn vũ khí ở đầu tay phải. Tên cố định `GanTayPhai` — model thật
-	# sau này phải có bone rỗng trùng tên (mục 11).
+	# Điểm gắn vũ khí. Tên cố định `GanTayPhai` — model thật sau này phải có
+	# bone rỗng trùng tên (mục 11).
+	#
+	# NÓ KHÔNG BÁM THEO CÁNH TAY. Bản đầu có một RemoteTransform3D kéo nó theo
+	# `_tay_phai`, nghĩa là HỘP ĐÒN nằm ở đâu là do dáng vung tay quyết định —
+	# mà dáng vung tay là code trang trí. Hậu quả: thêm một cái nghiêng người
+	# 4° cho đòn nặng trông nặng hơn là cả game hết trúng đòn, im lặng, không
+	# lỗi nào. Đã dính đúng một lần.
+	#
+	# Giờ điểm gắn đứng yên ở ngực (vị trí khai trong nguoi_choi.tscn) và quay
+	# theo THÂN. Hộp đòn vì vậy là một vùng với phía trước mặt, đúng bằng
+	# `tam_voi` và `goc_quet` của moveset.csv — hai cột đó giờ nói thật.
 	if _diem_gan == null:
 		_diem_gan = Node3D.new()
 		_diem_gan.name = "GanTayPhai"
+		_diem_gan.position = Vector3(-0.36, 1.08, 0)
 		add_child(_diem_gan)
-	_tay_phai.add_child(_theo_doi(_diem_gan))
 
 	_vu_khi = MeshInstance3D.new()
 	_vu_khi.mesh = _hinh_hop(Vector3(0.08, 0.08, 1.1))
@@ -68,14 +82,14 @@ func _dung_hinh() -> void:
 	_vu_khi.rotation_degrees = Vector3(90, 0, 0)
 	_tay_phai.add_child(_vu_khi)
 
-## Node rỗng bám theo tay phải — HopDon là con của GanTayPhai trong .tscn nên
-## không di dời được, thay vào đó gắn một node trung gian theo dõi vị trí.
-func _theo_doi(dich: Node3D) -> Node3D:
-	var n := RemoteTransform3D.new()
-	n.name = "TruyenVeGanTayPhai"
-	n.remote_path = dich.get_path()
-	n.position = Vector3(0, -0.34, 0.0)
-	return n
+	# Khiên ở tay trái. Phải NHÌN THẤY được: cầm khiên hay không đổi hẳn cách
+	# chơi (có khiên mới parry được, mới đỡ được, mới có đòn phản đỡ), nên
+	# không thấy nó trên người là người chơi không biết mình đang ở chế độ nào.
+	_khien = MeshInstance3D.new()
+	_khien.mesh = _hinh_hop(Vector3(0.62, 0.78, 0.09))
+	_khien.material_override = _vat_lieu(mau_vu_khi)
+	_khien.position = Vector3(0.10, -0.40, 0.14)
+	_tay_trai.add_child(_khien)
 
 func _chi(cha: Node3D, vi_tri: Vector3, co: Vector3, mau: Color) -> Node3D:
 	# Khớp xoay đặt ở VAI/HÔNG, khối hộp treo bên dưới — xoay node cha là chi
@@ -125,6 +139,7 @@ const HINH_VU_KHI := {
 }
 
 func _cap_nhat_vu_khi() -> void:
+	_cap_nhat_khien()
 	if _vu_khi == null:
 		return
 	var chu := Tui.moveset_dang_dung()
@@ -144,18 +159,34 @@ func _cap_nhat_vu_khi() -> void:
 			mau = mau.lerp(NguHanh.mau_cua(h), 0.55)
 	_vu_khi.material_override = _vat_lieu(mau)
 
+## Khiên hiện khi tay trái có món loại `khien`.
+##
+## Nhận biết bằng LOẠI của món đồ, không phải bằng chữ trung tâm của nó — luật
+## 1: file này không được biết chữ 盾 tồn tại. Đổi khiên trong game thành chữ
+## khác chỉ cần sửa nguyen_lieu.csv.
+func _cap_nhat_khien() -> void:
+	if _khien == null:
+		return
+	var kh = Tui.tay_trai_dang_cam()
+	_khien.visible = kh != null
+	if kh == null:
+		return
+	# Tô theo độ hiếm + hành, y như vũ khí — nhìn là đoán được nó hệ gì.
+	var mau: Color = kh.mau()
+	var h: String = kh.ngu_hanh()
+	if h != "":
+		mau = mau.lerp(NguHanh.mau_cua(h), 0.55)
+	_khien.material_override = _vat_lieu(mau)
+
 # --- Hoạt ảnh tạm bằng code -----------------------------------------
 
 ## Không có animation thật thì xoay khớp bằng tay. Xấu, nhưng đủ để ĐỌC được
 ## đòn đánh — mà đọc được đòn mới là thứ quyết định ở mốc 2.
-func dien(trang_thai: String, tien_do: float, dang_di: bool, delta: float) -> void:
+func dien(trang_thai: String, tien_do: float, dang_di: bool, delta: float,
+		kieu: String = "") -> void:
 	match trang_thai:
 		"danh":
-			# Vung từ sau đầu ra trước: -150° → +55°. Vung tay ngược lên trước
-			# là chỗ người chơi đọc được "nó sắp chém" — khung quan trọng nhất.
-			var g := lerpf(-150.0, 55.0, clampf(tien_do, 0.0, 1.0))
-			_tay_phai.rotation_degrees.x = g
-			_tay_trai.rotation_degrees.x = lerpf(0.0, -25.0, tien_do)
+			_dien_danh(kieu, tien_do)
 		"lan":
 			var vong := clampf(tien_do, 0.0, 1.0) * 360.0
 			_than_nguoi.rotation_degrees.x = vong
@@ -189,7 +220,45 @@ func dien(trang_thai: String, tien_do: float, dang_di: bool, delta: float) -> vo
 		_chan_trai.rotation_degrees.x = lerpf(_chan_trai.rotation_degrees.x, 0.0,
 			minf(1.0, 10.0 * delta))
 
+## Dáng đánh, khác nhau theo LOẠI đòn.
+##
+## Trước đây cả bảy loại đòn dùng chung đúng một cung vung, nên đòn nặng nhìn
+## y hệt đòn nhẹ — chỉ chậm hơn. Người chơi giữ chuột mà không thấy gì khác
+## thì tưởng giữ không ăn thua, dù sát thương thật đã gấp rưỡi. Ở một game
+## souls-like, ĐỌC ĐƯỢC ĐÒN là nửa cơ chế; nửa kia là con số.
+func _dien_danh(kieu: String, tien_do: float) -> void:
+	var t := clampf(tien_do, 0.0, 1.0)
+	_vu_khi.scale = Vector3.ONE
+
+	if kieu == "nap":
+		# ĐANG NẠP: giơ ngược ra sau đầu rồi GIỮ NGUYÊN, rung nhẹ, vũ khí to
+		# dần. Đây là khung người chơi đọc "sắp ra đòn to" — và cũng là khung
+		# đối phương đọc được, nên nạp phải có rủi ro nhìn thấy được.
+		_tay_phai.rotation_degrees.x = -172.0 + sin(t * 46.0) * 3.5
+		_tay_trai.rotation_degrees.x = -28.0
+		_than_nguoi.rotation_degrees.x = 7.0
+		_vu_khi.scale = Vector3.ONE * (1.0 + t * 0.35)
+		return
+
+	if kieu == "phan_do":
+		# ĐÒN PHẢN ĐỠ: thúc thẳng từ sau khiên ra, không vung vòng. Khiên vẫn
+		# giơ gần hết đòn — đó là cả ý của đòn này, phản mà không bỏ thủ.
+		_tay_phai.rotation_degrees.x = lerpf(-38.0, 32.0, t)
+		_tay_trai.rotation_degrees.x = lerpf(-95.0, -62.0, t)
+		_than_nguoi.rotation_degrees.x = lerpf(0.0, -11.0, t)
+		return
+
+	# Vung từ sau đầu ra trước. Vung tay ngược lên trước là chỗ người chơi đọc
+	# được "nó sắp chém" — khung quan trọng nhất.
+	var nang := kieu.begins_with("nang")
+	_tay_phai.rotation_degrees.x = lerpf(-176.0 if nang else -150.0,
+		80.0 if nang else 55.0, t)
+	_tay_trai.rotation_degrees.x = lerpf(0.0, -25.0, t)
+	# Đòn nặng đổ cả người theo cú vung rồi thẳng lại — nhìn ra sức nặng.
+	_than_nguoi.rotation_degrees.x = sin(t * PI) * (-15.0 if nang else -4.0)
+
 func _ve_thuong(delta: float) -> void:
+	_vu_khi.scale = Vector3.ONE
 	var k := minf(1.0, 10.0 * delta)
 	_than_nguoi.rotation_degrees.x = lerpf(_than_nguoi.rotation_degrees.x, 0.0, k)
 	_than_nguoi.position.y = lerpf(_than_nguoi.position.y, 0.0, k)
