@@ -67,8 +67,15 @@ func nhap(su_kien: InputEvent) -> void:
 		hien_tai.nhap(su_kien)
 
 ## Chuyển tiếp có điều kiện — state chỉ đổi nếu state hiện tại CHO PHÉP.
-## Đây là chỗ cài "cam kết đòn đánh" (mục 5.1): state đánh trả về false cho
-## mọi thứ trừ trúng đòn, nên đã vung là không huỷ được.
+##
+## Dùng cái này cho mọi chuyển tiếp do NGOẠI CẢNH ép (ăn đòn, bị đỡ phản):
+## trạng thái đang chạy được quyền từ chối. Dùng doi() thẳng cho hai thứ
+## không ai được phép từ chối — CHẾT, và chuyển tiếp do chính state tự quyết
+## lúc nó kết thúc.
+##
+## Đây là nửa còn lại của cam kết đòn (mục 5.1). Nửa kia là việc state đánh
+## đơn giản không đọc phím nào — nhưng chỉ dựa vào nửa kia thì luật chỉ đúng
+## do tình cờ: thêm một lời gọi doi() ở đâu đó là mất, mà không test nào thấy.
 func xin_doi(ten: String, du_lieu: Dictionary = {}) -> bool:
 	if hien_tai != null and not hien_tai.cho_doi(ten):
 		return false

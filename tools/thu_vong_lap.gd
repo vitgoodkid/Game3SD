@@ -36,11 +36,13 @@ func _ready() -> void:
 
 	await _dat_canh()
 	await _the_luc_va_nut_danh()
+	await _cam_ket_va_iframe()
 	await _phim_hanh_trang()
 	await _quai_roi_do()
 	await _nghi_bia_da()
 	await _chet_va_hoi_sinh()
 	await _nhat_lai_hon()
+	await _may_trang_thai_quai()
 
 	print("")
 	print("====== %d qua, %d HONG ======" % [_qua, _hong])
@@ -192,6 +194,165 @@ func _the_luc_va_nut_danh() -> void:
 	await _cho(1.2)
 	_nc.the_luc = _nc.the_luc_max
 	_nc.khung_tl = 0.0
+
+## Bốn luật ghìm trận đánh, cả bốn đều không nhìn thấy trên màn hình và vì thế
+## rất dễ bị nới ra lúc nào không ai hay: cam kết đòn, i-frame của cú lăn, đỡ
+## phản, và vỡ tư thế. Từ khi đòn đánh thôi tốn thể lực thì CAM KẾT ĐÒN là thứ
+## gần như duy nhất còn ghìm nhịp — nên nó phải có test, không thể chỉ có comment.
+func _cam_ket_va_iframe() -> void:
+	_nhom("Cam kết đòn và i-frame")
+	if _nc == null:
+		_dung(false, "không có người chơi để thử")
+		return
+	# Nhóm này thử NGƯỜI CHƠI, nên bốn con quái phải đứng ngoài: mấy phép thử
+	# dưới kéo dài hơn mười giây, thừa thời gian cho một con chạy tới đấm vào
+	# giữa phép thử và đẩy nhân vật sang trạng thái trung_don. Bịt mắt chúng
+	# thay vì xê dịch — xê dịch thì có con rơi khỏi sàn.
+	_bit_mat_quai(true)
+	_lam_moi_nguoi_choi()
+
+	# --- Đã vung là không huỷ ---
+	await _giu("don_nhe", 0.05)
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "danh", "vung đòn")
+	await _giu("lan_chay", 0.05)
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "danh", "bấm lăn GIỮA đòn không huỷ được đòn")
+	await _cho(1.4)
+
+	# --- Lăn qua đòn thì không dính ---
+	_lam_moi_nguoi_choi()
+	var mau_truoc := _nc.mau
+	await _giu("lan_chay", 0.05)
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "lan", "nhả Space sớm là lăn")
+	_dung(_nc.bat_tu, "đầu cú lăn là BẤT TỬ")
+	_bang(_nc.an_don(50, 5.0, _truoc_mat()), 0, "ăn đòn giữa i-frame: 0 sát thương")
+	_bang(_nc.mau, mau_truoc, "và máu không suy suyển")
+
+	# Hết lăn là hết bất tử — nếu không thì lăn thành nút bất tử miễn phí.
+	await _cho(1.0)
+	_dung(not _nc.bat_tu, "lăn xong là hết bất tử")
+	var an := _nc.an_don(50, 5.0, _truoc_mat())
+	_dung(an > 0, "cùng đòn đó lúc đứng thì ăn thật (%d máu)" % an)
+	_dung(_nc.mau < mau_truoc, "máu tụt thật")
+	await _cho(1.0)
+
+	# --- Đỡ phản trúng ---
+	_lam_moi_nguoi_choi()
+	await _bam("do_phan")
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "do_phan", "vào đỡ phản")
+	_bang(_nc.an_don(50, 5.0, _truoc_mat()), -1,
+		"đỡ phản TRÚNG trả -1 — dấu hiệu cho bên gọi bắt quái ngây ra")
+	_bang(_nc.mau, _nc.mau_toi_da, "đỡ phản trúng thì không mất máu")
+	await _cho(1.0)
+
+	# --- Vỡ tư thế ---
+	_lam_moi_nguoi_choi()
+	_nc.an_don(1, _nc.tu_the_max + 1.0, _truoc_mat())
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "vo_the", "đầy thanh tư thế là VỠ THẾ")
+	_bang(_nc.tu_the, 0.0, "vỡ xong thanh tư thế về 0")
+	await _giu("lan_chay", 0.05)
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "vo_the", "đang vỡ thế thì bấm lăn cũng không thoát")
+	# Ngây thật thì phải ngây THẬT, kể cả khi bị đánh tiếp. Đây là cả phần
+	# thưởng của việc đánh dồn đúng nhịp: cửa sổ 2.6s đủ rộng để chạy tới kết
+	# liễu. Một đòn vặt cắt ngang nó thành trung_don (ngắn hơn nhiều) là biến
+	# hình phạt nặng nhất thành hình phạt nhẹ hơn cả trúng đòn thường.
+	# Đòn phải đủ mạnh để bình thường VẪN gây khựng, nếu không phép thử này
+	# xanh oan: SoulsLike.co_khung() chỉ khựng khi pha_the >= thế đứng.
+	var manh := _nc.the_dung() + 1.0
+	_nc.an_don(5, manh, _truoc_mat())
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "vo_the", "bị đánh tiếp cũng KHÔNG cắt được vỡ thế")
+	await _cho(SoulsLike.NGAY_SAU_VO + 0.3)
+	_bang(_nc.may.ten_hien_tai, "dung", "ngây hết giờ thì đứng dậy")
+	_lam_moi_nguoi_choi()
+	_bit_mat_quai(false)
+
+## Máy trạng thái quái. Chạy CUỐI CÙNG vì nó xê dịch và hạ quái — mấy nhóm
+## trước đếm đúng bốn con.
+func _may_trang_thai_quai() -> void:
+	_nhom("Máy trạng thái quái")
+	var ds := get_tree().get_nodes_in_group("quai")
+	if ds.is_empty():
+		_dung(false, "không còn con quái nào để thử")
+		return
+	var q := ds[0] as Quai
+	var cho_cu := q.global_position
+
+	# --- Thấy người chơi thì đuổi ---
+	q.global_position = _nc.global_position + Vector3(0, 0, 3.0)
+	await _hai_khung()
+	_dung(q.thay_nguoi_choi(), "đứng sát thì quái thấy người chơi")
+	q.may.doi("quai_dung")
+	await _hai_khung()
+	_bang(q.may.ten_hien_tai, "quai_dung", "chưa lao ra ngay — có khoảng chờ")
+	# quai_dung cố ý chờ CHO_TRUOC_KHI_DUOI giây để người chơi kịp thấy nó
+	# ngẩng đầu lên. Chờ hụt là test đỏ oan.
+	await _cho(0.7)
+	_bang(q.may.ten_hien_tai, "quai_duoi", "chờ hết khoảng đó thì đuổi")
+
+	# --- Mất dấu thì về chỗ, KHÔNG đứng ngây tại chỗ vừa mất dấu ---
+	q.global_position = _nc.global_position + Vector3(0, 0, 60.0)
+	await _hai_khung()
+	_dung(not q.thay_nguoi_choi(), "kéo ra xa thì quái mất dấu")
+	await _hai_khung()
+	_bang(q.may.ten_hien_tai, "quai_ve_cho", "mất dấu thì quay về chỗ cũ")
+
+	# --- Bị đỡ phản thì đứng ngây đúng NGAY_SAU_DO_PHAN ---
+	q.bi_do_phan()
+	await _hai_khung()
+	_bang(q.may.ten_hien_tai, "quai_vo_the", "bị đỡ phản là đứng ngây")
+	_dung(q.dang_ngay, "cờ dang_ngay bật — đây là thứ cho phép kết liễu")
+
+	# Đánh một đòn vặt vào con đang ngây: cửa sổ kết liễu KHÔNG được ngắn đi.
+	# Đây là phần thưởng cho việc đỡ phản trúng, mà đỡ phản là kỹ năng cao
+	# nhất người chơi học được — cắt ngắn nó là rút ngược phần thưởng.
+	q.an_don(1, float(q.d.get("the_dung", 30)) + 1.0, _nc.global_position)
+	await _hai_khung()
+	_bang(q.may.ten_hien_tai, "quai_vo_the", "đánh thêm một đòn không cắt được cửa sổ đó")
+
+	# --- Hết máu thì chết ---
+	q.global_position = cho_cu
+	q.may.doi("quai_dung")
+	var con := _dem_nhom("quai")
+	q.an_don(int(q.mau_toi_da) + 50, 1.0, _nc.global_position)
+	await _hai_khung()
+	_bang(q.may.ten_hien_tai, "quai_chet", "hết máu là vào trạng thái chết")
+	_dung(not q.con_song(), "và con_song() trả false")
+	_dung(_dem_nhom("quai") <= con, "xác không tự nhân bản (còn %d con)"
+		% _dem_nhom("quai"))
+
+## Cho quái tạm thôi nhìn thấy người chơi (và đứng yên tại chỗ), rồi trả lại.
+## thay_nguoi_choi() trả false khi nguoi_choi == null, nên đây là cái công tắc
+## rẻ nhất — không đụng vào vị trí, không có con nào rơi khỏi sàn.
+func _bit_mat_quai(bit: bool) -> void:
+	for n in get_tree().get_nodes_in_group("quai"):
+		var q := n as Quai
+		if q == null or not q.con_song():
+			continue
+		q.nguoi_choi = null if bit else _nc
+		if bit:
+			q.may.doi("quai_dung")
+
+## Đưa người chơi về trạng thái sạch giữa hai phép thử — đầy máu, đầy thể lực,
+## không còn khựng, không còn dư i-frame hay hồi lăn của cú trước.
+func _lam_moi_nguoi_choi() -> void:
+	_nc.mau = _nc.mau_toi_da
+	_nc.the_luc = _nc.the_luc_max
+	_nc.khung_tl = 0.0
+	_nc.tu_the = 0.0
+	_nc.hoi_lan = 0.0
+	_nc.bat_tu = false
+	_nc.may.doi("dung")
+
+## Một điểm ngay trước mặt nhân vật. Đòn đánh tới từ phía sau tính khác (đỡ
+## không ăn, nhân hệ số sau lưng), nên phép thử phải nói rõ đòn tới từ đâu.
+func _truoc_mat() -> Vector3:
+	return _nc.global_position + _nc.huong_mat() * 2.0
 
 func _phim_hanh_trang() -> void:
 	_nhom("Phím I mở hành trang")

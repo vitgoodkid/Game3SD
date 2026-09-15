@@ -179,15 +179,18 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 		return int(round(st))
 
 	# Vỡ tư thế → đứng ngây cho ăn đòn kết liễu (mục 5.1).
+	# xin_doi() chứ không doi() — cùng lý do như NguoiChoi.an_don(): con quái
+	# đang đứng ngây cho ăn kết liễu thì một đòn vặt không được cắt ngang cửa
+	# sổ đó (quai_vo_the.cho_doi chặn). Đường CHẾT ở trên vẫn đổi thẳng.
 	tu_the += pha_the
 	if tu_the >= tu_the_max:
 		tu_the = 0.0
-		may.doi("quai_vo_the")
+		may.xin_doi("quai_vo_the")
 	elif SoulsLike.co_khung(float(d.get("the_dung", 30)), pha_the):
-		may.doi("quai_trung_don", {"tu_dau": tu_dau})
+		may.xin_doi("quai_trung_don", {"tu_dau": tu_dau})
 	elif may.ten_hien_tai in ["quai_dung", "quai_tuan", "quai_duoi"]:
 		# Bị đánh lén thì quay lại đánh, kể cả khi chưa thấy người chơi.
-		may.doi("quai_duoi")
+		may.xin_doi("quai_duoi")
 	return int(round(st))
 
 func _bao_so(st: int, hs: float, hanh: String) -> void:
@@ -201,7 +204,7 @@ func _bao_so(st: int, hs: float, hanh: String) -> void:
 
 ## Đối phương đỡ phản trúng đòn của mình → đứng ngây.
 func bi_do_phan() -> void:
-	may.doi("quai_vo_the", {"lau": SoulsLike.NGAY_SAU_DO_PHAN})
+	may.xin_doi("quai_vo_the", {"lau": SoulsLike.NGAY_SAU_DO_PHAN})
 
 # --- Chết -----------------------------------------------------------
 

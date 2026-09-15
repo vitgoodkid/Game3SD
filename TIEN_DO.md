@@ -7,7 +7,7 @@ Sổ tiến độ theo 7 mốc ở mục 12 của `PROMPT_3D.md`.
 | # | Mốc | Trạng thái |
 |---|---|---|
 | 1 | Đi lại — nhân vật 3D, state machine, camera F5 ba chế độ, một phòng thử | ✅ xong |
-| 2 | **Combat lõi** — thể lực, lăn i-frame, đòn nhẹ/nặng, cam kết đòn, khoá mục tiêu, quái đánh trả | ✅ xong, **chưa tune** |
+| 2 | **Combat lõi** — thể lực, lăn i-frame, đòn nhẹ/nặng, cam kết đòn, khoá mục tiêu, quái đánh trả | ✅ xong + có test hành vi, **chưa tune** |
 | 3 | Trang bị + đọc chữ — khe, tải trọng, cơ chế `???`, nối VocabDB | ✅ xong — màn hành trang bấm I là mở |
 | 4 | Vòng lặp souls — bia đá, chết rơi chữ, nhặt lại, hồi sinh quái, ghép chữ | ✅ xong trong phòng thử |
 | 5 | Ngũ hành + boss — tương sinh tương khắc, thang chồng bộ, boss hai giai đoạn | 🟡 ngũ hành + thang xong, chưa có boss |
@@ -84,7 +84,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 170 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + nút đánh trong phòng thử thật, 56 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 84 test theo thời gian |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
@@ -146,6 +146,14 @@ Ghi lại để không ai tưởng là quên:
   tỉ lệ hợp lý, không phải khai thêm gì.
 
 ## Bẫy đã dính, ghi lại cho đỡ dính lần nữa
+
+- **`cho_doi()` từng là đồ trang trí.** Sáu state cài nó cẩn thận, `CLAUDE.md`
+  gọi nó là cơ chế xương sống của cam kết đòn — mà `xin_doi()`, hàm duy nhất
+  hỏi tới nó, **không chỗ nào gọi**. Cam kết đòn vẫn đúng, nhưng đúng do tình
+  cờ (state đánh không đọc phím), không phải do luật. Hậu quả thật: một đòn
+  vặt cắt được người chơi ra khỏi `vo_the` sang `trung_don` — biến hình phạt
+  nặng nhất của game thành nhẹ hơn cả trúng đòn thường. Bài học: **một cơ chế
+  không có test thì không tồn tại**, dù nó được viết và được ghi vào tài liệu.
 
 - **`sinh()` là hàm có sẵn của GDScript** (sin hyperbol). Hàm tĩnh tên `sinh`
   trong class của mình sẽ bị hàm có sẵn ăn mất mọi lời gọi không có tiền tố,

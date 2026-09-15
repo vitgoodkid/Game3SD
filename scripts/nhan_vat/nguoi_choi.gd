@@ -307,14 +307,19 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 		# thanh tư thế đầy rồi vỡ thế, kiểu Sekiro. Trước đây việc này do thể
 		# lực làm; đổi tay chứ không bỏ, vì bỏ hẳn là trận đánh chết tại chỗ.
 		if them_tu_the(pha_the * SoulsLike.TU_THE_KHI_DO):
-			may.doi("vo_the")
+			may.xin_doi("vo_the")
 		return st
 
 	mat_mau(st)
+	# xin_doi() chứ không doi(): trạng thái hiện tại được quyền từ chối. Đang
+	# VỠ THẾ mà một đòn vặt đẩy sang trung_don là biến hình phạt nặng nhất của
+	# game thành nhẹ hơn cả trúng đòn thường — vo_the.cho_doi() chặn đúng chỗ
+	# đó. Riêng đường CHẾT trong mat_mau() vẫn đổi thẳng: chết thì không trạng
+	# thái nào được phép từ chối.
 	if them_tu_the(pha_the):
-		may.doi("vo_the")
+		may.xin_doi("vo_the")
 	elif SoulsLike.co_khung(the_dung(), pha_the):
-		may.doi("trung_don", {"tu_dau": tu_dau})
+		may.xin_doi("trung_don", {"tu_dau": tu_dau})
 	return st
 
 func _don_tu_phia_truoc(tu_dau: Vector3) -> bool:

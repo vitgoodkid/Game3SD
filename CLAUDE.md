@@ -46,9 +46,9 @@ Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.
 # kiểm tầng luật — 170 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + nút đánh — 56 test, nạp phòng thử thật và diễn lại:
-# đánh, lăn, đỡ phản, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại.
-# Chạy mất ~20 giây vì phải đợi thật.
+# kiểm vòng lặp souls + combat — 84 test, nạp phòng thử thật và diễn lại:
+# đánh, cam kết đòn, i-frame, đỡ phản, vỡ thế, state machine quái, chết, rơi
+# vũng hồn, đứng dậy ở bia, quái sống lại. Chạy mất ~35 giây vì phải đợi thật.
 godot --headless --path . tools/thu_vong_lap.tscn
 
 # chạy thử game 10 giây, bắt lỗi lúc chạy
@@ -111,8 +111,14 @@ tools/           kiểm tra + sinh dữ liệu
 
 - **Máy trạng thái là bắt buộc.** Người chơi lẫn quái. Không viết chuỗi `if` để
   hỏi "đang làm gì". Mỗi state là một node con có `vao()` / `ra()` / `chay(delta)`.
-- **Cam kết đòn đánh** cài ở `TrangThaiMay.cho_doi()`. `danh.gd` chặn gần như
-  mọi chuyển tiếp — đó là thứ phân biệt souls-like với hack-n-slash. Đừng nới.
+- **Cam kết đòn đánh** đứng trên HAI chân, cần cả hai:
+  1. state đang đánh không đọc phím nào — bấm gì giữa đòn cũng chỉ vào bộ đệm;
+  2. `cho_doi()` của nó từ chối gần hết mọi chuyển tiếp từ ngoài vào.
+  Chân thứ hai chỉ có tác dụng khi bên gọi dùng **`may.xin_doi()`** chứ không
+  phải `may.doi()`. Luật: chuyển tiếp do **ngoại cảnh ép** (ăn đòn, bị đỡ
+  phản) thì `xin_doi()`; chỉ CHẾT và chuyển tiếp do chính state tự quyết lúc
+  nó kết thúc mới được `doi()` thẳng. Đây là thứ phân biệt souls-like với
+  hack-n-slash. Đừng nới.
 - **Mọi con số cảm giác** nằm trong `souls_like.gd` và `data/moveset.csv`.
   Đừng rải hằng số vào state.
 - **Chỉ ba thứ tốn thể lực: lăn, đỡ phản, chạy.** Đánh / nhảy / đỡ đòn KHÔNG
