@@ -1,22 +1,29 @@
 class_name ManBiaDa
 extends ManChung
 
-## Bia đá — bốn việc, và cả bốn đều là học (mục 4.6).
+## Bia đá — ba việc (mục 4.6).
 ##
 ##   Ghép chữ     bộ thủ nhặt được → chữ. Ghép xong là BIẾT, và mọi món đồ cũ
 ##                trong túi sáng ra cùng lúc. Đây là cái lò rèn của game này.
-##   Ngồi thiền   mười dạng câu hỏi của bản 2D, chạy qua CauHoi. Không bắt buộc.
 ##   Khắc chữ     lắp / tháo / đổi thứ tự / nâng bậc chồng bộ (mục 4.2 + 4.3).
 ##   Nâng chỉ số  tiêu hồn tăng 体韧力巧智心.
 ##
-## Vì sao bốn việc dồn vào một màn thay vì bốn chỗ khác nhau: nghỉ ở bia là lúc
+## KHÔNG có thẻ hỏi-đáp. Từng có một thẻ "Ngồi thiền" bắn câu hỏi trắc nghiệm;
+## chủ dự án bỏ đi vì ngồi trả lời hết câu này tới câu khác là quá mất thì giờ
+## so với thứ nhận lại được. Việc học giờ nằm trọn trong hai thẻ CHẾ ĐỒ ở
+## trên: ghép một chữ hay khắc một chữ lên vũ khí đều tính là ôn chữ đó
+## (`TriNho.on_tap`), nên chữ được ôn bằng việc dùng nó chứ không bằng việc bị
+## hỏi về nó. Bộ sinh câu hỏi `cau_hoi.gd` vẫn còn trong repo và vẫn có test
+## canh, phòng khi cần lại — chỉ là không màn nào gọi tới nữa.
+##
+## Vì sao ba việc dồn vào một màn thay vì ba chỗ khác nhau: nghỉ ở bia là lúc
 ## DUY NHẤT người chơi được dừng lại nghĩ. Bắt họ chạy sang chỗ khác để đổi thứ
 ## tự chữ là bắt họ bỏ luôn việc đó.
 ##
 ## Màn này KHÔNG dạy chữ bằng cách chặn đường. Đóng nó lại và đi đánh tiếp thì
 ## game vẫn chạy bình thường — chỉ là món đồ trong túi vẫn còn đầy □.
 
-const TEN_THE := ["Ghép chữ", "Ngồi thiền", "Khắc chữ", "Nâng chỉ số"]
+const TEN_THE := ["Ghép chữ", "Khắc chữ", "Nâng chỉ số"]
 ## Hiện nhiều nhất bấy nhiêu chữ "sắp ghép được" — đủ để biết đang thiếu gì,
 ## không nhiều tới mức thành bảng tra cứu.
 const SAP_GHEP_TOI_DA := 12
@@ -28,10 +35,6 @@ var _ten_bia := "Bia đá"
 var _the := 0
 var _noi_dung: VBoxContainer = null
 var _hang_the: HBoxContainer = null
-
-# Ngồi thiền
-var _cau := {}
-var _chon_cua_toi := -1
 
 # Khắc chữ
 var _mon: MonDo = null
@@ -65,8 +68,6 @@ func dung_noi_dung(cha: MarginContainer) -> void:
 ## là một câu hỏi mới, không phải câu còn dở của lần trước.
 func mo_o_bia(ten_bia: String) -> void:
 	_ten_bia = ten_bia
-	_cau = {}
-	_chon_cua_toi = -1
 	mo()
 
 func lam_moi() -> void:
@@ -86,9 +87,8 @@ func _ve_the() -> void:
 	don(_noi_dung)
 	match _the:
 		0: _ve_ghep_chu()
-		1: _ve_ngoi_thien()
-		2: _ve_khac_chu()
-		3: _ve_nang_chi_so()
+		1: _ve_khac_chu()
+		2: _ve_nang_chi_so()
 	ve_xong = true
 
 # --- Thẻ 1: ghép chữ ------------------------------------------------
@@ -166,79 +166,7 @@ func _ghep(c: String) -> void:
 			String(tu.get("han_viet", "")), String(tu.get("nghia", ""))])
 	lam_moi()
 
-# --- Thẻ 2: ngồi thiền ----------------------------------------------
-
-func _ve_ngoi_thien() -> void:
-	var sp := TriNho.sap_phai(12)
-	_noi_dung.add_child(chu("Đã học %d chữ · thuộc %d · sắp phai %d"
-		% [TriNho.so_chu_da_hoc(), TriNho.so_chu_thuoc(), sp.size()],
-		15, MAU_CHU_MO))
-	if not sp.is_empty():
-		var phan: Array[String] = []
-		for m in sp:
-			phan.append(String(m["chu"]))
-		_noi_dung.add_child(chu("Sắp phai: " + " ".join(phan), 18,
-			Color(0.85, 0.72, 0.38)))
-	_noi_dung.add_child(HSeparator.new())
-
-	if _cau.is_empty():
-		_cau = CauHoi.sinh_theo_lich_on()
-		_chon_cua_toi = -1
-	if _cau.is_empty():
-		_noi_dung.add_child(chu("Chưa học chữ nào để ôn.", 16, MAU_CHU_MO))
-		return
-
-	_noi_dung.add_child(chu(String(_cau["de"]), 30))
-	var goi_y := String(_cau.get("goi_y", ""))
-	if goi_y != "":
-		_noi_dung.add_child(chu(goi_y, 16, MAU_CHU_MO))
-	_noi_dung.add_child(HSeparator.new())
-
-	var dung: int = int(_cau["dung"])
-	var lua_chon: Array = _cau["lua_chon"]
-	for i in lua_chon.size():
-		var b := nut(String(lua_chon[i]), _tra_loi.bind(i), _chon_cua_toi < 0)
-		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		if _chon_cua_toi >= 0:
-			if i == dung:
-				b.add_theme_color_override("font_color", Color(0.55, 0.88, 0.58))
-			elif i == _chon_cua_toi:
-				b.add_theme_color_override("font_color", Color(0.90, 0.45, 0.40))
-		_noi_dung.add_child(b)
-
-	if _chon_cua_toi < 0:
-		return
-
-	_noi_dung.add_child(HSeparator.new())
-	var da_dung := _chon_cua_toi == dung
-	_noi_dung.add_child(chu("Đúng" if da_dung else "Sai", 22,
-		Color(0.55, 0.88, 0.58) if da_dung else Color(0.90, 0.45, 0.40)))
-	# Cột `diem` của ngu_phap.csv là LỜI GIẢI THÍCH. Đây mới là chỗ dạy thật —
-	# trả lời xong mà không biết vì sao thì lần sau vẫn sai.
-	var gt := String(_cau.get("giai_thich", ""))
-	if gt != "":
-		_noi_dung.add_child(chu(gt, 16, MAU_NHAN))
-	var c := String(_cau["chu"])
-	_noi_dung.add_child(chu("%s — %s  ·  thuần thục: %s"
-		% [c, String(VocabDB.tu_cua(c).get("nghia", "")), TriNho.ten_muc(c)],
-		16, MAU_CHU_MO))
-	_noi_dung.add_child(nut("Câu tiếp", _cau_tiep))
-
-func _tra_loi(i: int) -> void:
-	if _chon_cua_toi >= 0 or _cau.is_empty():
-		return
-	_chon_cua_toi = i
-	TriNho.on_tap(String(_cau["chu"]), i == int(_cau["dung"]))
-	# Trả lời xong là độ thuần thục đổi ⇒ món đồ trong túi đổi theo.
-	Tui.doi_trang_bi.emit()
-	lam_moi()
-
-func _cau_tiep() -> void:
-	_cau = {}
-	_chon_cua_toi = -1
-	lam_moi()
-
-# --- Thẻ 3: khắc chữ ------------------------------------------------
+# --- Thẻ 2: khắc chữ ------------------------------------------------
 
 func _ve_khac_chu() -> void:
 	if not Tui.kho.has(_mon):
@@ -402,7 +330,7 @@ func _khac_them(c: String) -> void:
 		_bao("Khắc %s — %s" % [c, _mon.ten_hien()])
 	lam_moi()
 
-# --- Thẻ 4: nâng chỉ số ---------------------------------------------
+# --- Thẻ 3: nâng chỉ số ---------------------------------------------
 
 func _ve_nang_chi_so() -> void:
 	var gia := Tui.gia_nang_chi_so()

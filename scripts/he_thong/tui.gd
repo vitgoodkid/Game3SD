@@ -210,7 +210,11 @@ func khac_them(mon: MonDo, chu: String) -> bool:
 		return false
 	hon -= gia
 	mon.ten = moi
-	TriNho.gap_lai(chu)
+	# Khắc một chữ lên vũ khí TÍNH LÀ ÔN chữ đó, không chỉ lùi ngày phai. Từ
+	# khi bỏ thẻ ngồi thiền, hai thẻ chế đồ là đường duy nhất để chữ đã phai
+	# quay lại mức Thuộc — chữ được ôn bằng việc dùng nó. Không farm rẻ được:
+	# mỗi lần khắc đều trừ hồn, và giá tăng theo độ dài tên.
+	TriNho.on_tap(chu, true)
 	doi_hon.emit(hon)
 	doi_trang_bi.emit()
 	return true
@@ -254,7 +258,8 @@ func nang_bac_chu(mon: MonDo, vi_tri: int) -> bool:
 		return false
 	bot_bo_thu(goc, gia)
 	mon.ten = TenDoVat.nang_bac(mon.ten, vi_tri)
-	TriNho.gap_lai(tren)
+	# Nâng bậc chồng bộ cũng là ôn — và cũng có giá (tốn bộ thủ), xem khac_them.
+	TriNho.on_tap(tren, true)
 	doi_trang_bi.emit()
 	return true
 

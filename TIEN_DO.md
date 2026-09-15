@@ -9,7 +9,7 @@ Sổ tiến độ theo 7 mốc ở mục 12 của `PROMPT_3D.md`.
 | 1 | Đi lại — nhân vật 3D, state machine, camera F5 ba chế độ, một phòng thử | ✅ xong |
 | 2 | **Combat lõi** — thể lực, lăn i-frame, đòn nhẹ/nặng, cam kết đòn, khoá mục tiêu, quái đánh trả | ✅ xong, **chưa tune** |
 | 3 | Trang bị + đọc chữ — khe, tải trọng, cơ chế `???`, nối VocabDB | ✅ xong — màn hành trang bấm I là mở |
-| 4 | Vòng lặp souls — bia đá, chết rơi chữ, nhặt lại, hồi sinh quái, ghép chữ, ngồi thiền | ✅ xong trong phòng thử |
+| 4 | Vòng lặp souls — bia đá, chết rơi chữ, nhặt lại, hồi sinh quái, ghép chữ | ✅ xong trong phòng thử |
 | 5 | Ngũ hành + boss — tương sinh tương khắc, thang chồng bộ, boss hai giai đoạn | 🟡 ngũ hành + thang xong, chưa có boss |
 | 6 | Thế giới — 7 vùng, địa hình, streaming, đường tắt, shader "vùng bị xoá" | ⬜ chưa |
 | 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, animation thật | ⬜ chưa |
@@ -27,6 +27,12 @@ test canh.
 2. **Địa hình vùng đầu** (mốc 6). Tự viết, không dùng Terrain3D — xem mục "Đã
    đổi so với bản yêu cầu" bên dưới. Bắt đầu bằng `ria_bien`: `vung.csv` đã khai
    sẵn hạt giống, cao độ, độ gồ ghề, mật độ cây đá.
+   Kèm theo: mỗi vùng một `WorldEnvironment` riêng sinh từ `vung.csv` lúc chạy
+   (`scripts/the_gioi/moi_truong_vung.gd`, **chưa viết**), lấy
+   `scenes/the_gioi/moi_truong_mac_dinh.tres` làm nền chung. Mục 7.4 của bản
+   yêu cầu nói thẳng: chỗ đáng đầu tư để "đẹp" là **ÁNH SÁNG**, không phải hình
+   khối — một quả đồi đơn giản + ánh sáng tốt đẹp hơn hẳn quả đồi chi tiết +
+   ánh sáng mặc định. Và ánh sáng là thứ chỉnh được bằng số.
 3. **Đổi phòng thử thành vùng thật.** `phong_thu.gd` đặt quái bằng một mảng
    hằng; vùng thật phải đọc `quai.csv` theo cột `vung`.
 4. **Tune ba con số của mục 5.2.** Việc này **phải làm bằng tay, trên máy có màn
@@ -62,11 +68,13 @@ test canh.
 ### Chơi được
 Chạy `godot --path .` là vào thẳng phòng thử. Làm được trọn vòng souls:
 
-- chạy quanh, đổi camera F5, khoá mục tiêu, đánh bốn con quái
+- chạy quanh, đổi camera F5, khoá mục tiêu, đánh bốn con quái. Phím đánh:
+  **bấm chuột trái** = đòn nhẹ, **giữ chuột trái** = đòn nặng rồi đòn nạp,
+  **chuột phải** = đỡ phản, Space = lăn (giữ = chạy), Q = giơ khiên
 - nhặt đồ dưới đất (bấm **E**), mở hành trang (bấm **I**) — chữ chưa đọc được
   hiện `□`, chỉ số hiện `???`
 - bấm **E** ở bia đá: bật bia, hồi đầy máu và bình, quái sống lại hết, mở màn
-  bốn thẻ — **ghép chữ / ngồi thiền / khắc chữ / nâng chỉ số**
+  ba thẻ — **ghép chữ / khắc chữ / nâng chỉ số**
 - chết: rơi hết hồn chưa tiêu thành **vũng hồn** tại chỗ, đứng dậy ở bia đá, về
   nhặt lại được. Chết lần nữa trước khi nhặt là mất vĩnh viễn.
 
@@ -75,8 +83,8 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 
 | Lệnh | Kiểm gì |
 |---|---|
-| `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 171 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls trong phòng thử thật, 45 test theo thời gian |
+| `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 170 test trong một khung hình |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + nút đánh trong phòng thử thật, 56 test theo thời gian |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
@@ -100,6 +108,25 @@ qua nhiều node**, tầng luật không với tới được.
 
 Ghi lại để không ai tưởng là quên:
 
+- **Bỏ thẻ "Ngồi thiền" ở bia đá.** Chủ dự án chơi thử và thấy ngồi trả lời hết
+  câu trắc nghiệm này tới câu khác quá mất thì giờ so với thứ nhận lại được.
+  Việc học giờ nằm trọn trong hai thẻ CHẾ ĐỒ: **ghép chữ và khắc chữ đều tính
+  là ôn tập** (`TriNho.on_tap`), nên chữ được ôn bằng việc DÙNG nó chứ không
+  bằng việc bị hỏi về nó — và cơ chế phai vẫn có đường hồi phục, không thành
+  một chiều. `cau_hoi.gd` + `ngu_phap.csv` vẫn ở lại repo và vẫn có test canh
+  (nhóm "Mười dạng câu hỏi"), vì test đó là thứ duy nhất bắt Godot biên dịch
+  `cau_hoi.gd`; chỉ là không màn nào gọi tới nữa.
+- **Chỉ lăn / đỡ phản / chạy tốn thể lực.** Trước đây mọi đòn đánh đều tốn, mà
+  `ton_the_luc()` đặt lại 0.8s khựng mỗi lần tiêu — nên đánh năm nhát là đứng
+  ngây giữa trận. Đánh, nhảy, đỡ đòn giờ miễn phí. Hai thứ trước kia do thể lực
+  ghìm phải đổi tay, đừng gỡ mất: nhịp đòn đánh giờ do **cam kết đòn + `t_hoi`**
+  ghìm, và "đứng giơ khiên" giờ do **tư thế** ghìm (đỡ mãi thì vỡ thế kiểu
+  Sekiro) chứ không do cạn thể lực. Cột `the_luc` của `moveset.csv` vì vậy hiện
+  không ai đọc — giữ lại phòng khi đổi ý.
+- **Một nút chuột trái ra cả đòn nhẹ lẫn đòn nặng.** Nhả trước
+  `NguoiChoi.NGUONG_GIU_NANG` (0.22s) là nhẹ, giữ lâu hơn là nặng, giữ tiếp nữa
+  thành đòn nạp. Chuột phải chuyển thành **đỡ phản** (phím R vẫn dùng được).
+  Action `don_nang` đã gỡ khỏi input map; cái tên chỉ còn sống trong bộ đệm phím.
 - **Không dùng Terrain3D / ProtonScatter** (mục 7.3). Chủ dự án chọn tự viết —
   repo sạch, không phụ thuộc phiên bản addon. Địa hình sẽ viết ở mốc 6.
 - **Điểm chỉ số của chữ ngoài `nguyen_lieu.csv`** suy từ độ khó của chữ, không

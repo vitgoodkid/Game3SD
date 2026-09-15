@@ -370,8 +370,9 @@ func _cau_hoi() -> void:
 	_dung(chet.is_empty(), "cả 10 dạng câu hỏi đều dựng được%s"
 		% ("" if chet.is_empty() else " — chết: " + " ".join(chet)))
 
-	# Ngồi thiền phải LUÔN ra được câu hỏi. Bấm vào thấy màn trống là lỗi nặng
-	# hơn câu hỏi dở, vì người chơi tưởng game hỏng.
+	# Không màn nào gọi CauHoi nữa (thẻ ngồi thiền đã bỏ), nhưng nhóm test này
+	# ở lại: nó là thứ duy nhất bắt Godot BIÊN DỊCH cau_hoi.gd. Gỡ nó đi thì
+	# file kia hỏng lúc nào không ai biết — đúng cái bẫy đã ghi trong TIEN_DO.
 	var hong := 0
 	for i in 80:
 		if not _cau_hop_le(CauHoi.sinh_theo_lich_on()):
@@ -484,7 +485,7 @@ func _man_hinh() -> void:
 
 	# Thẻ khắc chữ chỉ vẽ hết phần thú vị khi đã chọn món và chọn chữ.
 	if not Tui.kho.is_empty():
-		bia._the = 2
+		bia._the = ManBiaDa.TEN_THE.find("Khắc chữ")
 		bia._mon = Tui.kho[0]
 		bia._vi_tri = 0
 		bia.lam_moi()

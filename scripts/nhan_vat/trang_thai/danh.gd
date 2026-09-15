@@ -12,13 +12,21 @@ extends TTNguoiChoi
 ## Khung "hồi" là chỗ đối phương phản đòn. Cắt ngắn nó đi thì trận đánh thành
 ## hack-n-slash. Cho huỷ nó bằng cách lăn thì cũng vậy. Nên cho_doi() ở dưới
 ## chặn gần như mọi thứ — đó là cả mục đích của file này.
+##
+## ĐÁNH KHÔNG TỐN THỂ LỰC (xem "Cái gì tốn thể lực" trong souls_like.gd). Thứ
+## ghìm nhịp đòn đánh là cam kết đòn + khung hồi ở trên, không phải thanh thể
+## lực. Cột `the_luc` của moveset.csv vì vậy hiện không ai đọc.
+##
+## Nhẹ hay nặng là do GIỮ CHUỘT TRÁI lâu hay không, không phải hai nút khác
+## nhau: nc.dang_giu_danh() còn true nghĩa là người chơi vẫn đang giữ, và đòn
+## nặng nạp tiếp thành đòn nạp.
 
 var _don := "nhe_1"
 var _m := {}
 var _chu_mv := "拳"
 var _da_bat := false     ## hộp đòn đã bật trong đòn này chưa
 var _da_tat := false
-var _nap := false        ## đang giữ nút đòn nặng để nạp
+var _nap := false        ## còn giữ chuột trái để nạp tiếp thành đòn nạp
 var _t_nap := 0.0
 ## Đã đệm sẵn đòn kế tiếp của combo chưa.
 var _noi := ""
@@ -32,10 +40,9 @@ func vao(du_lieu: Dictionary = {}) -> void:
 	_da_bat = false
 	_da_tat = false
 	_noi = ""
-	_nap = _don == "nang" and Input.is_action_pressed("don_nang")
+	_nap = _don == "nang" and nc.dang_giu_danh()
 	_t_nap = 0.0
 	nc.dang_do = false
-	nc.ton_the_luc(float(_m.get("the_luc", 15)))
 	# Xoay về hướng đang nhắm NGAY lúc bắt đầu vung. Sau đó khoá cứng —
 	# xoay được giữa đòn là cách nhanh nhất giết chết cảm giác souls.
 	var h := nc.huong_nhap if nc.huong_nhap != Vector3.ZERO else nc.huong_mat()
@@ -86,23 +93,21 @@ func chay(delta: float) -> void:
 
 func _chay_nap(delta: float) -> void:
 	_t_nap += delta
-	if not Input.is_action_pressed("don_nang") or _t_nap >= T_NAP_TOI_DA:
+	if not nc.dang_giu_danh() or _t_nap >= T_NAP_TOI_DA:
 		# Nhả sớm thì ra đòn nặng thường, giữ đủ lâu thì ra đòn nạp.
 		var ra_don := "nang_nap" if _t_nap >= T_NAP_TOI_DA * 0.55 else "nang"
 		_nap = false
 		_don = ra_don
 		_m = VocabDB.don_cua(_chu_mv, ra_don)
-		if ra_don == "nang_nap":
-			nc.ton_the_luc(float(_m.get("the_luc", 30)) * 0.4)
 		may.t = 0.0
 
 func _thu_noi() -> void:
 	var combo := VocabDB.combo_nhe(_chu_mv)
 	var i := combo.find(_don)
-	if nc.co_dem("don_nhe") and i >= 0 and i + 1 < combo.size() and nc.du_the_luc():
+	if nc.co_dem("don_nhe") and i >= 0 and i + 1 < combo.size():
 		nc.lay_dem("don_nhe")
 		_noi = String(combo[i + 1])
-	elif nc.co_dem("don_nang") and nc.du_the_luc():
+	elif nc.co_dem("don_nang"):
 		nc.lay_dem("don_nang")
 		_noi = "nang"
 

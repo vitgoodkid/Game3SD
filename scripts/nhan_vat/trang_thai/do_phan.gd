@@ -9,7 +9,7 @@ extends TTNguoiChoi
 func vao(_du_lieu: Dictionary = {}) -> void:
 	nc.dang_do = false
 	nc.dang_do_phan = true
-	nc.ton_the_luc(10.0)
+	nc.ton_the_luc(SoulsLike.THE_LUC_DO_PHAN)
 
 func ra() -> void:
 	nc.dang_do_phan = false

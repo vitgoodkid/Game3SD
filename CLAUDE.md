@@ -43,11 +43,12 @@ Sửa file đó thì chạy lại test ngay.
 Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.exe`).
 
 ```bash
-# kiểm tầng luật — 171 test trong một khung hình, thoát mã 1 nếu hỏng
+# kiểm tầng luật — 170 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls — 45 test, nạp phòng thử thật và diễn lại: chết, rơi
-# vũng hồn, đứng dậy ở bia, quái sống lại. Chạy mất ~12 giây vì phải đợi thật.
+# kiểm vòng lặp souls + nút đánh — 56 test, nạp phòng thử thật và diễn lại:
+# đánh, lăn, đỡ phản, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại.
+# Chạy mất ~20 giây vì phải đợi thật.
 godot --headless --path . tools/thu_vong_lap.tscn
 
 # chạy thử game 10 giây, bắt lỗi lúc chạy
@@ -61,7 +62,7 @@ GitHub Actions chạy cả bốn mỗi lần đẩy code (`.github/workflows/kie
 **Không có Godot thì vẫn sửa được CSV và tầng luật** — đẩy lên rồi đọc kết quả
 Actions.
 
-Hai cái bẫy đã gặp:
+Bốn cái bẫy đã gặp:
 
 - Nếu script của scene chính không biên dịch được, Godot headless **treo vô hạn**
   chứ không báo lỗi. Luôn bọc lệnh chạy bằng `timeout`.
@@ -69,6 +70,15 @@ Hai cái bẫy đã gặp:
   có nghĩa là file đó chạy được — `cau_hoi.gd` từng nằm trong repo cả một mốc
   với một lỗi biên dịch mà CI không thấy. Viết file mới xong thì phải nối nó vào
   scene hoặc gọi nó trong bộ kiểm tra, không thì coi như chưa viết.
+- **Kéo code mới về xong phải `--import` trước khi chạy test.** Cache lớp toàn
+  cục (`.godot/`) không nằm trong git, nên `class_name` mới kéo về Godot chưa
+  biết — và nó treo đúng như bẫy đầu tiên, không báo gì cả:
+  `timeout 300 godot --headless --path . --import`
+- **`.tres` và `project.godot` do Godot sở hữu.** Chạy Godot một lần là nó viết
+  lại theo định dạng chuẩn của nó: xoá comment `;`, xoá dòng trùng giá trị mặc
+  định, tự thêm `uid`. Đừng đặt tài liệu vào đó — comment sẽ biến mất, mà uid
+  thì sinh lại NGẪU NHIÊN mỗi lần ai đó khôi phục file, nên cây làm việc bẩn
+  mãi không sạch. Ghi chú thiết kế để ở `.md` hoặc trong `.gd`.
 
 Danh sách bẫy đầy đủ nằm cuối `TIEN_DO.md`.
 
@@ -84,7 +94,7 @@ scripts/
                    ngu_hanh.gd    vòng tương sinh tương khắc
                    ten_do_vat.gd  NGỮ PHÁP TÊN MÓN ĐỒ — cơ chế xương sống
                    mon_do.gd      một món đồ = một mảng chữ
-                   cau_hoi.gd     10 dạng câu hỏi cho ngồi thiền
+                   cau_hoi.gd     10 dạng câu hỏi — KHÔNG màn nào gọi nữa
                    sinh_mon_do.gd sinh đồ rơi từ CSV, không biết chữ nào tồn tại
   he_thong/      autoload có trạng thái: vocab_db, tui, tri_nho, the_gioi
   nhan_vat/      người chơi, camera ba chế độ, khoá mục tiêu, máy trạng thái
@@ -105,6 +115,15 @@ tools/           kiểm tra + sinh dữ liệu
   mọi chuyển tiếp — đó là thứ phân biệt souls-like với hack-n-slash. Đừng nới.
 - **Mọi con số cảm giác** nằm trong `souls_like.gd` và `data/moveset.csv`.
   Đừng rải hằng số vào state.
+- **Chỉ ba thứ tốn thể lực: lăn, đỡ phản, chạy.** Đánh / nhảy / đỡ đòn KHÔNG
+  tốn — quyết định của chủ dự án, xem mục "Cái gì tốn thể lực" ở đầu phần thể
+  lực trong `souls_like.gd`. Cột `the_luc` của `moveset.csv` vì vậy hiện không
+  ai đọc. Thứ ghìm nhịp đòn đánh là cam kết đòn + `t_hoi`; thứ ghìm "đứng giơ
+  khiên" là tư thế. Có test canh cả năm điều này trong `thu_vong_lap.gd`.
+- **Chuột trái ra cả hai đòn**: nhả trước `NguoiChoi.NGUONG_GIU_NANG` là đòn
+  nhẹ, giữ lâu hơn là đòn nặng (giữ tiếp nữa thành đòn nạp). Chuột phải là đỡ
+  phản. Không còn action `don_nang` trong input map; tên `don_nang` giờ chỉ là
+  tên trong bộ đệm phím.
 - **Ba con số quyết định** (mục 5.2 của bản yêu cầu), có test canh khoảng:
   i-frame lăn 0.30–0.40s · khựng thể lực 0.6–1.0s · hồi đòn nặng 0.7–1.2s.
 - Chưa có model nào. Nhân vật và quái dựng bằng khối hộp sinh trong code

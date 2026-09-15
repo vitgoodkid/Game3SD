@@ -25,6 +25,10 @@ const LUC_NHAY := 8.0
 const TOC_XOAY := 12.0
 ## Giữ Space quá bấy nhiêu giây thì thành CHẠY, dưới thì là LĂN.
 const NGUONG_GIU_CHAY := 0.22
+## Giữ chuột trái quá bấy nhiêu giây thì thành đòn NẶNG, nhả sớm hơn là đòn
+## NHẸ. Cùng một nút ra hai đòn, nên ngưỡng phải ngắn: dài hơn ~0.25s là đòn
+## nhẹ cảm giác trễ, mà ngắn hơn ~0.15s thì bấm nhanh cũng lỡ ra đòn nặng.
+const NGUONG_GIU_NANG := 0.22
 ## Đệm phím: bấm đánh trong lúc còn đang hồi đòn trước thì vẫn tính, miễn là
 ## sớm hơn bấy nhiêu giây. Không có đệm thì combo cảm giác như bị nuốt phím.
 const DEM_NHAP := 0.35
@@ -63,6 +67,8 @@ var muc_tieu: Node3D = null
 
 var _dem := {}          ## phím đã bấm gần đây: tên -> thời điểm còn hiệu lực
 var _giu_space := -1.0  ## bấm Space lúc nào (-1 = chưa bấm)
+var _giu_danh := -1.0   ## giữ chuột trái được bao lâu (-1 = không giữ)
+var _da_ra_nang := false ## cú giữ này đã bắn ra đòn nặng rồi thì thôi
 
 func _ready() -> void:
 	add_to_group("nguoi_choi")
@@ -116,9 +122,20 @@ func _dien_hinh(delta: float) -> void:
 func _unhandled_input(su_kien: InputEvent) -> void:
 	# Ghi đệm phím TRƯỚC khi đưa cho state: state đang bận hồi đòn vẫn phải
 	# nhớ được là người chơi đã bấm, nếu không combo cảm giác bị nuốt phím.
-	for ten in ["don_nhe", "don_nang", "do_phan", "nhay", "uong_binh"]:
+	for ten in ["do_phan", "nhay", "uong_binh"]:
 		if su_kien.is_action_pressed(ten):
 			_dem[ten] = DEM_NHAP
+
+	# Chuột trái: nhả sớm = đòn nhẹ, giữ = đòn nặng. Đòn nặng bắn ra ngay lúc
+	# CHẠM ngưỡng (xem _process) chứ không đợi nhả — giữ nút rồi mới thấy đòn
+	# vung là cảm giác trễ, và người chơi cần thấy mình đang nạp đòn gì.
+	if su_kien.is_action_pressed("don_nhe"):
+		_giu_danh = 0.0
+		_da_ra_nang = false
+	elif su_kien.is_action_released("don_nhe"):
+		if _giu_danh >= 0.0 and not _da_ra_nang:
+			_dem["don_nhe"] = DEM_NHAP
+		_giu_danh = -1.0
 
 	if su_kien.is_action_pressed("lan_chay"):
 		_giu_space = 0.0
@@ -138,10 +155,26 @@ func _unhandled_input(su_kien: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if _giu_space >= 0.0:
 		_giu_space += delta
+	if _giu_danh >= 0.0:
+		# Tự gỡ kẹt: mở hành trang giữa lúc đang giữ chuột thì game dừng, và
+		# sự kiện NHẢ không bao giờ tới _unhandled_input. Không có dòng này
+		# thì nhân vật tưởng người chơi còn đang giữ chuột mãi mãi.
+		if not Input.is_action_pressed("don_nhe"):
+			_giu_danh = -1.0
+		else:
+			_giu_danh += delta
+			if not _da_ra_nang and _giu_danh >= NGUONG_GIU_NANG:
+				_da_ra_nang = true
+				_dem["don_nang"] = DEM_NHAP
 
 ## Đang giữ Space đủ lâu để tính là chạy chưa.
 func dang_giu_chay() -> bool:
 	return _giu_space >= NGUONG_GIU_CHAY
+
+## Còn đang giữ chuột trái không. Đòn nặng đọc cái này để nạp tiếp — giữ lâu
+## hơn nữa thì ra đòn nạp, xem danh.gd.
+func dang_giu_danh() -> bool:
+	return _giu_danh >= 0.0
 
 func _don_dem(delta: float) -> void:
 	for k in _dem.keys():
@@ -267,14 +300,14 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 
 	if dang_do and _don_tu_phia_truoc(tu_dau):
 		var chan := _chi_so_chan()
-		var ton := SoulsLike.the_luc_do(st, _chi_so_on_dinh())
-		ton_the_luc(ton)
 		st = SoulsLike.sat_thuong_sau_do(st, chan)
-		if the_luc <= 0.0:
-			# Đỡ tới cạn thể lực → VỠ THẾ (mục 5.1)
-			may.doi("vo_the")
 		mat_mau(st)
-		them_tu_the(pha_the * SoulsLike.TU_THE_KHI_DO)
+		# Đỡ KHÔNG còn tốn thể lực, nên thứ giữ cho "đứng giơ khiên" khỏi
+		# thành chiến thuật tối ưu ở mọi tình huống là TƯ THẾ: đỡ mãi thì
+		# thanh tư thế đầy rồi vỡ thế, kiểu Sekiro. Trước đây việc này do thể
+		# lực làm; đổi tay chứ không bỏ, vì bỏ hẳn là trận đánh chết tại chỗ.
+		if them_tu_the(pha_the * SoulsLike.TU_THE_KHI_DO):
+			may.doi("vo_the")
 		return st
 
 	mat_mau(st)
@@ -296,10 +329,6 @@ func _hanh_giap() -> String:
 func _chi_so_chan() -> int:
 	var kh = Tui.tay_trai_dang_cam()
 	return 55 if kh == null else clampi(int(kh.sat_thuong() * 1.6), 40, 95)
-
-func _chi_so_on_dinh() -> int:
-	var kh = Tui.tay_trai_dang_cam()
-	return 30 if kh == null else clampi(int(kh.nang() * 3.0), 20, 90)
 
 func mat_mau(n: int) -> void:
 	if n <= 0:

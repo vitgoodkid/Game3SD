@@ -25,10 +25,10 @@ func thu_hanh_dong() -> bool:
 	if nc.lay_dem("uong_binh"):
 		di("uong")
 		return true
-	if nc.lay_dem("don_nhe") and nc.du_the_luc():
+	if nc.lay_dem("don_nhe"):
 		di("danh", {"don": _don_dau("nhe")})
 		return true
-	if nc.lay_dem("don_nang") and nc.du_the_luc():
+	if nc.lay_dem("don_nang"):
 		di("danh", {"don": _don_dau("nang")})
 		return true
 	if nc.lay_dem("do_phan"):
@@ -37,7 +37,7 @@ func thu_hanh_dong() -> bool:
 	if nc.lay_dem("nhay") and nc.is_on_floor():
 		di("nhay")
 		return true
-	if Input.is_action_pressed("do_don") and nc.du_the_luc():
+	if Input.is_action_pressed("do_don"):
 		di("do_don")
 		return true
 	return false

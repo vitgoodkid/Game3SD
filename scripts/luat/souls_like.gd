@@ -40,13 +40,23 @@ extends Node
 const THE_LUC_GOC := 90.0
 const THE_LUC_MOI_NHAN := 2.4
 
-## Tốn mỗi giây khi chạy. Lăn/đánh tốn theo mốc, chạy thì tốn liên tục.
+## CÁI GÌ TỐN THỂ LỰC — danh sách đóng, đúng ba thứ:
+##
+##   lăn        THE_LUC_LAN, theo mốc
+##   đỡ phản    THE_LUC_DO_PHAN, theo mốc
+##   chạy       THE_LUC_CHAY_MOI_GIAY, liên tục theo giây
+##
+## Đánh, nhảy, và đỡ đòn KHÔNG tốn. Đây là quyết định của chủ dự án, không
+## phải thiếu sót: thanh thể lực chỉ còn trả lời đúng một câu — "còn mấy cú
+## lăn nữa" — nên người chơi đọc nó bằng liếc mắt giữa trận.
+##
+## Hệ quả phải bù ở chỗ khác, đừng gỡ mất:
+##   · nhịp đòn đánh giờ do cam kết đòn + khung hồi (t_hoi) ghìm, xem danh.gd
+##   · giơ khiên giờ do TƯ THẾ ghìm, không do thể lực, xem NguoiChoi.an_don()
+## Cột `the_luc` của moveset.csv vì vậy hiện không ai đọc.
 const THE_LUC_CHAY_MOI_GIAY := 14.0
 const THE_LUC_LAN := 22.0
-const THE_LUC_NHAY := 12.0
-## Đỡ một đòn tốn = sát thương gốc × hệ số này. Đỡ đòn to thì tốn nhiều —
-## đó là cách khiên "vỡ thế" mà không cần bảng riêng.
-const THE_LUC_DO_MOI_SAT_THUONG := 0.55
+const THE_LUC_DO_PHAN := 10.0
 
 func the_luc_toi_da(nhan: int) -> float:
 	return THE_LUC_GOC + THE_LUC_MOI_NHAN * float(maxi(nhan, 0))
@@ -133,11 +143,6 @@ const CHAN_TOI_DA := 0.90
 func sat_thuong_sau_do(sat_thuong: int, chan: int) -> int:
 	var ti_le: float = minf(float(chan) / 100.0, CHAN_TOI_DA)
 	return maxi(1, int(round(float(sat_thuong) * (1.0 - ti_le))))
-
-func the_luc_do(sat_thuong: int, on_dinh: int) -> float:
-	# Khiên ổn định cao thì đỡ đỡ tốn thể lực hơn. on_dinh 0-100.
-	var giam: float = 1.0 - minf(float(on_dinh) / 100.0, 0.75)
-	return float(sat_thuong) * THE_LUC_DO_MOI_SAT_THUONG * giam
 
 # --- Trạng thái tích dần (mục 5.3) ----------------------------------
 #

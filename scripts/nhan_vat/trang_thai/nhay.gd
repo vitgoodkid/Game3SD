@@ -8,7 +8,6 @@ extends TTNguoiChoi
 
 func vao(_du_lieu: Dictionary = {}) -> void:
 	nc.velocity.y = NguoiChoi.LUC_NHAY
-	nc.ton_the_luc(SoulsLike.THE_LUC_NHAY)
 	nc.dang_do = false
 
 func chay(delta: float) -> void:
@@ -19,7 +18,7 @@ func chay(delta: float) -> void:
 		nc.velocity.z = move_toward(nc.velocity.z, nc.huong_nhap.z * toc, 9.0 * delta)
 		nc.xoay_ve(nc.huong_nhap, delta)
 
-	if nc.lay_dem("don_nhe") and nc.du_the_luc():
+	if nc.lay_dem("don_nhe"):
 		di("danh", {"don": "nhay"})
 		return
 	# Chờ qua khung hình đầu rồi mới xét chạm đất, không thì vừa nhảy đã hạ.

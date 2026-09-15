@@ -96,8 +96,12 @@ func hoc(chu: String) -> void:
 	so[chu] = {"lan": 0, "lan_cuoi": _bay_gio(), "dung": 0, "sai": 0, "muc": MUC_THUOC}
 	da_hoc_chu.emit(chu)
 
-## Trả lời một câu hỏi về chữ này lúc ngồi thiền (mục 4.6).
-## Đúng thì đẩy lịch ôn ra xa, sai thì kéo về gần — đúng tinh thần SM-2.
+## Ôn một chữ. Đúng thì đẩy lịch ôn ra xa, sai thì kéo về gần — SM-2 rút gọn.
+##
+## Ai gọi: hai thẻ chế đồ ở bia đá (khắc chữ, nâng bậc chồng bộ) — dùng được
+## chữ nghĩa là thuộc chữ. Thẻ hỏi-đáp đã bỏ, nên đây là đường DUY NHẤT để một
+## chữ đã phai quay lại mức Thuộc; gỡ mấy lời gọi đó đi là cơ chế phai thành
+## một chiều. Tham số `dung` giữ lại vì `cau_hoi.gd` vẫn còn trong repo.
 func on_tap(chu: String, dung: bool) -> void:
 	if not so.has(chu):
 		hoc(chu)

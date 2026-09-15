@@ -15,7 +15,7 @@ func ra() -> void:
 	nc.dang_do = false
 
 func chay(delta: float) -> void:
-	if not Input.is_action_pressed("do_don") or not nc.du_the_luc():
+	if not Input.is_action_pressed("do_don"):
 		di("dung")
 		return
 	if nc.lay_dem("lan") and nc.hoi_lan <= 0.0:
@@ -24,7 +24,7 @@ func chay(delta: float) -> void:
 	if nc.lay_dem("do_phan"):
 		di("do_phan")
 		return
-	if nc.lay_dem("don_nhe") and nc.du_the_luc():
+	if nc.lay_dem("don_nhe"):
 		di("danh", {"don": "nhe_1"})
 		return
 

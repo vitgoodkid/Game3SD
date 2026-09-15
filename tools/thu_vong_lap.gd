@@ -35,6 +35,7 @@ func _ready() -> void:
 	_nc = get_tree().get_first_node_in_group("nguoi_choi") as NguoiChoi
 
 	await _dat_canh()
+	await _the_luc_va_nut_danh()
 	await _phim_hanh_trang()
 	await _quai_roi_do()
 	await _nghi_bia_da()
@@ -75,6 +76,28 @@ func _bam(hanh_dong: String) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 
+## Giữ một nút bấy nhiêu giây rồi nhả. Cần cho đòn nhẹ/nặng: cả hai đi ra từ
+## CÙNG một nút, phân biệt nhau đúng ở chỗ giữ bao lâu.
+func _giu(hanh_dong: String, giay: float) -> void:
+	var xuong := InputEventAction.new()
+	xuong.action = hanh_dong
+	xuong.pressed = true
+	Input.parse_input_event(xuong)
+	await _cho(giay)
+	var len_ := InputEventAction.new()
+	len_.action = hanh_dong
+	len_.pressed = false
+	Input.parse_input_event(len_)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+## Đợi máy trạng thái chắc chắn đã chạy. Một khung là chưa đủ: lúc await trả
+## về có thể vẫn chưa tới lượt may.chay() của khung đó, và test đâm ra lúc qua
+## lúc hỏng — đã dính một lần rồi.
+func _hai_khung() -> void:
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+
 func _dem_nhom(ten: String) -> int:
 	return get_tree().get_nodes_in_group(ten).size()
 
@@ -104,6 +127,72 @@ func _dat_canh() -> void:
 
 ## Phím I. Đây là thứ duy nhất trong mốc này chỉ sai được ở khâu NỐI: màn hình
 ## dựng đúng, luật đúng, mà quên nối phím thì bấm I không ra gì.
+## Nhóm này canh quyết định "chỉ lăn / đỡ phản / chạy mới tốn thể lực", và
+## canh chuyện một nút chuột trái ra được hai đòn. Cả hai đều là thứ rất dễ bị
+## một lần sửa vô tình kéo ngược về cũ, mà chơi thử mới thấy — nên phải có test.
+func _the_luc_va_nut_danh() -> void:
+	_nhom("Thể lực và nút đánh")
+	if _nc == null:
+		_dung(false, "không có người chơi để thử")
+		return
+	_nc.the_luc = _nc.the_luc_max
+	_nc.khung_tl = 0.0
+	await get_tree().physics_frame
+
+	# --- Bấm nhanh = đòn nhẹ, và KHÔNG tốn thể lực ---
+	var truoc := _nc.the_luc
+	await _giu("don_nhe", 0.05)
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "danh", "bấm nhanh chuột trái thì vào trạng thái đánh")
+	_bang(_nc.the_luc, truoc, "đòn nhẹ KHÔNG tốn thể lực")
+	_bang(_nc.khung_tl, 0.0, "đánh xong không bị khựng hồi thể lực")
+	await _cho(1.2)
+
+	# --- Giữ lâu = đòn nặng, cũng không tốn ---
+	_nc.the_luc = _nc.the_luc_max
+	_nc.khung_tl = 0.0
+	truoc = _nc.the_luc
+	await _giu("don_nhe", NguoiChoi.NGUONG_GIU_NANG + 0.12)
+	await _hai_khung()
+	_dung(_nc.may.ten_hien_tai == "danh", "giữ chuột trái cũng ra đòn — trạng thái: %s"
+		% _nc.may.ten_hien_tai)
+	var don: String = _nc.may.hien_tai._don if _nc.may.ten_hien_tai == "danh" else "?"
+	_dung(don.begins_with("nang"), "giữ lâu ra đòn NẶNG (được '%s')" % don)
+	_bang(_nc.the_luc, truoc, "đòn nặng cũng KHÔNG tốn thể lực")
+	await _cho(1.6)
+
+	# --- Lăn thì tốn ---
+	_nc.the_luc = _nc.the_luc_max
+	_nc.khung_tl = 0.0
+	_nc.hoi_lan = 0.0
+	truoc = _nc.the_luc
+	await _giu("lan_chay", 0.05)
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "lan", "nhả Space sớm thì lăn")
+	_bang(_nc.the_luc, truoc - SoulsLike.THE_LUC_LAN, "lăn TỐN đúng THE_LUC_LAN")
+	await _cho(1.2)
+
+	# --- Đỡ phản thì tốn ---
+	_nc.the_luc = _nc.the_luc_max
+	_nc.khung_tl = 0.0
+	truoc = _nc.the_luc
+	await _bam("do_phan")
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "do_phan", "chuột phải ra đỡ phản")
+	_bang(_nc.the_luc, truoc - SoulsLike.THE_LUC_DO_PHAN, "đỡ phản TỐN đúng THE_LUC_DO_PHAN")
+	await _cho(1.0)
+
+	# --- Cạn thể lực vẫn đánh được: đó là cả điểm của thay đổi này ---
+	_nc.the_luc = 0.0
+	_nc.khung_tl = 0.0
+	await get_tree().physics_frame
+	await _giu("don_nhe", 0.05)
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "danh", "cạn sạch thể lực vẫn đánh được")
+	await _cho(1.2)
+	_nc.the_luc = _nc.the_luc_max
+	_nc.khung_tl = 0.0
+
 func _phim_hanh_trang() -> void:
 	_nhom("Phím I mở hành trang")
 	var man := get_tree().get_nodes_in_group("man_hanh_trang")[0] as ManChung
