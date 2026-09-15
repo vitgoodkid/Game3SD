@@ -50,7 +50,7 @@ Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.
 # kiểm tầng luật — 196 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + combat — 123 test, nạp phòng thử thật và diễn lại:
+# kiểm vòng lặp souls + combat — 128 test, nạp phòng thử thật và diễn lại:
 # đánh, thể lực, cam kết đòn, i-frame, siêu giáp, đòn phản đỡ, vỡ đỡ, đỡ phản,
 # state machine quái, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại.
 # Chạy mất ~45 giây vì phải đợi thật.
@@ -150,6 +150,10 @@ tools/           kiểm tra + sinh dữ liệu
   chữ `剑 刀 斧 弓 拳` để chọn hình dáng khối vũ khí. Biết mà chưa sửa —
   chủ dự án để lại. Hệ quả: thêm loại vũ khí mới vào CSV thì nó hiện nhầm hình
   kiếm. Sửa bằng cách đọc hình từ một cột mới trong `nguyen_lieu.csv`.
+- **Đang NẠP đòn nặng thì LẾT ĐƯỢC**, tốc độ × `SoulsLike.TOC_DO_KHI_NAP`.
+  Đây là chỗ cam kết đòn được nới có chủ ý — cú vung chưa bắt đầu, nên cam kết
+  tính từ lúc NHẢ, và lúc nhả thì nhắm lại theo hướng đang đứng. Mọi đòn khác
+  vẫn bám chân tại chỗ; đừng nới thêm.
 - **Siêu giáp (hyperarmor)** là cột `sieu_giap` của `moveset.csv`, cộng vào
   `NguoiChoi.the_dung()` chỉ trong khung vung tay rồi TẮT ở khung hồi. Gỡ chỗ
   tắt đi là vũ khí nặng thành bất khả xâm phạm và trận đánh mất hết rủi ro.

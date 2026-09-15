@@ -47,8 +47,12 @@ func vao(du_lieu: Dictionary = {}) -> void:
 	_t_nap = 0.0
 	nc.dang_do = false
 	nc.ton_the_luc(float(_m.get("the_luc", 15)))
-	# Xoay về hướng đang nhắm NGAY lúc bắt đầu vung. Sau đó khoá cứng —
-	# xoay được giữa đòn là cách nhanh nhất giết chết cảm giác souls.
+	_nham()
+
+## Xoay về hướng đang nhắm. Gọi lúc bắt đầu vung, và gọi LẠI lúc nhả nạp —
+## sau đó khoá cứng, vì xoay được giữa cú vung là cách nhanh nhất giết chết
+## cảm giác souls. Nạp thì khác: cú vung chưa bắt đầu, nên nhắm lại là hợp lệ.
+func _nham() -> void:
 	var h := nc.huong_nhap if nc.huong_nhap != Vector3.ZERO else nc.huong_mat()
 	if nc.muc_tieu != null:
 		h = nc.muc_tieu.global_position - nc.global_position
@@ -63,7 +67,15 @@ func ra() -> void:
 func chay(delta: float) -> void:
 	# Bám chân tại chỗ: đòn đánh souls-like gần như không tự di chuyển, trừ
 	# đòn chạy và đòn nhảy vốn mang sẵn quán tính.
-	if _don in ["chay", "nhay"]:
+	#
+	# Ngoại lệ: ĐANG NẠP thì lết được, chậm hẳn (mục 5.1). Cú vung chưa bắt
+	# đầu nên chưa có gì để cam kết — cam kết tính từ lúc NHẢ.
+	if _nap and nc.huong_nhap != Vector3.ZERO:
+		var tai := float(Tui.muc_tai()["toc_do"])
+		nc.dat_toc_ngang(nc.huong_nhap,
+			nc.toc_do_di * tai * SoulsLike.TOC_DO_KHI_NAP)
+		nc.xoay_ve(nc.huong_nhap, delta)
+	elif _don in ["chay", "nhay"]:
 		nc.dung_lai(delta, 6.0)
 	else:
 		nc.dung_lai(delta, 22.0)
@@ -130,6 +142,9 @@ func _chay_nap(delta: float, t_vung: float) -> void:
 		_m = VocabDB.don_cua(_chu_mv, ra_don)
 		# Giữ đủ lâu thành đòn nạp thì tiêu thêm — ER cũng tính đòn nạp đắt hơn.
 		nc.ton_the_luc(float(_m.get("the_luc", 30)) * 0.4)
+	# Lết quanh trong lúc nạp xong thì nhắm LẠI theo hướng đang đứng — chém ra
+	# sau lưng vì lúc bắt đầu nạp đang quay hướng khác là lỗi cảm giác nặng.
+	_nham()
 	# Tay đã vung lên xong rồi, vào THẲNG khung gây sát thương — đừng bắt vung
 	# lại từ đầu, đó đúng là chỗ làm đòn nặng dài gấp đôi cần thiết.
 	may.t = float(_m.get("t_vung", t_vung))

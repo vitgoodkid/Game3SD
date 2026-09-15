@@ -89,7 +89,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 196 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 123 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 128 test theo thời gian |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
@@ -125,6 +125,10 @@ combat**, vì mấy chỗ "cố ý khác" rất dễ bị sửa nhầm về ER r
   chỉ bắn ra lúc NHẢ chuột chứ không phải lúc bấm, vì phải đợi mới biết người
   chơi định bấm hay định giữ. Đó là 0.18s trễ trên mọi cú chém thường
   (`NguoiChoi.NGUONG_GIU_NANG`). Muốn hết trễ thì phải tách hai nút.
+- **Nạp đòn nặng thì lết được** (tốc độ ×0.30). ER không cho đi lúc nạp —
+  đứng im là cả cái giá của đòn nạp. Chủ dự án chốt cho đi, nên cái giá chuyển
+  sang tốc độ: chậm hơn cả giơ khiên (×0.45). Có test canh cả ba vế — lết được,
+  chậm hơn hẳn đi thường, và đòn nhẹ thì vẫn bám chân tại chỗ.
 - **Sai hệ ngũ hành KHÔNG làm quái hồi máu nữa** — sàn 0.25×. ER không có cơ
   chế này, mà bản 2D thì để hệ số âm. Bỏ vì luật 4 của `CLAUDE.md`: gặp boss
   sai hệ mà chỉ có một vũ khí là tắc hẳn. 0.25× vẫn đủ đau (đánh lâu gấp bốn).

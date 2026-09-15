@@ -46,6 +46,14 @@ const HOI_LAN_TAI := {"nhe": 1.0, "vua": 1.0, "nang": 2.0, "qua_tai": 3.0}
 ## Khung hồi của đòn nặng nằm trong data/moveset.csv (cột t_hoi), không ở đây —
 ## mỗi vũ khí một khác. Ở đây chỉ giữ hệ số chung nhân lên khi đang mệt.
 
+## Đang NẠP đòn nặng thì đi được, nhưng chậm — nhân tốc độ đi bộ với ngần này.
+##
+## Elden Ring KHÔNG cho di chuyển lúc nạp: đứng im là cả cái giá của đòn nạp.
+## Chủ dự án chốt cho đi, nên cái giá phải chuyển sang tốc độ. Để thấp hơn hẳn
+## mức giơ khiên (0.45) là cố ý: nạp mà đi gần như bình thường thì đòn nạp
+## thành miễn phí, và người chơi không bao giờ chọn đòn nào khác.
+const TOC_DO_KHI_NAP := 0.30
+
 # --- Thể lực --------------------------------------------------------
 
 # --- Quy thang sát thương 2D sang 3D --------------------------------

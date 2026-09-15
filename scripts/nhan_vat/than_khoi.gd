@@ -206,12 +206,13 @@ func dien(trang_thai: String, tien_do: float, dang_di: bool, delta: float,
 		_:
 			_ve_thuong(delta)
 
-	if dang_di and trang_thai in ["di", "chay_nhanh"]:
+	# Lết trong lúc nạp cũng phải bước chân, không thì nhân vật trượt băng.
+	if dang_di and (trang_thai in ["di", "chay_nhanh"] or kieu == "nap"):
 		_nhip += delta * (11.0 if trang_thai == "chay_nhanh" else 7.0)
 		var b := sin(_nhip) * (28.0 if trang_thai == "chay_nhanh" else 17.0)
 		_chan_phai.rotation_degrees.x = b
 		_chan_trai.rotation_degrees.x = -b
-		if trang_thai != "danh":
+		if trang_thai != "danh":   # đang đánh thì tay do _dien_danh() lo
 			_tay_phai.rotation_degrees.x = -b * 0.55
 			_tay_trai.rotation_degrees.x = b * 0.55
 	elif trang_thai not in ["lan", "chet"]:

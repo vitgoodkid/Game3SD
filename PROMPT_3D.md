@@ -289,6 +289,7 @@ Bia đá hiện "**12 chữ sắp phai**". Lưu trong file save, **không** lưu
 | **Cam kết đòn đánh** | **Quan trọng nhất.** Đã vung là không huỷ. Đây là thứ phân biệt souls-like với hack-n-slash. Không có nó thì mọi thứ khác vô nghĩa |
 | **Khoá mục tiêu** | Chuột giữa / R3. Nhân vật đi vòng quanh mục tiêu. Hất chuột để đổi mục tiêu |
 | **Đòn nhẹ / nặng** | **MỘT nút chuột trái**: bấm nhanh = nhẹ (combo 3 nhát), giữ = nặng, giữ tiếp = nạp. Không phải R1/R2 như bản yêu cầu đầu — chủ dự án chốt một nút, và chấp nhận cái giá: đòn nhẹ chỉ bắn ra lúc NHẢ, tức trễ `NguoiChoi.NGUONG_GIU_NANG` (0.18s) |
+| **Nạp đòn nặng** | Lết được trong lúc nạp, tốc độ ×`SoulsLike.TOC_DO_KHI_NAP` (0.30). Nhả ra thì nhắm lại theo hướng đang đứng — cam kết đòn tính từ lúc NHẢ, không phải lúc bắt đầu nạp |
 | **Siêu giáp** | Cột `sieu_giap` của `moveset.csv`, cộng vào thế đứng chỉ trong khung vung tay rồi TẮT ở khung hồi. Thiếu nó thì vũ khí nặng vô dụng |
 | **Đỡ** | Giảm sát thương theo chỉ số khiên, tốn thể lực. Đỡ tới cạn thể lực → **vỡ đỡ**, đứng ngây cho ăn kết liễu |
 | **Đòn phản đỡ** | Đỡ trúng xong bấm đòn nặng trong `cua_so_phan_do` (0.6s) → đòn riêng, phá thế gấp 6 lần đòn nhẹ |

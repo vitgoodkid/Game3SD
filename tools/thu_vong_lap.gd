@@ -39,6 +39,7 @@ func _ready() -> void:
 	await _cam_ket_va_iframe()
 	await _sieu_giap_va_phan_do()
 	await _phan_nhin()
+	await _let_khi_nap()
 	await _phim_hanh_trang()
 	await _quai_roi_do()
 	await _nghi_bia_da()
@@ -523,6 +524,73 @@ func _danh_thu(q: Quai, giu: float) -> float:
 	q.mau = mau_that
 	await _cho(1.5)
 	return mat
+
+## Nạp đòn thì LẾT ĐƯỢC, nhưng chậm.
+##
+## Elden Ring không cho đi lúc nạp — đứng im là cả cái giá của đòn nạp. Chủ dự
+## án chốt cho đi, nên cái giá chuyển sang tốc độ. Ba điều phải giữ cùng lúc,
+## thiếu một là hỏng cân bằng:
+##   1. nạp thì đi được (nếu không thì yêu cầu này chưa làm)
+##   2. đi CHẬM HƠN hẳn đi thường (nếu không thì nạp thành miễn phí)
+##   3. đòn NHẸ vẫn không đi được (cam kết đòn chỉ được nới cho lúc nạp thôi)
+func _let_khi_nap() -> void:
+	_nhom("Nạp đòn thì lết được, chậm")
+	if _nc == null:
+		_dung(false, "không có người chơi để thử")
+		return
+	_bit_mat_quai(true)
+	_lam_moi_nguoi_choi()
+
+	var xa_thuong := await _do_quang_duong("", 0.0)
+	_dung(xa_thuong > 0.1, "đi thường có nhúc nhích (%.2fm)" % xa_thuong)
+
+	var xa_nap := await _do_quang_duong("don_nhe", 0.0)
+	_dung(xa_nap > 0.05, "ĐANG NẠP vẫn lết được (%.2fm)" % xa_nap)
+	_dung(xa_nap < xa_thuong * 0.6,
+		"nhưng chậm hơn hẳn đi thường (%.2fm so với %.2fm)" % [xa_nap, xa_thuong])
+
+	# Đòn nhẹ thì vẫn bám chân tại chỗ — chỉ lúc NẠP mới được nới.
+	_lam_moi_nguoi_choi()
+	var truoc := _nc.global_position
+	await _giu("don_nhe", 0.04)
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "danh", "bấm nhanh ra đòn nhẹ")
+	await _nut("di_truoc", true)
+	await _cho(0.25)
+	var xa_nhe := truoc.distance_to(_nc.global_position)
+	await _nut("di_truoc", false)
+	_dung(xa_nhe < xa_nap, "đòn NHẸ vẫn bám chân tại chỗ (%.2fm)" % xa_nhe)
+
+	await _cho(1.6)
+	_lam_moi_nguoi_choi()
+	_bit_mat_quai(false)
+
+## Giữ `nut` (rỗng = không giữ gì) rồi đẩy hướng đi trong 0.35 giây, trả về
+## quãng đường đi được. Dùng để so tốc độ giữa hai tình huống.
+func _do_quang_duong(nut: String, _bo: float) -> float:
+	_lam_moi_nguoi_choi()
+	await _hai_khung()
+	var e: InputEventAction = null
+	if nut != "":
+		e = InputEventAction.new()
+		e.action = nut
+		e.pressed = true
+		Input.parse_input_event(e)
+		# Chờ qua ngưỡng giữ + khung vung tay để chắc chắn đã vào thế nạp.
+		var tv := float(VocabDB.don_cua(Tui.moveset_dang_dung(), "nang").get("t_vung", 0.4))
+		await _cho(NguoiChoi.NGUONG_GIU_NANG + tv + 0.1)
+	var truoc := _nc.global_position
+	await _nut("di_truoc", true)
+	await _cho(0.35)
+	var xa := truoc.distance_to(_nc.global_position)
+	await _nut("di_truoc", false)
+	if e != null:
+		var r := InputEventAction.new()
+		r.action = nut
+		r.pressed = false
+		Input.parse_input_event(r)
+	await _cho(1.6)
+	return xa
 
 ## Máy trạng thái quái. Chạy CUỐI CÙNG vì nó xê dịch và hạ quái — mấy nhóm
 ## trước đếm đúng bốn con.
