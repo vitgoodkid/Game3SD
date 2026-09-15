@@ -87,7 +87,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 171 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 117 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 123 test theo thời gian |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
@@ -189,6 +189,14 @@ Ghi lại để không ai tưởng là quên:
   tỉ lệ hợp lý, không phải khai thêm gì.
 
 ## Bẫy đã dính, ghi lại cho đỡ dính lần nữa
+
+- **Cái xác nhặt được hồn của chính nó.** `TuongTacDuoc` chỉ hỏi "có phải thứ
+  gần nhất không", không hỏi "người chơi còn đứng được không". Mà vũng hồn mọc
+  ĐÚNG chỗ ngã xuống, nên cái xác nằm trọn trong tầm với của nó suốt 2.8 giây
+  trước khi đứng dậy ở bia — bấm E lúc đó là nhặt lại sạch, mất trắng thành ra
+  không mất gì, cả mục 4.5 sụp theo. Bộ test cũ không bắt được vì nó gọi thẳng
+  `vung.tuong_tac()`, đi vòng qua đúng chỗ hỏng. Bài học: **test đường tắt thì
+  không bắt được lỗi ở đường chính** — muốn canh phím thì phải bơm phím thật.
 
 - **Hai thang số chưa bao giờ được quy về nhau.** Điểm `cong` của
   `nguyen_lieu.csv` là thang bản 2D (đánh theo lượt, đúng một câu = quái mất

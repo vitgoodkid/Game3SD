@@ -245,6 +245,20 @@ func xoay_ve(huong: Vector3, delta: float) -> void:
 	var goc := atan2(h.x, h.z)
 	than.rotation.y = lerp_angle(than.rotation.y, goc, minf(1.0, TOC_XOAY * delta))
 
+## Những trạng thái mà bấm E được. DANH SÁCH CHO PHÉP, không phải danh sách
+## cấm — thêm trạng thái mới thì mặc định là KHÔNG tương tác được, và đó là
+## chiều an toàn.
+##
+## Vì sao cần: cái xác nằm đúng trong tầm với của vũng hồn vừa rơi ra, suốt
+## 2.8 giây trước khi đứng dậy ở bia. Không có luật này thì chết xong bấm E là
+## nhặt lại sạch hồn của chính mình — mất trắng thành ra không mất gì, và cả
+## mục 4.5 sụp theo.
+const TRANG_THAI_TUONG_TAC := ["dung", "di", "chay_nhanh", "do_don"]
+
+## Có đang ở tư thế bấm E được không.
+func tuong_tac_duoc() -> bool:
+	return may.ten_hien_tai in TRANG_THAI_TUONG_TAC
+
 ## Hướng nhân vật đang quay mặt.
 func huong_mat() -> Vector3:
 	return than.global_transform.basis.z.normalized()

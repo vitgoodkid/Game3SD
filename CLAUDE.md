@@ -46,7 +46,7 @@ Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.
 # kiểm tầng luật — 171 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + combat — 117 test, nạp phòng thử thật và diễn lại:
+# kiểm vòng lặp souls + combat — 123 test, nạp phòng thử thật và diễn lại:
 # đánh, thể lực, cam kết đòn, i-frame, siêu giáp, đòn phản đỡ, vỡ đỡ, đỡ phản,
 # state machine quái, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại.
 # Chạy mất ~45 giây vì phải đợi thật.
@@ -139,6 +139,9 @@ tools/           kiểm tra + sinh dữ liệu
   phản, **cần khiên ở tay trái** (ER không cho parry tay không). Q giơ khiên;
   đỡ trúng rồi bấm đòn nặng trong `cua_so_phan_do` giây là ra **đòn phản đỡ**.
   Không còn action `don_nang` trong input map.
+- **Bấm E đi qua `NguoiChoi.TRANG_THAI_TUONG_TAC`** — danh sách CHO PHÉP, nên
+  trạng thái mới mặc định là không tương tác được. Chiều an toàn: vũng hồn mọc
+  ngay dưới cái xác, và nếu xác bấm E được thì chết chẳng mất gì.
 - **Siêu giáp (hyperarmor)** là cột `sieu_giap` của `moveset.csv`, cộng vào
   `NguoiChoi.the_dung()` chỉ trong khung vung tay rồi TẮT ở khung hồi. Gỡ chỗ
   tắt đi là vũ khí nặng thành bất khả xâm phạm và trận đánh mất hết rủi ro.

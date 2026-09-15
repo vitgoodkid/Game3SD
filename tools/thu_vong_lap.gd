@@ -710,6 +710,40 @@ func _chet_va_hoi_sinh() -> void:
 func _nhat_lai_hon() -> void:
 	_nhom("Về nhặt lại")
 	var vung := get_tree().get_nodes_in_group("vung_hon")[0] as VungHon
+
+	# CÁI XÁC KHÔNG NHẶT ĐƯỢC HỒN CỦA CHÍNH NÓ.
+	#
+	# Vũng hồn mọc ngay tại chỗ ngã xuống, nên cái xác nằm trọn trong tầm với
+	# của nó suốt 2.8 giây trước khi đứng dậy ở bia. Bấm E lúc đó là nhặt lại
+	# sạch — mất trắng thành ra không mất gì, và cả mục 4.5 sụp theo. Phải bơm
+	# phím E THẬT: gọi thẳng vung.tuong_tac() thì đi vòng qua đúng chỗ hỏng.
+	var hon_truoc := Tui.hon
+	vung.nguoi_choi = _nc
+	vung.trong_tam = true
+	if not TuongTacDuoc.dang_trong_tam.has(vung):
+		TuongTacDuoc.dang_trong_tam.append(vung)
+
+	# "chet" phải nằm ngoài danh sách cho phép. Kiểm bằng chính hàm đó chứ
+	# không ép state: vào state chet là chạy lại cả luồng chết (rơi vũng mới,
+	# hồi sinh), phép thử tự gây nhiễu cho mình.
+	_dung(not ("chet" in NguoiChoi.TRANG_THAI_TUONG_TAC),
+		"trạng thái 'chet' KHÔNG nằm trong danh sách bấm E được")
+
+	# Diễn lại bằng vỡ thế — cùng một đường chặn, mà không có tác dụng phụ.
+	_nc.may.doi("vo_the")
+	await _hai_khung()
+	_dung(not _nc.tuong_tac_duoc(), "đang ngây thì không bấm E được")
+	_dung(not vung.la_gan_nhat(), "và vũng hồn không mời bấm E")
+	await _bam("tuong_tac")
+	_bang(Tui.hon, hon_truoc, "bấm E cũng KHÔNG nhặt được")
+	_bang(_dem_nhom("vung_hon"), 1, "vũng vẫn còn nguyên đó")
+
+	_nc.may.doi("dung")
+	await _hai_khung()
+	_dung(_nc.tuong_tac_duoc(), "đứng dậy rồi thì bấm E được")
+	# Không kiểm vung.la_gan_nhat() ở đây: lúc này người chơi vừa đứng dậy Ở
+	# BIA ĐÁ, nên bia mới là thứ gần nhất chứ không phải vũng — đó là luật
+	# "một phím E chỉ ăn vào cái gần nhất", không phải lỗi.
 	vung.tuong_tac()
 	_bang(Tui.hon, 500, "nhặt lại đủ 500 hồn")
 	_dung(not TheGioi.co_vung_hon(), "nhặt xong thì hết vũng")

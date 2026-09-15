@@ -101,6 +101,11 @@ func _process(_delta: float) -> void:
 func la_gan_nhat() -> bool:
 	if not trong_tam or nguoi_choi == null:
 		return false
+	# Đang chết / vỡ thế / vung đòn / lăn thì không bấm E được, và dòng mời
+	# cũng KHÔNG hiện — hiện "E — nhặt lại 500 hồn" ngay trên cái xác của mình
+	# chính là thứ mời người chơi bấm vào lỗi.
+	if nguoi_choi.has_method("tuong_tac_duoc") and not nguoi_choi.tuong_tac_duoc():
+		return false
 	var xa := global_position.distance_to(nguoi_choi.global_position)
 	for t in dang_trong_tam:
 		var khac := t as TuongTacDuoc

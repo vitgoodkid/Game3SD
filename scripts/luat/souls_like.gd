@@ -190,8 +190,13 @@ const HS_SAU_LUNG := 2.6
 
 # --- Đỡ và đỡ phản --------------------------------------------------
 
-## Cửa sổ đỡ phản — hẹp là cố ý. Đây là kỹ năng cao nhất của người chơi.
-@export var cua_so_do_phan := 0.15
+## Cửa sổ đỡ phản.
+##
+## Hẹp là cố ý — đây là kỹ năng cao nhất người chơi học được. Nhưng hẹp quá thì
+## không ai học nổi và cả cơ chế thành đồ trang trí: chủ dự án chơi thử ở 0.15s
+## và bảo rộng thêm. Elden Ring rơi vào khoảng 0.1–0.2s tuỳ khiên, nên 0.24s là
+## dễ hơn ER một chút — cố ý, để người chơi còn dám bấm.
+@export var cua_so_do_phan := 0.24
 ## Bấm đỡ phản hụt thì đứng ngây bấy nhiêu giây, không đỡ được gì.
 @export var hoi_do_phan := 0.45
 ## Đỡ phản trúng thì đối phương ngây bấy nhiêu giây.
