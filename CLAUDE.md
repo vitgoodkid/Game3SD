@@ -46,7 +46,7 @@ Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.
 # kiểm tầng luật — 171 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + combat — 115 test, nạp phòng thử thật và diễn lại:
+# kiểm vòng lặp souls + combat — 117 test, nạp phòng thử thật và diễn lại:
 # đánh, thể lực, cam kết đòn, i-frame, siêu giáp, đòn phản đỡ, vỡ đỡ, đỡ phản,
 # state machine quái, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại.
 # Chạy mất ~45 giây vì phải đợi thật.
@@ -122,6 +122,9 @@ tools/           kiểm tra + sinh dữ liệu
   hack-n-slash. Đừng nới.
 - **Mọi con số cảm giác** nằm trong `souls_like.gd` và `data/moveset.csv`.
   Đừng rải hằng số vào state.
+- **Sát thương người chơi nhân `SoulsLike.HS_SAT_THUONG_NGUOI_CHOI`** ở
+  `Tui.sat_thuong_don()` — quy thang điểm bản 2D sang thang máu bản 3D. Đổi số
+  đó là đổi nhịp cả game; quái thường nên chết trong 4–8 đòn nhẹ.
 - **Combat làm theo Elden Ring.** Chủ dự án yêu cầu bám ER. Xem mục "Combat
   kiểu Elden Ring" ở cuối `TIEN_DO.md` để biết chỗ nào giống, chỗ nào cố ý
   khác và vì sao. Đổi gì trong combat thì đối chiếu lại mục đó trước.

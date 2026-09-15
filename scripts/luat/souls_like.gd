@@ -48,6 +48,22 @@ const HOI_LAN_TAI := {"nhe": 1.0, "vua": 1.0, "nang": 2.0, "qua_tai": 3.0}
 
 # --- Thể lực --------------------------------------------------------
 
+# --- Quy thang sát thương 2D sang 3D --------------------------------
+
+## Nhân sát thương của NGƯỜI CHƠI lên bấy nhiêu lần.
+##
+## Vì sao cần: điểm `cong` trong nguyen_lieu.csv là thang của bản 2D, nơi trận
+## đánh theo lượt và trả lời đúng một câu là quái mất MỘT máu. Máu quái trong
+## quai.csv (120–300) và máu người chơi (390) lại là thang hành động thời gian
+## thực. Hai thang đó chưa bao giờ được quy về nhau, nên một nhát kiếm 10 điểm
+## đập vào con quái 300 máu — đo thật: 48–50 nhát mới hạ nổi một con thường,
+## trong khi nó giết mình trong 13 nhát. Combat thành cào cấu.
+##
+## Sửa bằng MỘT hằng số ở đây chứ không sửa 38 nguyên liệu: giá trị của bản 2D
+## đã cân với nhau rồi, chỉ sai thang. Đổi số này là đổi nhịp cả game —
+## quái thường nên chết trong 4–8 nhát đòn nhẹ như Elden Ring.
+const HS_SAT_THUONG_NGUOI_CHOI := 3.5
+
 ## Thể lực gốc khi 韧 (Nhận) = 0. Mỗi điểm 韧 cộng thêm THE_LUC_MOI_NHAN.
 const THE_LUC_GOC := 90.0
 const THE_LUC_MOI_NHAN := 2.4

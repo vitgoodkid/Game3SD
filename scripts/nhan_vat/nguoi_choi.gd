@@ -26,9 +26,14 @@ const TOC_XOAY := 12.0
 ## Giữ Space quá bấy nhiêu giây thì thành CHẠY, dưới thì là LĂN.
 const NGUONG_GIU_CHAY := 0.22
 ## Giữ chuột trái quá bấy nhiêu giây thì thành đòn NẶNG, nhả sớm hơn là đòn
-## NHẸ. Cùng một nút ra hai đòn, nên ngưỡng phải ngắn: dài hơn ~0.25s là đòn
-## nhẹ cảm giác trễ, mà ngắn hơn ~0.15s thì bấm nhanh cũng lỡ ra đòn nặng.
-const NGUONG_GIU_NANG := 0.22
+## NHẸ.
+##
+## Cùng một nút ra hai đòn nên có một cái giá không tránh được: đòn NHẸ chỉ
+## bắn ra lúc NHẢ chuột, chứ không phải lúc bấm — phải đợi mới biết người chơi
+## định bấm hay định giữ. Con số này CHÍNH LÀ độ trễ của mọi cú chém thường,
+## nên để càng ngắn càng tốt. Dưới ~0.15s thì bấm hơi lâu tay đã lỡ ra đòn
+## nặng. Muốn hết trễ hẳn thì phải tách đòn nặng sang nút riêng.
+const NGUONG_GIU_NANG := 0.18
 ## Đệm phím: bấm đánh trong lúc còn đang hồi đòn trước thì vẫn tính, miễn là
 ## sớm hơn bấy nhiêu giây. Không có đệm thì combo cảm giác như bị nuốt phím.
 const DEM_NHAP := 0.35

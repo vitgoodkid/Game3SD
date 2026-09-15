@@ -23,10 +23,17 @@ const DAT_QUAI := [
 ## Đồ đặt sẵn dưới đất cho lần chơi đầu. Hạt giống cố định nên chạy lại bao
 ## nhiêu lần cũng ra đúng ba món ấy — cần thế để tune, và để bắt được lỗi
 ## "món này sinh ra sai" mà không phải đánh quái mười lần cầu may.
+## `loai` bỏ trống thì bốc ngẫu nhiên như đồ rơi thường.
+##
+## Món thứ ba CỐ Ý là vũ khí khác hệ với vũ khí khởi đầu. Trong phòng có một
+## con hệ Thuỷ, mà vũ khí khởi đầu hệ Kim — Kim SINH Thuỷ, nghĩa là đánh nó
+## bằng kiếm khởi đầu thì nó HỒI MÁU (`NguHanh.HS_SINH` âm, cố ý). Bài học đó
+## chỉ dạy được nếu người chơi có đường ra; không có cây kiếm này thì con sói
+## đọc y như "máu vô hạn" và người chơi chỉ thấy game hỏng.
 const DAT_DO := [
 	{"hat": 20260914, "tai": Vector3(2.5, 0, 2.0)},
 	{"hat": 777001, "tai": Vector3(-3.0, 0, 1.0)},
-	{"hat": 424242, "tai": Vector3(-1.0, 0, -3.0)},
+	{"hat": 1063, "loai": "vukhi", "tai": Vector3(-1.0, 0, -3.0)},
 ]
 
 ## Đồ mặc sẵn cho lần chơi đầu: một vũ khí và một khiên, hạt cố định.
@@ -139,7 +146,8 @@ func _dat_lai_quai() -> void:
 ## không có gì để hiện.
 func _dat_do() -> void:
 	for d in DAT_DO:
-		var mon := SinhMonDo.sinh_mon("thi_tran", int(d["hat"]))
+		var loai := String(d.get("loai", ""))
+		var mon := SinhMonDo.sinh_theo_loai(loai, "thi_tran", int(d["hat"])) 			if loai != "" else SinhMonDo.sinh_mon("thi_tran", int(d["hat"]))
 		if mon != null:
 			add_child(VatRoi.tao(mon, d["tai"]))
 

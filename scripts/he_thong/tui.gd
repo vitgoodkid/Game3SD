@@ -414,7 +414,10 @@ func sat_thuong_don(don: String) -> float:
 	var can := String(m.get("he_so_bac", "丙"))
 	var chinh := String(m.get("chi_so_chinh", "力"))
 	st += SoulsLike.cong_tu_chi_so(cs(chinh), can, goc)
-	return st * he_so_cong_huong()
+	# Quy từ thang điểm của bản 2D sang thang máu của bản 3D — xem
+	# SoulsLike.HS_SAT_THUONG_NGUOI_CHOI. Nhân ở ĐÂY, chỗ duy nhất tính sát
+	# thương đòn đánh của người chơi, để không phải rải hệ số ra khắp nơi.
+	return st * he_so_cong_huong() * SoulsLike.HS_SAT_THUONG_NGUOI_CHOI
 
 # --- Lưu / nạp ------------------------------------------------------
 

@@ -87,7 +87,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 171 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 115 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 117 test theo thời gian |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
@@ -189,6 +189,16 @@ Ghi lại để không ai tưởng là quên:
   tỉ lệ hợp lý, không phải khai thêm gì.
 
 ## Bẫy đã dính, ghi lại cho đỡ dính lần nữa
+
+- **Hai thang số chưa bao giờ được quy về nhau.** Điểm `cong` của
+  `nguyen_lieu.csv` là thang bản 2D (đánh theo lượt, đúng một câu = quái mất
+  MỘT máu), còn máu quái trong `quai.csv` (120–300) và máu người chơi (390) là
+  thang hành động thời gian thực. Chồng hai thang lên nhau thì một nhát kiếm
+  10 điểm đập vào con quái 300 máu: **đo thật là 48–50 nhát** mới hạ nổi một
+  con thường, trong khi nó giết mình trong 13. Người chơi đọc ra là "máu quái
+  vô hạn" và họ đúng. Sửa bằng một hằng số
+  `SoulsLike.HS_SAT_THUONG_NGUOI_CHOI`, không sửa 38 nguyên liệu — giá trị của
+  bản 2D đã cân với nhau rồi, chỉ sai thang. Có test canh khoảng 2–14 đòn.
 
 - **Hộp đòn từng bị kéo theo cánh tay diễn hoạt ảnh.** `than_khoi.gd` tự nhận
   là "thuần chỗ để nhìn", nhưng nó gắn một `RemoteTransform3D` kéo `GanTayPhai`

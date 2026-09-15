@@ -441,7 +441,8 @@ func _phan_nhin() -> void:
 	e.action = "don_nhe"
 	e.pressed = true
 	Input.parse_input_event(e)
-	await _cho(NguoiChoi.NGUONG_GIU_NANG + 0.25)
+	var t_vung_nang := float(VocabDB.don_cua(Tui.moveset_dang_dung(), "nang").get("t_vung", 0.4))
+	await _cho(NguoiChoi.NGUONG_GIU_NANG + t_vung_nang + 0.15)
 	_bang(_nc.may.hien_tai.ten_dien(), "nap",
 		"còn giữ chuột thì phần nhìn báo ĐANG NẠP — dáng giữ, không phải dáng vung")
 	e = InputEventAction.new()
@@ -471,6 +472,15 @@ func _phan_nhin() -> void:
 		_dung(mat_nang > 0.0, "giữ chuột: đòn TRÚNG thật (%.0f máu)" % mat_nang)
 		_dung(mat_nang > mat_nhe, "và đòn giữ ĐAU HƠN đòn bấm nhanh (%.0f > %.0f)"
 			% [mat_nang, mat_nhe])
+		# Nhịp trận đánh: quái thường phải chết trong ÍT đòn, không thì người
+		# chơi đứng cào cấu và tưởng máu nó vô hạn. Đo thật trước khi sửa:
+		# 48–50 đòn nhẹ mới hạ nổi một con thường, trong khi nó giết mình
+		# trong 13. Canh cả hai đầu — quá ít đòn thì trận đánh cũng vô nghĩa.
+		var so_don := ceilf(q.mau_toi_da / maxf(mat_nhe, 0.001))
+		_dung(q.con_song(), "bao cát vẫn sống qua cả hai nhát")
+		_dung(so_don >= 2.0 and so_don <= 14.0,
+			"hạ một con quái thường mất %d đòn nhẹ (muốn 2–14, kiểu Elden Ring)"
+			% int(so_don))
 
 	_lam_moi_nguoi_choi()
 	_bit_mat_quai(false)
@@ -487,8 +497,19 @@ func _quai_de_danh() -> Quai:
 
 ## Đặt quái ngay trước mặt rồi vung một đòn, trả về số máu nó mất.
 func _danh_thu(q: Quai, giu: float) -> float:
+	# Bơm máu bao cát lên thật cao rồi trả lại: từ khi sát thương được quy về
+	# đúng thang, một nhát nhẹ đủ hạ con yếu nhất — và nhát thứ hai của phép
+	# thử sẽ đánh vào cái xác, đo ra 0.
+	var mau_that := q.mau_toi_da
+	q.mau_toi_da = 100000.0
 	q.mau = q.mau_toi_da
 	q.global_position = _nc.global_position + _nc.huong_mat() * 1.4
+	# Cho nó QUAY MẶT LẠI. Đánh sau lưng nhân 2.6 lần (mục 5.1), mà con số cần
+	# đo ở đây là nhịp đánh CHÍNH DIỆN — đánh lén thì con nào cũng chết nhanh.
+	var ve := _nc.global_position - q.global_position
+	ve.y = 0.0
+	if ve.length_squared() > 0.001:
+		q.rotation.y = atan2(ve.x, ve.z)
 	_nc.the_luc = _nc.the_luc_max
 	_nc.tre_hoi = 0.0
 	await _hai_khung()
@@ -498,7 +519,8 @@ func _danh_thu(q: Quai, giu: float) -> float:
 		if q.mau < q.mau_toi_da:
 			break
 	var mat := q.mau_toi_da - q.mau
-	q.mau = q.mau_toi_da
+	q.mau_toi_da = mau_that
+	q.mau = mau_that
 	await _cho(1.5)
 	return mat
 
