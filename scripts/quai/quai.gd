@@ -166,8 +166,11 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 	var hs := NguHanh.he_so(hanh, ngu_hanh)
 	st *= hs
 	st -= float(d.get("giap", 0))
-	if hs > 0.0:
-		st = maxf(float(ChienDau.DON_TOI_THIEU), st)
+	# Luôn ăn ít nhất một máu. Trước đây câu này có điều kiện `hs > 0.0` vì hệ
+	# số ngũ hành từng ÂM (quái hồi máu); giờ hệ số thấp nhất là 0.25 nên không
+	# còn đường nào cho sát thương âm, và cũng không được phép có — xem
+	# NguHanh.HS_SINH.
+	st = maxf(float(ChienDau.DON_TOI_THIEU), st)
 
 	mau = clampf(mau - st, 0.0, mau_toi_da)
 	doi_mau.emit(mau, mau_toi_da)

@@ -5,7 +5,7 @@ extends Node
 ## Vì sao hệ này đáng có mặt: bảng kháng nguyên tố của phần lớn game là luật
 ## bịa, người chơi học thuộc xong ra khỏi game là vứt. Vòng ngũ hành thì có
 ## thật, dùng được ngoài đời, và nó TỰ BẮT người chơi phải thuộc — không thuộc
-## thì đánh boss bằng vũ khí sinh ra hành của nó, boss hồi máu.
+## thì đánh boss bằng vũ khí sinh ra hành của nó, đánh cả buổi không xong.
 ##
 ## Chú ý luật số 1 của dự án: code KHÔNG được biết chữ 火 tồn tại. Vòng ngũ
 ## hành là ngoại lệ DUY NHẤT được phép, vì nó là năm hằng số của văn hoá chứ
@@ -39,9 +39,14 @@ const MAU := {
 const HS_KHAC := 1.5
 ## Vũ khí bị hành của quái khắc lại.
 const HS_BI_KHAC := 0.6
-## Vũ khí sinh ra hành của quái — quái HỒI máu bằng ngần này phần sát thương.
-## Số âm là cố ý: dùng sai thì đánh càng mạnh càng tự hại.
-const HS_SINH := -0.5
+## Vũ khí SINH ra hành của quái — đòn yếu hẳn, nhưng vẫn là đòn.
+##
+## Từng để −0.5, tức quái HỒI máu. Bỏ vì nó đá thẳng luật 4 của CLAUDE.md:
+## gặp một con boss hệ Thuỷ mà trong tay chỉ có vũ khí hệ Kim thì người chơi
+## TẮC HẲN, không có đường đi tiếp — mà luật 4 nói không bao giờ được để xảy ra
+## chuyện đó. Sàn 0.25 vẫn đủ đau để học bài (đánh lâu gấp bốn lần), mà không
+## bao giờ khoá cứng đường chơi.
+const HS_SINH := 0.25
 ## Hai món trang bị tương sinh nhau thì cả hai cùng được cộng.
 const CONG_HUONG := 0.10
 
@@ -80,9 +85,9 @@ func bi_khac_boi(hanh: String) -> String:
 
 ## Hệ số nhân sát thương khi vũ khí hành `hanh_danh` đánh vào hành `hanh_chiu`.
 ##
-## Trả về ÂM nghĩa là đối phương hồi máu — bên gọi phải xử đúng dấu, đừng
-## clamp về 0. Đó chính là hình phạt cho việc dùng sai vũ khí, và là lý do
-## người chơi phải thuộc vòng sinh.
+## LUÔN DƯƠNG. Thấp nhất là HS_SINH (0.25) — dùng sai vũ khí thì đánh lâu gấp
+## bốn lần, đủ đau để phải thuộc vòng sinh, nhưng không bao giờ khoá cứng
+## đường chơi. Đừng cho nó về 0 hay xuống âm: luật 4 của CLAUDE.md cấm.
 ##
 ## Một trong hai bên không có hành (quái vô danh, boss 无) thì trả 1.0 —
 ## không khắc được cũng không bị khắc. Boss cuối cố ý như vậy.
@@ -107,7 +112,7 @@ func giai_thich(hanh_danh: String, hanh_chiu: String) -> String:
 	if bi_khac_boi(hanh_danh) == hanh_chiu:
 		return "%s khắc %s — đòn yếu đi" % [hanh_chiu, hanh_danh]
 	if sinh_ra(hanh_danh) == hanh_chiu:
-		return "%s sinh %s — nó đang HỒI MÁU" % [hanh_danh, hanh_chiu]
+		return "%s sinh %s — đòn gần như không ăn thua" % [hanh_danh, hanh_chiu]
 	return ""
 
 # --- Cộng hưởng giữa các món đang mặc -------------------------------

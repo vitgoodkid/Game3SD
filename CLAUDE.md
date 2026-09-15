@@ -12,9 +12,13 @@ Bản yêu cầu gốc: `PROMPT_3D.md` ở gốc repo. Mọi comment trong code 
 "mục 5.1"… là dẫn tới file đó.
 
 Kế thừa từ bản 2D (`E:\Gamez\han-tu-fixed` trên máy chủ dự án — **không có trên
-cloud**): 993 chữ Hán trong `data/`, và ba script luật `chien_dau.gd`,
-`do_hiem.gd`, `crafting_manager.gd`. Mọi thứ đã copy vào repo này rồi; không cần
-bản 2D để làm việc nữa.
+cloud**): 993 chữ Hán trong `data/`, và hai script luật `chien_dau.gd`,
+`do_hiem.gd`. Mọi thứ đã copy vào repo này rồi; không cần bản 2D để làm việc nữa.
+
+Hai file nữa từng được chép sang rồi **xoá hẳn**: `battle.gd` (màn đánh theo
+lượt, hỏi đáp trắc nghiệm — đá thẳng luật 3) và `crafting_manager.gd` (bàn chế
+đồ kéo–thả 2D, đã bị thẻ *Khắc chữ* ở bia đá thay thế). Cả hai nằm im 1187 dòng
+không ai gọi, nên Godot chưa từng biên dịch chúng. Đừng chép lại.
 
 ## Bốn luật không được phá
 
@@ -43,7 +47,7 @@ Sửa file đó thì chạy lại test ngay.
 Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.exe`).
 
 ```bash
-# kiểm tầng luật — 171 test trong một khung hình, thoát mã 1 nếu hỏng
+# kiểm tầng luật — 196 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
 # kiểm vòng lặp souls + combat — 123 test, nạp phòng thử thật và diễn lại:
@@ -142,11 +146,21 @@ tools/           kiểm tra + sinh dữ liệu
 - **Bấm E đi qua `NguoiChoi.TRANG_THAI_TUONG_TAC`** — danh sách CHO PHÉP, nên
   trạng thái mới mặc định là không tương tác được. Chiều an toàn: vũng hồn mọc
   ngay dưới cái xác, và nếu xác bấm E được thì chết chẳng mất gì.
+- **`than_khoi.gd` còn một chỗ phá luật 1**: bảng `HINH_VU_KHI` gán cứng năm
+  chữ `剑 刀 斧 弓 拳` để chọn hình dáng khối vũ khí. Biết mà chưa sửa —
+  chủ dự án để lại. Hệ quả: thêm loại vũ khí mới vào CSV thì nó hiện nhầm hình
+  kiếm. Sửa bằng cách đọc hình từ một cột mới trong `nguyen_lieu.csv`.
 - **Siêu giáp (hyperarmor)** là cột `sieu_giap` của `moveset.csv`, cộng vào
   `NguoiChoi.the_dung()` chỉ trong khung vung tay rồi TẮT ở khung hồi. Gỡ chỗ
   tắt đi là vũ khí nặng thành bất khả xâm phạm và trận đánh mất hết rủi ro.
-- **Ba con số quyết định** (mục 5.2 của bản yêu cầu), có test canh khoảng:
-  i-frame lăn 0.30–0.40s · khựng thể lực 0.6–1.0s · hồi đòn nặng 0.7–1.2s.
+- **Bốn con số quyết định** (mục 5.2 của bản yêu cầu), có test canh khoảng:
+  i-frame lăn 0.30–0.40s · **trễ hồi** thể lực 0.25–0.60s · hồi đòn nặng
+  0.45–1.2s tuỳ vũ khí · `HS_SAT_THUONG_NGUOI_CHOI` (quái thường chết trong
+  4–8 đòn nhẹ). Con số thứ hai từng ghi là "khựng 0.6–1.0s tính mỗi lần tiêu"
+  và cách tính đó chính là chỗ làm combat khựng cứng — xem mục Thể lực ở trên.
+- **Khi bản yêu cầu và Elden Ring đá nhau thì CẢM GIÁC CHƠI thắng cả hai.**
+  Chủ dự án chốt như vậy. `PROMPT_3D.md` mục 5.1/5.2 đã sửa theo con số thật;
+  gặp chỗ nào tài liệu lệch code thì sửa TÀI LIỆU, đừng sửa ngược.
 - Chưa có model nào. Nhân vật và quái dựng bằng khối hộp sinh trong code
   (`than_khoi.gd`, `than_quai.gd`). Thay bằng `.glb` sau: giữ tên điểm gắn
   `GanTayPhai`, nhân vật cao 1.8m, gốc toạ độ dưới chân.

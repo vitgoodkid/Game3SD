@@ -4,7 +4,7 @@ extends RefCounted
 ## Sinh câu hỏi cho màn ngồi thiền ở bia đá (mục 4.6).
 ##
 ## Giữ trọn **mười dạng câu hỏi** và 41 câu ngữ pháp của bản 2D — đúng yêu cầu.
-## Khác bản 2D ở đúng một chỗ: tách hẳn khỏi giao diện. `battle.gd` cũ trộn
+## Khác bản 2D ở đúng một chỗ: tách hẳn khỏi giao diện. Màn chiến đấu cũ trộn
 ## việc dựng câu hỏi với việc vẽ khung chữ và tính sát thương, nên không dùng
 ## lại được ở chỗ khác. Ở đây chỉ trả về dữ liệu; ai vẽ thì tự vẽ.
 ##

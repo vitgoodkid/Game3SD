@@ -21,10 +21,9 @@ godot --path .
 | WASD | đi |
 | Chuột | xoay camera |
 | Space | gõ nhanh = **lăn**, giữ = **chạy** |
-| Chuột trái | đòn nhẹ (combo 3 nhát) |
-| Chuột phải | đòn nặng (giữ để nạp) |
-| Q | giơ khiên |
-| R | đỡ phản |
+| Chuột trái | **bấm** = đòn nhẹ (combo 3 nhát) · **giữ** = đòn nặng → đòn nạp |
+| Chuột phải | đỡ phản — **cần khiên ở tay trái** |
+| Q | giơ khiên · đỡ trúng rồi giữ chuột trái = **đòn phản đỡ** |
 | F | nhảy |
 | Chuột giữa / Tab | khoá mục tiêu |
 | J / L | đổi mục tiêu trái / phải |
@@ -37,10 +36,14 @@ godot --path .
 ## Kiểm tra
 
 ```bash
-godot --headless --path . tools/kiem_tra.tscn   # 129 test tầng luật
-godot --headless --path . --quit-after 600      # chạy thử, bắt lỗi lúc chạy
-python tools/kiem_csv.py                        # kiểm CSV, không cần Godot
+godot --headless --path . tools/kiem_tra.tscn      # 196 test tầng luật
+godot --headless --path . tools/thu_vong_lap.tscn  # 123 test vòng lặp + combat
+godot --headless --path . --quit-after 600         # chạy thử, bắt lỗi lúc chạy
+python tools/kiem_csv.py                           # kiểm CSV, không cần Godot
 ```
+
+Kéo code mới về thì chạy `godot --headless --path . --import` TRƯỚC, không thì
+Godot chưa biết `class_name` mới và nó **treo** chứ không báo lỗi.
 
 ## Tài liệu
 
@@ -51,4 +54,4 @@ python tools/kiem_csv.py                        # kiểm CSV, không cần Godot
 ## Dữ liệu
 
 Toàn bộ nội dung nằm trong `data/*.csv`. Thêm chữ, quái, vùng, vũ khí đều là sửa
-CSV — không đụng file `.gd` nào. 1011 chữ Hán, 41 câu ngữ pháp, 38 nguyên liệu.
+CSV — không đụng file `.gd` nào. 1011 chữ Hán, 41 câu ngữ pháp, 39 nguyên liệu.

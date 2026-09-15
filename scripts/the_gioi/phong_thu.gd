@@ -27,9 +27,9 @@ const DAT_QUAI := [
 ##
 ## Món thứ ba CỐ Ý là vũ khí khác hệ với vũ khí khởi đầu. Trong phòng có một
 ## con hệ Thuỷ, mà vũ khí khởi đầu hệ Kim — Kim SINH Thuỷ, nghĩa là đánh nó
-## bằng kiếm khởi đầu thì nó HỒI MÁU (`NguHanh.HS_SINH` âm, cố ý). Bài học đó
-## chỉ dạy được nếu người chơi có đường ra; không có cây kiếm này thì con sói
-## đọc y như "máu vô hạn" và người chơi chỉ thấy game hỏng.
+## bằng kiếm khởi đầu thì mỗi nhát chỉ ăn 1/4 (`NguHanh.HS_SINH`). Bài học đó
+## chỉ dạy được nếu người chơi có đường ra: đổi sang 石剑 hệ Thổ là Thổ khắc
+## Thuỷ, hạ trong bốn đòn thay vì mười sáu.
 const DAT_DO := [
 	{"hat": 20260914, "tai": Vector3(2.5, 0, 2.0)},
 	{"hat": 777001, "tai": Vector3(-3.0, 0, 1.0)},

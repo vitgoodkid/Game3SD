@@ -31,7 +31,7 @@ và ba script luật. Đừng cố sửa dần project 2D — `CharacterBody2D`,
 | `data/tu_vung.csv` | **993 chữ**, 15 cột | ✅ nguyên vẹn |
 | `data/ngu_phap.csv` | 41 câu | ✅ nguyên vẹn |
 | `data/ky_nang.csv` | 19 phép | ✅ mở rộng thêm cột |
-| `data/nguyen_lieu.csv` | 38 nguyên liệu | ✅ nguyên vẹn |
+| `data/nguyen_lieu.csv` | 38 nguyên liệu + 盾 (khiên) = 39 | ✅ giữ nguyên 38 giá trị cũ |
 | `data/trang_bi.csv` | 18 công thức | ✅ nguyên vẹn |
 | `scripts/chien_dau.gd` | sát thương/giáp/nguyên tố | ✅ port gần nguyên |
 | `scripts/do_hiem.gd` | 5 bậc độ hiếm | ✅ nguyên vẹn |
@@ -284,25 +284,44 @@ Bia đá hiện "**12 chữ sắp phai**". Lưu trong file save, **không** lưu
 
 | Cơ chế | Yêu cầu |
 |---|---|
-| **Thể lực** | Đánh / lăn / đỡ / chạy đều tốn. **Khựng ~0.8s rồi mới bắt đầu hồi**. Cạn = không hành động được (không chết ngay) |
-| **Lăn né** | i-frame thật ~0.35s giữa cú lăn. Số khung bất tử **tăng theo 韧** và **giảm theo tải trọng** |
+| **Thể lực** | Đánh / lăn / nhảy / chạy / đỡ một đòn đều tốn. Đang BẬN thì không hồi; xong việc chờ **~0.4s** rồi hồi nhanh (mô hình Elden Ring). Cạn = không hành động được (không chết ngay) |
+| **Lăn né** | i-frame thật ~0.35s giữa cú lăn, **tăng theo 韧**. Theo tải trọng thì gần như KHÔNG đổi (ER cho 13/13/12 khung) — chỗ phạt giáp nặng là **hồi lăn** (×2) và **quãng lăn** |
 | **Cam kết đòn đánh** | **Quan trọng nhất.** Đã vung là không huỷ. Đây là thứ phân biệt souls-like với hack-n-slash. Không có nó thì mọi thứ khác vô nghĩa |
 | **Khoá mục tiêu** | Chuột giữa / R3. Nhân vật đi vòng quanh mục tiêu. Hất chuột để đổi mục tiêu |
-| **Đòn nhẹ / nặng** | R1 / R2. Combo 3 nhát cho đòn nhẹ. Đòn nặng nạp được, phá thế đứng |
-| **Đỡ** | Giảm sát thương theo chỉ số khiên, tốn thể lực. Đỡ tới cạn thể lực → **vỡ thế** |
-| **Đỡ phản (parry)** | Cửa sổ hẹp ~0.15s → mở **đòn kết liễu** |
+| **Đòn nhẹ / nặng** | **MỘT nút chuột trái**: bấm nhanh = nhẹ (combo 3 nhát), giữ = nặng, giữ tiếp = nạp. Không phải R1/R2 như bản yêu cầu đầu — chủ dự án chốt một nút, và chấp nhận cái giá: đòn nhẹ chỉ bắn ra lúc NHẢ, tức trễ `NguoiChoi.NGUONG_GIU_NANG` (0.18s) |
+| **Siêu giáp** | Cột `sieu_giap` của `moveset.csv`, cộng vào thế đứng chỉ trong khung vung tay rồi TẮT ở khung hồi. Thiếu nó thì vũ khí nặng vô dụng |
+| **Đỡ** | Giảm sát thương theo chỉ số khiên, tốn thể lực. Đỡ tới cạn thể lực → **vỡ đỡ**, đứng ngây cho ăn kết liễu |
+| **Đòn phản đỡ** | Đỡ trúng xong bấm đòn nặng trong `cua_so_phan_do` (0.6s) → đòn riêng, phá thế gấp 6 lần đòn nhẹ |
+| **Đỡ phản (parry)** | Cửa sổ **0.24s** → mở **đòn kết liễu**. **Cần khiên ở tay trái** — tay không không parry được (như ER) |
 | **Đòn sau lưng** | Backstab ×2.5-3 |
 | **Thế đứng (poise)** | Giáp nặng → không khựng khi trúng đòn nhỏ |
 | **Vỡ tư thế** | Đánh dồn vào quái → thanh tư thế vỡ → **đòn kết liễu** (kiểu Sekiro/Elden Ring) |
 | **Nhảy + đòn nhảy** | Elden Ring có, dùng để né đòn quét ngang |
 
+> **Con số trong mục này đã được chỉnh theo thực tế chơi.** Chủ dự án chốt:
+> khi bản yêu cầu này và Elden Ring đá nhau thì **cảm giác chơi thắng cả hai**.
+> Ai đọc mục này về sau đừng "sửa ngược" code về con số cũ — code mới là bản
+> đúng, tài liệu chạy theo nó.
+
 ### 5.2 Ba con số quyết định cảm giác
 
 Chỉnh được trong Inspector, tune bằng tay ở mốc 2:
 
-- **i-frame của lăn**: 0.30 – 0.40s. Dưới 0.28 là ức chế, trên 0.45 là quá dễ
-- **Khựng trước khi hồi thể lực**: 0.6 – 1.0s. Đây là thứ ép người chơi phải nhịp
-- **Khung hồi của đòn nặng**: 0.7 – 1.2s. Đây là "giá" của việc đánh mạnh
+- **i-frame của lăn**: 0.30 – 0.40s. Dưới 0.28 là ức chế, trên 0.45 là quá dễ.
+  (Elden Ring thật ra chỉ 13 khung ≈ 0.217s — cố ý để rộng hơn ER.)
+- **Trễ hồi thể lực**: 0.25 – 0.60s, tính từ lúc hành động KẾT THÚC.
+  Bản yêu cầu đầu ghi "khựng 0.6 – 1.0s tính mỗi lần tiêu" và đó là một cái
+  bẫy: đặt lại mốc ở chỗ TIÊU thì mỗi nhát chém đẩy lùi mốc hồi thêm một lần,
+  ba nhát liên tiếp là thanh thể lực đứng hình. Đã dính một lần, combat khựng
+  cứng. Xem `TrangThaiMay.cho_hoi_the_luc()`.
+- **Khung hồi của đòn nặng**: 0.45 – 1.2s tuỳ vũ khí (kiếm 0.74 · rìu 0.95 ·
+  dao 0.59 · quyền 0.49). Đây là "giá" của việc đánh mạnh.
+
+Thêm một con số thứ tư, không có trong bản đầu nhưng quan trọng ngang ba cái
+trên: **`SoulsLike.HS_SAT_THUONG_NGUOI_CHOI`** quy thang điểm của bản 2D sang
+thang máu của bản 3D. Không có nó thì một nhát kiếm 10 điểm đập vào con quái
+300 máu — đo thật là 48–50 nhát mới hạ nổi một con thường. Quái thường nên
+chết trong 4–8 đòn nhẹ.
 
 ### 5.3 Công thức — dùng lại `chien_dau.gd`
 

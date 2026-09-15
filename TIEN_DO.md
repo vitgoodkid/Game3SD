@@ -61,6 +61,8 @@ test canh.
   Thêm phần khắc chữ: lắp / tháo / giá khắc tăng theo độ dài tên.
 - `tri_nho.gd` — bốn mức thuần thục, lịch ôn SM-2 rút gọn (1→3→7→16→35 ngày).
 - `cau_hoi.gd` — mười dạng câu hỏi, 41 câu ngữ pháp, tách hẳn khỏi giao diện.
+  **Không màn nào gọi nữa** từ khi bỏ thẻ Ngồi thiền; ở lại repo vì nhóm test
+  "Mười dạng câu hỏi" là thứ duy nhất bắt Godot biên dịch nó.
 - `sinh_mon_do.gd` — sinh đồ rơi từ CSV, không một chữ Hán nào nằm trong code.
   Trung tâm lấy từ `nguyen_lieu.csv`, bổ nghĩa trộn thêm chữ theo chủ đề vùng,
   nên đi sâu là gặp chữ khó hơn.
@@ -86,7 +88,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 
 | Lệnh | Kiểm gì |
 |---|---|
-| `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 171 test trong một khung hình |
+| `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 196 test trong một khung hình |
 | `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 123 test theo thời gian |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
@@ -117,6 +119,15 @@ combat**, vì mấy chỗ "cố ý khác" rất dễ bị sửa nhầm về ER r
 | Chặn đỡ (guard boost) | khiên tốt thì đỡ đỡ tốn thể lực | `_chi_so_chan_do()` |
 
 ### Cố ý KHÁC, và vì sao
+
+- **Một nút chuột trái ra cả đòn nhẹ lẫn đòn nặng**, thay vì R1/R2 như ER và
+  như bản yêu cầu đầu. Chủ dự án chốt, và chấp nhận cái giá đi kèm: đòn nhẹ
+  chỉ bắn ra lúc NHẢ chuột chứ không phải lúc bấm, vì phải đợi mới biết người
+  chơi định bấm hay định giữ. Đó là 0.18s trễ trên mọi cú chém thường
+  (`NguoiChoi.NGUONG_GIU_NANG`). Muốn hết trễ thì phải tách hai nút.
+- **Sai hệ ngũ hành KHÔNG làm quái hồi máu nữa** — sàn 0.25×. ER không có cơ
+  chế này, mà bản 2D thì để hệ số âm. Bỏ vì luật 4 của `CLAUDE.md`: gặp boss
+  sai hệ mà chỉ có một vũ khí là tắc hẳn. 0.25× vẫn đủ đau (đánh lâu gấp bốn).
 
 - **i-frame 0.35s chứ không phải 0.217s.** ER cho 13 khung ở 60fps = 0.217s.
   Mục 5.2 của `PROMPT_3D.md` lại bắt i-frame nằm trong **0.30–0.40s**, và có
@@ -165,7 +176,8 @@ Ghi lại để không ai tưởng là quên:
   ghìm phải đổi tay, đừng gỡ mất: nhịp đòn đánh giờ do **cam kết đòn + `t_hoi`**
   ghìm, và "đứng giơ khiên" giờ do **tư thế** ghìm (đỡ mãi thì vỡ thế kiểu
   Sekiro) chứ không do cạn thể lực. Cột `the_luc` của `moveset.csv` vì vậy hiện
-  không ai đọc — giữ lại phòng khi đổi ý.
+  không ai đọc — giữ lại phòng khi đổi ý. **(Đã đổi ý ở đợt làm combat kiểu
+  Elden Ring: đánh tốn thể lực trở lại, cột `the_luc` được đọc lại rồi.)**
 - **Một nút chuột trái ra cả đòn nhẹ lẫn đòn nặng.** Nhả trước
   `NguoiChoi.NGUONG_GIU_NANG` (0.22s) là nhẹ, giữ lâu hơn là nặng, giữ tiếp nữa
   thành đòn nạp. Chuột phải chuyển thành **đỡ phản** (phím R vẫn dùng được).

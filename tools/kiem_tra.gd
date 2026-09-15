@@ -126,8 +126,17 @@ func _ngu_hanh() -> void:
 
 	_gan(NguHanh.he_so("木", "土"), NguHanh.HS_KHAC, "khắc được thì ×1.5")
 	_gan(NguHanh.he_so("土", "木"), NguHanh.HS_BI_KHAC, "bị khắc thì ×0.6")
-	_gan(NguHanh.he_so("木", "火"), NguHanh.HS_SINH, "sinh ra nó thì nó HỒI máu")
-	_dung(NguHanh.he_so("木", "火") < 0.0, "hệ số sinh phải ÂM — dùng sai là tự hại")
+	_gan(NguHanh.he_so("木", "火"), NguHanh.HS_SINH, "sinh ra nó thì đòn yếu hẳn")
+	# Luật 4: không hệ nào được khoá cứng đường chơi. Hệ số thấp nhất vẫn phải
+	# DƯƠNG, nếu không thì gặp boss sai hệ là tắc hẳn, không có đường đi tiếp.
+	for a in NguHanh.VONG:
+		for b in NguHanh.VONG:
+			_dung(NguHanh.he_so(String(a), String(b)) > 0.0,
+				"%s đánh %s vẫn gây sát thương (không hệ nào khoá cứng)" % [a, b])
+	# Sinh ra nó = đòn yếu NHẤT, nhưng vẫn phải là đòn. Trước đây hệ số này âm
+	# (quái hồi máu) và thế là gặp boss sai hệ thì tắc hẳn — luật 4 cấm.
+	_dung(NguHanh.he_so("木", "火") < NguHanh.HS_BI_KHAC,
+		"sinh ra nó là hệ số THẤP NHẤT, thấp hơn cả bị khắc")
 	_gan(NguHanh.he_so("木", "木"), 1.0, "cùng hành thì ×1.0")
 	_gan(NguHanh.he_so("", "火"), 1.0, "không hành thì không khắc được ai (boss 无)")
 	_gan(NguHanh.he_so("火", ""), 1.0, "không hành thì không bị ai khắc")
@@ -307,9 +316,19 @@ func _souls() -> void:
 	# hành động kết thúc, nên khoảng hợp lệ cũng đổi: ER hồi lại rất nhanh.
 	_dung(SoulsLike.tre_hoi_the_luc >= 0.25 and SoulsLike.tre_hoi_the_luc <= 0.60,
 		"trễ hồi thể lực %.2fs nằm trong 0.25–0.60" % SoulsLike.tre_hoi_the_luc)
-	var nang := VocabDB.don_cua("剑", "nang")
-	_dung(float(nang["t_hoi"]) >= 0.7 and float(nang["t_hoi"]) <= 1.2,
-		"khung hồi đòn nặng %.2fs nằm trong 0.7–1.2" % float(nang["t_hoi"]))
+	# Canh MỌI vũ khí chứ không riêng cây kiếm. Bản cũ chỉ kiểm 剑, nên khi khung
+	# đòn nặng bị nhân hệ số thì ba vũ khí tụt khỏi khoảng mà test vẫn xanh.
+	var deu_trong_khoang := true
+	for m in VocabDB.moveset:
+		if String(m["don"]) != "nang":
+			continue
+		var th := float(m["t_hoi"])
+		if th < 0.45 or th > 1.2:
+			deu_trong_khoang = false
+			_dung(false, "khung hồi đòn nặng của %s là %.2fs — ngoài 0.45–1.2"
+				% [String(m["chu"]), th])
+	if deu_trong_khoang:
+		_dung(true, "khung hồi đòn nặng của cả 5 vũ khí nằm trong 0.45–1.2")
 
 	# Tải trọng: bốn mức, i-frame giảm dần theo tải.
 	_bang(String(SoulsLike.muc_tai(0.10)["muc"]), "nhe", "dưới 30% là tải nhẹ")

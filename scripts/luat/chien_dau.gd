@@ -3,20 +3,20 @@ extends Node
 ## Luật chiến đấu DÙNG CHUNG — không phụ thuộc vào việc đánh nhau theo kiểu nào.
 ## Autoload: gọi bằng "ChienDau".
 ##
-## Vì sao tách khỏi battle.gd: sau này game có thêm chế độ chém ngoài map, và
+## Vì sao tách khỏi màn chiến đấu của bản 2D (`battle.gd`, đã xoá khỏi repo): sau này game có thêm chế độ chém ngoài map, và
 ## hai chế độ dùng chung y hệt mọi thứ ở đây — cách tính sát thương, giáp trừ
 ## bao nhiêu, phép hồi máu hồi mấy điểm, nguyên tố băng/lửa làm gì. Nếu viết
-## thẳng vào battle.gd thì tới lúc dựng chế độ kia phải chép lại toàn bộ, rồi
+## thẳng vào màn đó thì tới lúc dựng chế độ kia phải chép lại toàn bộ, rồi
 ## từ đó về sau mỗi lần chỉnh cân bằng phải nhớ sửa hai chỗ.
 ##
 ## QUY TẮC để biết code mới nên nằm ở đâu — tự hỏi một câu:
 ##     "Cái này còn nghĩa gì không nếu không có câu hỏi nào?"
 ##   CÓ    (sát thương, giáp, hồi máu, chặn đòn, nguyên tố, độ hiếm)  -> viết vào ĐÂY
-##   KHÔNG (xoá bớt đáp án sai, bỏ qua câu hỏi, chọn dạng câu hỏi)    -> để trong battle.gd
+##   KHÔNG (xoá bớt đáp án sai, bỏ qua câu hỏi, chọn dạng câu hỏi)    -> việc của màn hình
 
 ## Hiệu ứng phép chạy được ở MỌI kiểu đánh nhau. Hai cái không có trong danh
 ## sách này — loai_bot (xoá đáp án sai) và bo_qua (bỏ qua câu) — chỉ có nghĩa
-## khi đang có câu hỏi trước mặt, nên battle.gd tự lo lấy.
+## khi đang có câu hỏi trước mặt, nên màn hình tự lo lấy.
 const HIEU_UNG_CHUNG := ["hoi_mau", "chan_don", "don_manh", "danh_truoc"]
 
 ## Dù giáp dày tới đâu cũng luôn chịu ít nhất bấy nhiêu máu mỗi đòn. Không có
@@ -47,7 +47,7 @@ func la_hieu_ung_chung(hieu_ung: String) -> bool:
 #
 # Bảy chữ có khe="nguyen_to" trong nguyen_lieu.csv, nhưng chỉ SÁU chữ dưới
 # đây có phép riêng — 红 (hồng) là đá quý THƯỜNG, chỉ cộng chỉ số như mọi
-# khe khác lúc ghép (crafting_manager.gd), không có hiệu ứng trong trận.
+# khe khác lúc ghép (bàn khắc chữ ở bia đá), không có hiệu ứng trong trận.
 ## % nghĩa là số thập phân (0.2 = 20%), không phải số nguyên phần trăm.
 const NGUYEN_TO := {
 	"火": {"ten": "Hoả", "st_them_pt": 0.20},
@@ -57,7 +57,7 @@ const NGUYEN_TO := {
 	"石": {"ten": "Thạch", "giap_them": 6},
 	"魔": {"ten": "Ma", "phep_them_pt": 0.30},
 }
-## Hằng tên chữ, để bên gọi (battle.gd) không phải gõ thẳng ký tự Hán vào —
+## Hằng tên chữ, để bên gọi không phải gõ thẳng ký tự Hán vào —
 ## đổi chữ đại diện cho nguyên tố nào thì chỉ sửa NGUYEN_TO ở trên và hai
 ## dòng này, không phải lục khắp nơi.
 const NGUYEN_TO_DOC := "毒"
