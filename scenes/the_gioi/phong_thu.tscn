@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/the_gioi/phong_thu.gd" id="1_phong"]
 [ext_resource type="Environment" path="res://scenes/the_gioi/moi_truong_mac_dinh.tres" id="2_mt"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/giao_dien/man_hanh_trang.gd" id="6_ht"]
 [ext_resource type="Script" path="res://scripts/giao_dien/man_bia_da.gd" id="7_bd"]
 [ext_resource type="Script" path="res://scripts/the_gioi/vong_hoi_sinh.gd" id="8_vhs"]
+[ext_resource type="Script" path="res://scripts/giao_dien/man_thoai.gd" id="90_mt"]
 
 [node name="PhongThu" type="Node3D"]
 script = ExtResource("1_phong")
@@ -42,3 +43,6 @@ script = ExtResource("6_ht")
 
 [node name="ManBiaDa" type="CanvasLayer" parent="."]
 script = ExtResource("7_bd")
+
+[node name="ManThoai" type="CanvasLayer" parent="."]
+script = ExtResource("90_mt")

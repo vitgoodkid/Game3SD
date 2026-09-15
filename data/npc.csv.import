@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c1r86q4cmcfh5"
+
+[deps]
+
+files=["res://data/npc.ten.translation", "res://data/npc.ten.translation", "res://data/npc.vung.translation", "res://data/npc.x.translation", "res://data/npc.z.translation", "res://data/npc.thoai.translation", "res://data/npc.thoai.translation", "res://data/npc.chu.translation", "res://data/npc.hon.translation"]
+
+source_file="res://data/npc.csv"
+dest_files=["res://data/npc.ten.translation", "res://data/npc.ten.translation", "res://data/npc.vung.translation", "res://data/npc.x.translation", "res://data/npc.z.translation", "res://data/npc.thoai.translation", "res://data/npc.thoai.translation", "res://data/npc.chu.translation", "res://data/npc.hon.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

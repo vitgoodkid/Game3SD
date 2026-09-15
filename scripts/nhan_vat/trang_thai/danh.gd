@@ -47,6 +47,9 @@ func vao(du_lieu: Dictionary = {}) -> void:
 	_t_nap = 0.0
 	nc.dang_do = false
 	nc.ton_the_luc(float(_m.get("the_luc", 15)))
+	# Tiếng vung tay là tiếng BÁO TRƯỚC — quái nghe được đòn của mình, và
+	# người chơi nghe được đòn của quái khi mắt đang nhìn chỗ khác.
+	AmThanh.phat("vung_nang" if _don.begins_with("nang") else "vung_nhe")
 	_nham()
 
 ## Xoay về hướng đang nhắm. Gọi lúc bắt đầu vung, và gọi LẠI lúc nhả nạp —

@@ -47,7 +47,7 @@ Sửa file đó thì chạy lại test ngay.
 Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.exe`).
 
 ```bash
-# kiểm tầng luật — 196 test trong một khung hình, thoát mã 1 nếu hỏng
+# kiểm tầng luật — 197 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
 # kiểm vòng lặp souls + combat + boss — 147 test, nạp phòng thử thật và diễn lại:
@@ -56,8 +56,9 @@ godot --headless --path . tools/kiem_tra.tscn
 # Chạy mất ~45 giây vì phải đợi thật.
 godot --headless --path . tools/thu_vong_lap.tscn
 
-# kiểm thế giới — 37 test, sinh một vùng thật từ CSV rồi đi lại trong đó:
-# địa hình, rải cây đá, streaming ô, bảy bảng màu, vùng bị xoá, chuỗi du hành
+# kiểm thế giới + nội dung — 66 test, sinh một vùng thật từ CSV rồi đi lại:
+# địa hình, rải cây đá, streaming ô, bảy bảng màu, vùng bị xoá, chuỗi du hành,
+# NPC và cốt truyện, âm thanh, 18 loài, boss ẩn 无
 godot --headless --path . tools/thu_the_gioi.tscn
 
 # chạy thử game 10 giây, bắt lỗi lúc chạy
@@ -106,6 +107,8 @@ scripts/
                    cau_hoi.gd     10 dạng câu hỏi — KHÔNG màn nào gọi nữa
                    sinh_mon_do.gd sinh đồ rơi từ CSV, không biết chữ nào tồn tại
   he_thong/      autoload có trạng thái: vocab_db, tui, tri_nho, the_gioi
+                   am_thanh.gd    15 tiếng TỔNG HỢP BẰNG CODE — repo không có
+                                  file .wav nào, xem mốc 7 trong TIEN_DO.md
   nhan_vat/      người chơi, camera ba chế độ, khoá mục tiêu, máy trạng thái
     trang_thai/  mỗi state một file
   quai/          quái + boss hai giai đoạn, state machine riêng
@@ -198,6 +201,8 @@ Hộp đòn người chơi bắt lớp 3; hộp đòn quái bắt lớp 2.
 | quái mới | `data/quai.csv`, đòn của nó vào `data/don_quai.csv` |
 | boss mới | `data/boss.csv` |
 | vùng mới | `data/vung.csv` |
+| NPC / thoại cốt truyện | `data/npc.csv` |
+| tiếng động mới | bảng `TIENG` trong `scripts/he_thong/am_thanh.gd` |
 
 Thêm xong chạy `python tools/kiem_csv.py` — nó bắt được đòn trỏ hụt, vùng không
 tồn tại, thang chồng bộ đứt bậc.

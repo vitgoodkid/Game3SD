@@ -175,6 +175,7 @@ func ghep(chu: String) -> bool:
 	for bt in bo_thu_can(chu):
 		bot_bo_thu(String(bt), 1)
 	TriNho.hoc(chu)
+	AmThanh.phat("hoc_chu")
 	doi_trang_bi.emit()  # mọi món đồ vừa đổi cách hiện
 	return true
 

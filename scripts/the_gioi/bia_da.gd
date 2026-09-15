@@ -46,6 +46,7 @@ func dong_moi() -> String:
 	return "E — nghỉ"
 
 func tuong_tac() -> void:
+	AmThanh.phat("bia_da")
 	var lan_dau := not TheGioi.bia_da_bat(ma)
 	# nghi() tự bật bia luôn, nên chỉ cần hỏi TRƯỚC khi gọi.
 	TheGioi.nghi(ma)

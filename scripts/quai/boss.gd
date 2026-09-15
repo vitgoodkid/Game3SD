@@ -109,9 +109,40 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 		# chơi học được rằng cứ thấy boss đổi dạng là xông vào chém miễn phí,
 		# và cả đoạn dựng không khí thành ra tự phạt mình.
 		return 0
-	var st := super(sat_thuong, pha_the, tu_dau, hanh)
+	var st := super(_sat_thuong_that(sat_thuong), pha_the, tu_dau, hanh)
 	_thu_doi_giai_doan()
 	return st
+
+## BOSS 无 — câu đố về chính cơ chế của game (mục 14.8 của bản yêu cầu).
+##
+## Nó không có hành, nên ngũ hành không cắn được. Và luật riêng của nó: **vũ
+## khí càng nhiều chữ càng yếu trước nó.** Cách thắng là CỞI HẾT chữ khắc ra —
+## đánh nó bằng một cây vũ khí trần.
+##
+## Vì sao luật này đáng có: cả game dạy người chơi rằng thêm chữ là mạnh thêm.
+## Con cuối đảo ngược đúng câu đó, và người chơi chỉ giải được nếu đã HIỂU cơ
+## chế chứ không chỉ làm theo. Nó cũng khớp cốt truyện: 无 là sự trống rỗng,
+## thứ ăn chữ — càng đưa chữ cho nó càng nuôi nó.
+##
+## Nhận biết bằng CỘT `ngu_hanh` TRỐNG trong boss.csv, không phải bằng mã 'vo'.
+## Luật 1: code không được biết con boss nào tên gì.
+func _sat_thuong_that(st: int) -> int:
+	if String(d.get("ngu_hanh", "")) != "":
+		return st
+	var vk = Tui.vu_khi_dang_cam()
+	if vk == null:
+		return st
+	# Mỗi chữ BỔ NGHĨA khắc trên vũ khí ăn mất một phần sát thương. Chữ trung
+	# tâm không tính — cởi hết thì vẫn còn cây kiếm trần, và đó là đáp án.
+	var them := maxi(0, vk.ten.size() - 1)
+	if them <= 0:
+		return st
+	return maxi(1, int(round(float(st) * pow(HS_MOI_CHU_KHAC, float(them)))))
+
+## Mỗi chữ khắc thừa nhân sát thương với ngần này khi đánh boss không hành.
+## 0.55 nghĩa là ba chữ còn 17% — đủ đau để người chơi phải nghĩ, chưa tới mức
+## không bao giờ thắng nổi nếu cứ cố.
+const HS_MOI_CHU_KHAC := 0.55
 
 func _thu_doi_giai_doan() -> void:
 	if _da_doi or giai_doan != 1 or not con_song():
@@ -122,6 +153,7 @@ func _thu_doi_giai_doan() -> void:
 	giai_doan = 2
 	tu_the = 0.0
 	may.doi("boss_doi_gd")
+	AmThanh.phat("gam_boss", 0.8, 1.2)
 	doi_giai_doan.emit(2)
 
 ## Đổi màu thân khi sang giai đoạn hai — người chơi phải NHÌN ra là luật vừa
@@ -137,7 +169,10 @@ func _physics_process(delta: float) -> void:
 	super(delta)
 	if not _da_chao and thay_nguoi_choi():
 		_da_chao = true
+		AmThanh.phat("gam_boss")
 		_noi_hud(self)
+		if khong_hanh():
+			_bao("Nó không có hành. Chữ khắc trên vũ khí đang nuôi nó.")
 		bat_dau_tran.emit(self)
 
 ## Chết. Boss dạy chữ — đó là phần thưởng thật của cả trận, hơn cả hồn.
@@ -171,6 +206,11 @@ func _bao(dong: String) -> void:
 	var h := get_tree().get_first_node_in_group("hud")
 	if h != null and h.has_method("bao"):
 		h.call("bao", dong)
+
+## Boss này có phải con không hành không — con mà ngũ hành vô dụng và chữ khắc
+## phản chủ. Giao diện dùng để nhắc người chơi một câu.
+func khong_hanh() -> bool:
+	return String(d.get("ngu_hanh", "")) == ""
 
 ## Câu boss nói lúc vào trận. Nằm ở cột `loi_thoai` của boss.csv.
 func loi_thoai() -> String:

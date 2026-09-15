@@ -20,6 +20,7 @@ const DUONG_DAN_TRANG_BI := "res://data/trang_bi.csv"
 const DUONG_DAN_MOVESET := "res://data/moveset.csv"
 const DUONG_DAN_QUAI := "res://data/quai.csv"
 const DUONG_DAN_BOSS := "res://data/boss.csv"
+const DUONG_DAN_NPC := "res://data/npc.csv"
 const DUONG_DAN_VUNG := "res://data/vung.csv"
 const DUONG_DAN_DON_QUAI := "res://data/don_quai.csv"
 
@@ -58,6 +59,8 @@ var trang_bi: Array[Dictionary] = []
 var moveset: Array[Dictionary] = []
 var quai: Array[Dictionary] = []
 var boss: Array[Dictionary] = []
+## NPC và thoại cốt truyện (mốc 7).
+var npc: Array[Dictionary] = []
 var vung: Array[Dictionary] = []
 var don_quai: Array[Dictionary] = []
 
@@ -69,6 +72,7 @@ var _kn_theo_chu := {}
 var _mv_theo_chu := {}
 var _quai_theo_ma := {}
 var _boss_theo_ma := {}
+var _npc_theo_ma := {}
 var _vung_theo_ma := {}
 var _dq_theo_ma := {}
 ## Chữ nào là bậc mấy của thang nào — cho TenDoVat.bac_tren() khỏi phải quét.
@@ -84,6 +88,9 @@ func _ready() -> void:
 	moveset = _doc_csv(DUONG_DAN_MOVESET, [], COT_SO_MV)
 	quai = _doc_csv(DUONG_DAN_QUAI, COT_NHIEU_QUAI, COT_SO_QUAI)
 	boss = _doc_csv(DUONG_DAN_BOSS, COT_NHIEU_BOSS, COT_SO_BOSS)
+	# Thoại tách bằng "|" — mỗi NPC nhiều câu, mỗi câu hiện một lượt.
+	npc = _doc_csv(DUONG_DAN_NPC, ["thoai", "thoai_nghia", "chu_tang"],
+		["x", "z", "hon_tang"])
 	vung = _doc_csv(DUONG_DAN_VUNG, COT_NHIEU_VUNG, COT_SO_VUNG)
 	don_quai = _doc_csv(DUONG_DAN_DON_QUAI, [], COT_SO_DQ)
 	_dung_chi_muc()
@@ -111,6 +118,8 @@ func _dung_chi_muc() -> void:
 		_quai_theo_ma[q["ma"]] = q
 	for b in boss:
 		_boss_theo_ma[b["ma"]] = b
+	for n in npc:
+		_npc_theo_ma[n["ma"]] = n
 	for v in vung:
 		_vung_theo_ma[v["ma"]] = v
 	for dq in don_quai:
@@ -387,6 +396,17 @@ func quai_trong_vung(ma_vung: String) -> Array:
 		if q["vung"] == ma_vung:
 			ds.append(q)
 	return ds
+
+## NPC trong một vùng, theo cột `vung` của npc.csv.
+func npc_trong_vung(ma_vung: String) -> Array:
+	var ds: Array = []
+	for n in npc:
+		if String(n.get("vung", "")) == ma_vung:
+			ds.append(n)
+	return ds
+
+func npc_cua(ma: String) -> Dictionary:
+	return _npc_theo_ma.get(ma, {})
 
 func boss_cua(ma: String) -> Dictionary:
 	return _boss_theo_ma.get(ma, {})

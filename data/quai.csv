@@ -12,3 +12,8 @@ coc_doc,Cóc độc,毒蛙,dam_lay,500,7,木,20,1.5,0.60,2.4,4.2,15,2.8,liem_doc
 re_song,Rễ sống,活根,dam_lay,680,16,木,60,2.6,0.70,1.4,2.2,12,3.0,quat_re|troi_chan,300,木|林
 bong_chu,Bóng chữ,字影,vung_bi_nguyen,720,10,,40,1.9,0.45,3.4,6.0,22,2.4,xe_toac|nhan_ban,420,口|品
 ke_xoa,Kẻ Xoá,抹者,vung_bi_nguyen,900,20,,80,2.4,0.60,2.6,4.6,20,2.6,chem_doi|xoa_ten,560,魔|无
+cua_da,Cua đá,石蟹,ria_bien,210,9,土,34,1.2,0.7,1.6,3.0,12,2.0,cau_xe|huc_dau,44,石|虫
+ke_khat_nuoc,Kẻ khát nước,渴者,sa_mac,240,3,火,22,1.9,0.5,3.0,5.2,17,2.4,lao_toi|chem_ngang|nhay_de,62,水|者
+bong_cua,Bóng bên cửa,门影,lang_bo_hoang,280,7,木,30,2.0,0.5,2.2,4.6,15,2.6,cao_xe|nhan_ban|troi_chan,88,门|木
+soi_tuyet,Sói tuyết,雪狼,nui_bang,320,11,水,40,1.5,0.6,3.4,6.0,20,2.2,cau_xe|nhay_de|vut_gai,120,冰|犬
+mieng_an_chu,Miệng ăn chữ,食口,dam_lay,380,8,木,36,2.1,0.8,2.0,4.0,16,2.8,liem_doc|nuot_chu|xe_toac,165,口|食

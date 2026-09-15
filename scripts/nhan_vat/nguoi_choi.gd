@@ -335,6 +335,7 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 		return 0
 	bi_danh.emit(tu_dau)
 	if dang_do_phan:
+		AmThanh.phat("do_phan")
 		return -1  # -1 = ĐỠ PHẢN TRÚNG, bên gọi cho quái ngây ra
 
 	var st := sat_thuong
@@ -361,7 +362,9 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 		# động thuần phòng thủ và build khiên không bao giờ thắng nổi cuộc đua
 		# sát thương; ER thêm đúng cơ chế này để chữa.
 		cho_phan_do = SoulsLike.cua_so_phan_do
+		AmThanh.phat("do")
 		if them_tu_the(pha_the * SoulsLike.TU_THE_KHI_DO):
+			AmThanh.phat("vo_the")
 			may.xin_doi("vo_the")
 		return st
 
@@ -371,7 +374,9 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 	# game thành nhẹ hơn cả trúng đòn thường — vo_the.cho_doi() chặn đúng chỗ
 	# đó. Riêng đường CHẾT trong mat_mau() vẫn đổi thẳng: chết thì không trạng
 	# thái nào được phép từ chối.
+	AmThanh.phat("trung_to" if st >= 40 else "trung", 1.15)
 	if them_tu_the(pha_the):
+		AmThanh.phat("vo_the")
 		may.xin_doi("vo_the")
 	elif SoulsLike.co_khung(the_dung(), pha_the):
 		may.xin_doi("trung_don", {"tu_dau": tu_dau})
@@ -415,6 +420,7 @@ func mat_mau(n: int) -> void:
 	doi_mau.emit(mau, mau_toi_da)
 	if mau <= 0.0:
 		may.doi("chet")
+		AmThanh.phat("chet")
 		da_chet.emit()
 
 ## Đứng dậy ở bia đá sau khi chết. Gọi bởi VongHoiSinh, không gọi từ state —

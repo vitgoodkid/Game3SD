@@ -25,6 +25,7 @@ func chay(delta: float) -> void:
 		_da_hoi = true
 		Tui.binh_con -= 1
 		nc.hoi_mau(nc.mau_toi_da * 0.45)
+		AmThanh.phat("uong")
 
 	if t >= T_XONG:
 		di("dung")

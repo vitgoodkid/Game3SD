@@ -35,6 +35,9 @@ func _ready() -> void:
 	_bay_vung()
 	_bi_xoa()
 	_chuoi_vung()
+	_npc_cot_truyen()
+	_am_thanh()
+	_noi_dung_moc_7()
 
 	print("")
 	print("====== %d qua, %d HONG ======" % [_qua, _hong])
@@ -280,3 +283,125 @@ func _chuoi_vung() -> void:
 		if truoc != "" and VocabDB.vung_cua(truoc).is_empty():
 			hop_le = false
 	_dung(hop_le, "mọi cột mo_khi đều trỏ tới một vùng có thật")
+
+
+# --- Mốc 7: NPC và cốt truyện ---------------------------------------
+
+func _npc_cot_truyen() -> void:
+	_nhom("NPC và cốt truyện (mốc 7)")
+	_dung(VocabDB.npc.size() >= 7, "npc.csv có ít nhất một NPC mỗi vùng (%d)"
+		% VocabDB.npc.size())
+	var ds := get_tree().get_nodes_in_group("npc")
+	_dung(not ds.is_empty(), "vùng dựng NPC lên (%d)" % ds.size())
+	if ds.is_empty():
+		return
+	var n := ds[0] as Npc
+	_dung(n.so_cau() > 0, "NPC có thoại (%d câu)" % n.so_cau())
+
+	# Mọi chữ trong thoại phải CÓ THẬT trong tu_vung.csv. Thiếu một chữ là câu
+	# đó không bao giờ đọc được, và cả mạch chuyện đứt mà không ai báo lỗi.
+	var thieu: Array[String] = []
+	for x in VocabDB.npc:
+		for cau in x.get("thoai", []):
+			for c in String(cau):
+				if Npc._la_chu_han(c) and VocabDB.tu_cua(c).is_empty() 						and not thieu.has(c):
+					thieu.append(c)
+	_dung(thieu.is_empty(), "mọi chữ trong thoại đều có trong tu_vung.csv%s"
+		% ("" if thieu.is_empty() else " — thiếu: " + " ".join(thieu)))
+
+	# LUẬT ???: chưa biết chữ thì thoại hiện □, và BẢN DỊCH KHÔNG LỘ.
+	# Đây là chỗ mục 13 được thi hành — phần thưởng của việc học là hiểu được
+	# cốt truyện. Gỡ phép thử này đi thì chữ Hán thành trang trí.
+	var cau := n.cau_chu(0)
+	for c in cau:
+		if Npc._la_chu_han(c):
+			TriNho.so.erase(c)
+	_dung(n.cau_hien(0).contains(TenDoVat.CHU_MO),
+		"chữ chưa học thì thoại hiện □ (%s)" % n.cau_hien(0))
+	_dung(not n.hieu_duoc(0), "và chưa hiểu được câu đó")
+	var ti_truoc := n.ti_le_doc(0)
+
+	for c in cau:
+		if Npc._la_chu_han(c):
+			TriNho.hoc(c)
+	_dung(n.ti_le_doc(0) > ti_truoc, "học chữ xong thì đọc được nhiều hơn (%.0f%% → %.0f%%)"
+		% [ti_truoc * 100.0, n.ti_le_doc(0) * 100.0])
+	_dung(n.hieu_duoc(0), "và HIỂU được câu — bản dịch mới lộ ra")
+	_bang(n.cau_hien(0), cau, "đọc được hết thì thoại hiện trọn, không còn □")
+	_dung(n.cau_nghia(0) != "", "câu nào cũng có bản dịch tiếng Việt")
+
+	# Nghe hết chuyện thì NPC tặng chữ, MỘT LẦN.
+	var hon_truoc := Tui.hon
+	var lan1 := n.nhan_thuong()
+	var hon_giua := Tui.hon
+	var lan2 := n.nhan_thuong()
+	_dung(hon_giua > hon_truoc, "nghe hết chuyện thì được hồn (%d → %d)"
+		% [hon_truoc, hon_giua])
+	_bang(lan2.size(), 0, "nghe lại lần hai KHÔNG ăn thưởng thêm")
+	_bang(Tui.hon, hon_giua, "và không được thêm hồn")
+
+# --- Mốc 7: âm thanh -------------------------------------------------
+
+func _am_thanh() -> void:
+	_nhom("Âm thanh (mốc 7)")
+	# Dự án không có một file .wav nào — mọi tiếng tổng hợp bằng code lúc
+	# khởi động. Phép thử canh chúng DỰNG ĐƯỢC, vì hỏng ở đây thì im lặng
+	# hoàn toàn: game vẫn chạy, chỉ là không nghe thấy gì.
+	_dung(AmThanh.TIENG.size() >= 12, "có đủ bảng tiếng (%d tiếng)"
+		% AmThanh.TIENG.size())
+	var hong: Array[String] = []
+	for ten in AmThanh.TIENG.keys():
+		var w: AudioStreamWAV = AmThanh._kho.get(ten)
+		if w == null or w.data.size() < 100:
+			hong.append(String(ten))
+	_dung(hong.is_empty(), "mọi tiếng đều tổng hợp ra sóng thật%s"
+		% ("" if hong.is_empty() else " — hỏng: " + " ".join(hong)))
+	for can in ["vung_nhe", "vung_nang", "trung", "do_phan", "chet", "gam_boss"]:
+		_dung(AmThanh.TIENG.has(can), "có tiếng '%s'" % can)
+	# Phát thử không được nổ.
+	AmThanh.phat("trung")
+	AmThanh.phat("khong_co_tieng_nay")
+	_dung(true, "phát một tiếng không tồn tại cũng không nổ")
+
+# --- Mốc 7: nội dung -------------------------------------------------
+
+func _noi_dung_moc_7() -> void:
+	_nhom("Nội dung (mốc 7)")
+	_dung(VocabDB.quai.size() >= 18, "quai.csv đủ 18 loài (%d) — mục 12"
+		% VocabDB.quai.size())
+	var thieu_vung: Array[String] = []
+	for v in VocabDB.vung:
+		if VocabDB.quai_trong_vung(String(v["ma"])).is_empty():
+			thieu_vung.append(String(v["ma"]))
+	_dung(thieu_vung.is_empty(), "vùng nào cũng có quái%s"
+		% ("" if thieu_vung.is_empty() else " — trống: " + " ".join(thieu_vung)))
+
+	# BOSS 无 (mục 14.8): không hành, và vũ khí càng nhiều chữ càng yếu.
+	var vo: Dictionary = {}
+	for b in VocabDB.boss:
+		if String(b.get("ngu_hanh", "")) == "":
+			vo = b
+	_dung(not vo.is_empty(), "boss.csv có một con KHÔNG HÀNH")
+	if vo.is_empty():
+		return
+	var b2 := Boss.new()
+	b2.ma = String(vo["ma"])
+	b2.d = vo.duplicate()
+	_dung(b2.khong_hanh(), "nhận ra nó bằng cột ngu_hanh trống, không bằng mã")
+
+	# Cây vũ khí trần phải đau hơn cây khắc đầy chữ — đảo ngược đúng bài học
+	# của cả game, và đó là cả câu đố.
+	var tran := MonDo.new(["剑"], 1)
+	var day_chu := MonDo.new(["长", "冰", "金", "剑"], 1)
+	Tui.mac["vu_khi"][Tui.tay_phai_dang] = tran
+	var st_tran := b2._sat_thuong_that(100)
+	Tui.mac["vu_khi"][Tui.tay_phai_dang] = day_chu
+	var st_day := b2._sat_thuong_that(100)
+	_dung(st_tran > st_day,
+		"vũ khí TRẦN đau hơn vũ khí khắc đầy chữ (%d so với %d)" % [st_tran, st_day])
+	_bang(st_tran, 100, "vũ khí trần ăn trọn sát thương")
+	_dung(st_day >= 1, "mà khắc đầy chữ vẫn gây được ít nhất 1 (%d)" % st_day)
+	# Dọn tay: b2 là node dựng ngoài cây scene nên phải free() tay, và khe vũ
+	# khí phải trả về trống, không thì hai món đồ dựng ở đây sống tới lúc thoát.
+	Tui.mac["vu_khi"][Tui.tay_phai_dang] = null
+	b2.free()

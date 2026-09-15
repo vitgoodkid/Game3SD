@@ -177,8 +177,11 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 	_cap_nhat_nhan()
 	_bao_so(int(round(st)), hs, hanh)
 
+	AmThanh.phat("trung_to" if st >= 40.0 else "trung",
+		1.0 / clampf(float(d.get("cao", 1.8)) / 1.8, 0.7, 2.0))
 	if mau <= 0.0:
 		may.doi("quai_chet")
+		AmThanh.phat("chet_quai")
 		return int(round(st))
 
 	# Vỡ tư thế → đứng ngây cho ăn đòn kết liễu (mục 5.1).

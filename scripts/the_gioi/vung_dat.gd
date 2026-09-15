@@ -63,6 +63,7 @@ func _ready() -> void:
 	add_child(VongHoiSinh.new())
 
 	_dat_bia()
+	_dat_npc()
 	_dat_quai()
 	_dat_boss()
 	TheGioi.nghi_bia_da.connect(func(_ma: String) -> void: _dat_lai_quai())
@@ -118,6 +119,14 @@ func _dat_bia() -> void:
 		b.ma = "%s_bia_%d" % [ma_vung, i]
 		b.position = _tren_dat(CHOT_BIA[i])
 		add_child(b)
+
+## NPC đứng đúng chỗ khai trong npc.csv. Đây là "chốt chặn dựng tay" của mục
+## 7.2 — toạ độ trong CSV chứ không rải theo thuật toán, vì chỗ đứng của một
+## nhân vật kể chuyện là quyết định thiết kế, không phải số ngẫu nhiên.
+func _dat_npc() -> void:
+	for n in VocabDB.npc_trong_vung(ma_vung):
+		add_child(Npc.tao(String(n["ma"]), _tren_dat(
+			Vector3(float(n.get("x", 0)), 0.0, float(n.get("z", 0))))))
 
 func _dat_quai() -> void:
 	var ds := VocabDB.quai_trong_vung(ma_vung)

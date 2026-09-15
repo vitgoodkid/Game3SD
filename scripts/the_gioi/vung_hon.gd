@@ -55,6 +55,7 @@ func dong_moi() -> String:
 	return "E — nhặt lại %d hồn" % so_hon
 
 func tuong_tac() -> void:
+	AmThanh.phat("hon")
 	var n := TheGioi.nhat_vung_hon()
 	bao_hud("Nhặt lại %d hồn" % n)
 	dang_trong_tam.erase(self)

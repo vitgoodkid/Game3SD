@@ -12,7 +12,7 @@ Sổ tiến độ theo 7 mốc ở mục 12 của `PROMPT_3D.md`.
 | 4 | Vòng lặp souls — bia đá, chết rơi chữ, nhặt lại, hồi sinh quái, ghép chữ | ✅ xong trong phòng thử |
 | 5 | Ngũ hành + boss — tương sinh tương khắc, thang chồng bộ, boss hai giai đoạn | ✅ xong |
 | 6 | Thế giới — 7 vùng, địa hình, streaming, du hành, "vùng bị xoá" | ✅ xong |
-| 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, animation thật | ⬜ chưa |
+| 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, 18 loài, boss ẩn 无 | 🟡 xong trừ animation thật (cần model) |
 
 ## ĐANG LÀM DỞ — đọc trước khi viết gì mới
 
@@ -90,7 +90,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 196 test trong một khung hình |
 | `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + boss trong phòng thử thật, 147 test theo thời gian |
-| `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới: địa hình, rải cây đá, streaming, 7 vùng, vùng bị xoá — 37 test |
+| `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 66 test |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
@@ -148,6 +148,44 @@ combat**, vì mấy chỗ "cố ý khác" rất dễ bị sửa nhầm về ER r
 - **Không có Ash of War.** ER cho gắn kỹ năng lên vũ khí, gồm cả Parry lên dao
   và nắm đấm. Ở đây parry buộc phải có khiên, không có đường vòng.
 - **Nhảy né đòn quét** có, nhưng chưa có đòn quét ngang nào của boss để né.
+
+## Mốc 7 — làm được tới đâu
+
+**Xong:**
+
+- **NPC + cốt truyện** (`npc.csv`, 7 NPC, mỗi vùng một). Thoại tiếng Trung hiện
+  theo luật ???; **bản dịch chỉ lộ khi đã đọc được ≥60% câu**. Chưa hiểu thì
+  màn thoại nói rõ THIẾU CHỮ NÀO — người chơi ra về với một việc cụ thể, không
+  phải một lời từ chối. Đây là mục 13 được thi hành: phần thưởng của việc học
+  là hiểu được cốt truyện.
+- **Âm thanh** — 15 tiếng, **tổng hợp bằng code** lúc khởi động (nhiễu lọc,
+  sin tụt cao độ, bao biên độ mũ). Repo không có một file `.wav` nào và sẽ
+  không có tới khi có người làm âm thanh; mục 14.6 nói game thiếu HẲN chiều
+  nghe, mà thiếu hẳn tệ hơn là có mà chưa hay. Thay bằng file thật sau: giữ
+  tên trong `AmThanh.TIENG`, nạp `AudioStream` vào `_kho`, chỗ gọi không sửa.
+- **18 loài quái** (mục 12). Thêm 5 loài, vùng nào cũng có quái.
+- **Boss ẩn 无** (mục 14.8) — không hành nên ngũ hành vô dụng, và **vũ khí càng
+  nhiều chữ khắc càng yếu** trước nó. Đo được: cây trần ăn trọn 100, cây khắc
+  ba chữ còn 17. Cả game dạy "thêm chữ là mạnh thêm"; con cuối đảo ngược đúng
+  câu đó, và chỉ ai HIỂU cơ chế mới giải được. Nhận ra nó bằng cột `ngu_hanh`
+  trống chứ không bằng mã — luật 1.
+- **Từ vựng 1011 → 1040 chữ.** Thêm 29 chữ, phần lớn là hư từ ngữ pháp cần cho
+  thoại (是 不 有 这 那 们 的 了 在 什 么 吗...). Kèm theo sửa một lỗi dữ liệu:
+  `无` và `毒` được dùng ở `boss.csv` và `vung.csv` mà **không có trong
+  `tu_vung.csv`** — nghĩa là tên boss cuối và tên vùng Đầm lầy không bao giờ
+  đọc được, dù người chơi học hết mọi chữ trong game.
+
+**KHÔNG làm được, và vì sao:**
+
+- **Animation thật.** Cần file `.glb` với skeleton humanoid (mục 11). Repo
+  chưa có model nào — nhân vật và quái vẫn là khối hộp sinh trong code. Đây là
+  việc cần người làm art, không phải việc thiếu code. Phần hoạt ảnh tạm trong
+  `than_khoi.gd` đã tách riêng từng loại đòn nên thay bằng `AnimationPlayer`
+  không phải viết lại luật nào.
+- **Âm thanh thu thật / lồng tiếng.** Cùng lý do.
+- **Thiết kế màn bằng tay** (đường tắt, mai phục, vòng lặp). Mục 7.1 của bản
+  yêu cầu nói thẳng là AI làm dở việc này. `VungDat.CHOT_BIA` và `CHOT_BOSS`
+  cố tình để là một bảng toạ độ thưa, dễ sửa tay.
 
 ## Cần người, agent không làm thay được
 

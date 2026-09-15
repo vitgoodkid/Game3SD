@@ -26,6 +26,7 @@ func vao(_du_lieu: Dictionary = {}) -> void:
 	if _huong == Vector3.ZERO:
 		_huong = -nc.huong_mat()   # đứng yên mà lăn = lùi lại
 	nc.ton_the_luc(SoulsLike.THE_LUC_LAN)
+	AmThanh.phat("lan")
 	nc.bat_tu = true
 	nc.dang_do = false
 	# Lăn xong mới được lăn tiếp — chặn ngay từ lúc vào, không đợi lúc ra,
