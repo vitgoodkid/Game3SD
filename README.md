@@ -36,8 +36,9 @@ godot --path .
 ## Kiểm tra
 
 ```bash
-godot --headless --path . tools/kiem_tra.tscn      # 196 test tầng luật
-godot --headless --path . tools/thu_vong_lap.tscn  # 123 test vòng lặp + combat
+godot --headless --path . tools/kiem_tra.tscn      # 197 test tầng luật
+godot --headless --path . tools/thu_vong_lap.tscn  # 147 test vòng lặp + combat + boss
+godot --headless --path . tools/thu_the_gioi.tscn  # 66 test thế giới + nội dung
 godot --headless --path . --quit-after 600         # chạy thử, bắt lỗi lúc chạy
 python tools/kiem_csv.py                           # kiểm CSV, không cần Godot
 ```
@@ -54,4 +55,5 @@ Godot chưa biết `class_name` mới và nó **treo** chứ không báo lỗi.
 ## Dữ liệu
 
 Toàn bộ nội dung nằm trong `data/*.csv`. Thêm chữ, quái, vùng, vũ khí đều là sửa
-CSV — không đụng file `.gd` nào. 1011 chữ Hán, 41 câu ngữ pháp, 39 nguyên liệu.
+CSV — không đụng file `.gd` nào. 1040 chữ Hán, 41 câu ngữ pháp, 39 nguyên liệu,
+18 loài quái, 6 boss, 7 vùng, 7 NPC.
