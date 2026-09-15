@@ -134,6 +134,13 @@ func _dien_danh(tien_do: float, delta: float) -> void:
 		rotation_degrees.x = lerpf(rotation_degrees.x, 24.0, minf(1.0, 26.0 * delta))
 		_to_mau(_mau_goc, delta, 10.0)
 
+## Đổi hẳn màu nền của con quái. Boss gọi lúc sang giai đoạn hai — đổi màu là
+## cách rẻ nhất để người chơi NHÌN ra luật vừa đổi, không phải đọc thanh máu.
+func to_lai(mau_moi: Color) -> void:
+	_mau_goc = mau_moi
+	if _vat_lieu != null:
+		_vat_lieu.albedo_color = mau_moi
+
 func _to_mau(dich: Color, delta: float, toc: float) -> void:
 	if _vat_lieu == null:
 		return

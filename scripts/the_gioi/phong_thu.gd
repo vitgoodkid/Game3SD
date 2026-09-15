@@ -11,6 +11,11 @@ extends Node3D
 ##   iframe_lan, tre_hoi_the_luc, và t_hoi của đòn nặng trong data/moveset.csv.
 
 const CANH_QUAI := preload("res://scenes/quai/quai.tscn")
+const CANH_BOSS := preload("res://scenes/quai/boss.tscn")
+
+## Boss đặt ở góc xa — đủ xa để không lao vào giữa lúc đang thử đòn với quái
+## thường, đủ gần để đi bộ tới trong mươi giây.
+const DAT_BOSS := {"ma": "canh_hai", "tai": Vector3(0, 0, -26)}
 
 ## Quái đặt sẵn: mã trong quai.csv + chỗ đứng.
 const DAT_QUAI := [
@@ -58,6 +63,7 @@ func _ready() -> void:
 	_dung_san()
 	_dung_cot()
 	_dat_quai()
+	_dat_boss()
 	_dat_do()
 	_trang_bi_san()
 	# Nghỉ ở bia và hồi sinh sau khi chết đều làm quái sống lại hết — đó là
@@ -134,10 +140,26 @@ func _dat_quai() -> void:
 		q.position = d["tai"]
 		add_child(q)
 
+func _dat_boss() -> void:
+	var b := CANH_BOSS.instantiate() as Boss
+	b.ma = String(DAT_BOSS["ma"])
+	b.ma_vung = "thi_tran"
+	b.position = DAT_BOSS["tai"]
+	add_child(b)
+
 ## Xoá sạch quái đang có rồi đặt lại từ đầu. Phải xoá trước: TheGioi vừa quên
 ## hết bảng "đã hạ", nên con đang còn sống cũng sẽ được sinh thêm một bản nữa.
 func _dat_lai_quai() -> void:
+	# CHỪA BOSS RA. Boss nằm trong cả nhóm "quai" lẫn nhóm "boss", nên vòng lặp
+	# này quét trúng nó — mà boss KHÔNG sống lại khi nghỉ ở bia. Souls-like: hạ
+	# boss là hạ xong; dựng nó dậy thì cửa boss thành chỗ cày hồn.
+	#
+	# Và đừng thay bằng "xoá hết rồi kiểm nhóm boss còn trống không" — bẫy
+	# queue_free(): node vẫn nằm trong nhóm tới hết khung hình, nên kiểm ngay
+	# sau đó là nhìn hụt, boss biến mất luôn. Đã dính.
 	for q in get_tree().get_nodes_in_group("quai"):
+		if q.is_in_group("boss"):
+			continue
 		q.queue_free()
 	_dat_quai()
 

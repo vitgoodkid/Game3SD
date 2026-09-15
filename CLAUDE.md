@@ -50,7 +50,7 @@ Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.
 # kiểm tầng luật — 196 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + combat — 128 test, nạp phòng thử thật và diễn lại:
+# kiểm vòng lặp souls + combat + boss — 147 test, nạp phòng thử thật và diễn lại:
 # đánh, thể lực, cam kết đòn, i-frame, siêu giáp, đòn phản đỡ, vỡ đỡ, đỡ phản,
 # state machine quái, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại.
 # Chạy mất ~45 giây vì phải đợi thật.
@@ -104,7 +104,7 @@ scripts/
   he_thong/      autoload có trạng thái: vocab_db, tui, tri_nho, the_gioi
   nhan_vat/      người chơi, camera ba chế độ, khoá mục tiêu, máy trạng thái
     trang_thai/  mỗi state một file
-  quai/          quái + state machine riêng
+  quai/          quái + boss hai giai đoạn, state machine riêng
   the_gioi/      phòng thử, bia đá, đồ rơi, vũng hồn, vòng hồi sinh
                    tuong_tac_duoc.gd  lớp gốc mọi thứ bấm E được
   giao_dien/     HUD + màn che toàn màn (hành trang, bia đá)

@@ -29,6 +29,10 @@ var _t_bao := 0.0
 var _huong_danh: Array = []
 ## Máu "trễ" — thanh trắng tụt chậm phía sau, cho thấy vừa mất bao nhiêu.
 var _mau_tre := 1.0
+## Boss đang đánh nhau với mình. Thanh máu của nó nằm dưới đáy màn hình, kiểu
+## souls — to, một thanh duy nhất, tên chữ Hán ở trên.
+var _boss: Boss = null
+var _boss_tre := 1.0
 
 func _ready() -> void:
 	layer = 10
@@ -70,6 +74,7 @@ func _process(delta: float) -> void:
 	_mau_tre = maxf(ti, _mau_tre - delta * 0.35)
 	if _mau_tre < ti:
 		_mau_tre = ti
+	_tut_mau_boss(delta)
 
 	for i in range(_huong_danh.size() - 1, -1, -1):
 		_huong_danh[i]["t"] = float(_huong_danh[i]["t"]) - delta
@@ -83,6 +88,14 @@ func _process(delta: float) -> void:
 	_ve.queue_redraw()
 
 ## Hiện một dòng thông báo ngắn giữa trên màn hình (ngũ hành, đổi camera...).
+## Thanh trắng của boss tụt chậm phía sau, y như của người chơi — đó là thứ
+## cho thấy cú vừa rồi ăn được bao nhiêu trên một thanh máu rất dài.
+func _tut_mau_boss(delta: float) -> void:
+	if _boss == null or not is_instance_valid(_boss):
+		return
+	var ti := _boss.mau / maxf(_boss.mau_toi_da, 1.0)
+	_boss_tre = maxf(ti, _boss_tre - delta * 0.28)
+
 func bao(dong: String) -> void:
 	if dong.strip_edges().is_empty():
 		return
@@ -121,12 +134,49 @@ func _ve_het() -> void:
 		_thanh(Vector2(LE, y), rong * 0.7, nc.tu_the / maxf(nc.tu_the_max, 1.0),
 			MAU_TU_THE, Color(0.14, 0.12, 0.05, 0.8))
 
+	_ve_thanh_boss(co)
 	_ve_goc_duoi(co)
 	_ve_vet_bi_danh(co)
 	var cam := nc.get_node_or_null("GiaCamera") as CameraBaCheDo
 	if cam != null and cam.la_thu_nhat():
 		_ve_cham_ngam(co)
 		_ve_mui_ten_muc_tieu(co, cam)
+
+## Nhận boss vào để vẽ thanh máu. Vùng nào có boss thì gọi lúc người chơi bước
+## vào cửa; hạ xong thì gọi lại với null.
+func theo_doi_boss(b: Boss) -> void:
+	_boss = b
+	_boss_tre = 1.0
+	if b != null:
+		var loi := b.loi_thoai()
+		if loi != "":
+			bao(loi)
+
+func _ve_thanh_boss(co: Vector2) -> void:
+	if _boss == null or not is_instance_valid(_boss) or not _boss.con_song():
+		return
+	var f := ThemeDB.fallback_font
+	var rong := minf(co.x * 0.56, 760.0)
+	var x := (co.x - rong) * 0.5
+	var y := co.y - LE * 2.6
+	var ti := _boss.mau / maxf(_boss.mau_toi_da, 1.0)
+
+	# Tên hiện theo luật ???: chữ chưa đọc được thì hiện □. Boss vô danh là
+	# một hình ảnh mạnh — và hạ xong thì `thuong_chu` dạy luôn mấy chữ đó.
+	var ten := _boss.ten_hien()
+	var be := _ve.get_theme_default_font_size()
+	_ve.draw_string(f, Vector2(x, y - 10.0), ten,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, be + 8, MAU_CHU)
+	# Giai đoạn hai: vạch mốc trên thanh cho thấy nó đã qua ngưỡng.
+	_thanh(Vector2(x, y), rong, ti, MAU_MAU, MAU_MAU_NEN, _boss_tre)
+	var moc := _boss.nguong_gd2()
+	if moc > 0.0 and moc < 1.0:
+		var mx := x + rong * moc
+		_ve.draw_line(Vector2(mx, y - 3.0), Vector2(mx, y + CAO_THANH + 3.0),
+			Color(0.95, 0.85, 0.45, 0.9), 2.0)
+	if _boss.giai_doan >= 2:
+		_ve.draw_string(f, Vector2(x + rong - 46.0, y - 10.0), "二",
+			HORIZONTAL_ALIGNMENT_LEFT, -1, be + 6, Color(0.95, 0.55, 0.42))
 
 func _thanh(tai: Vector2, rong: float, ti: float, mau: Color, nen: Color,
 		tre: float = -1.0) -> void:

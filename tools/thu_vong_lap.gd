@@ -46,6 +46,7 @@ func _ready() -> void:
 	await _chet_va_hoi_sinh()
 	await _nhat_lai_hon()
 	await _may_trang_thai_quai()
+	await _boss_hai_giai_doan()
 
 	print("")
 	print("====== %d qua, %d HONG ======" % [_qua, _hong])
@@ -113,7 +114,19 @@ func _nut(hanh_dong: String, giu: bool) -> void:
 	await _hai_khung()
 
 func _dem_nhom(ten: String) -> int:
+	# Boss nằm trong CẢ nhóm "quai" lẫn nhóm "boss" (nó kế thừa Quai). Mọi phép
+	# đếm quái thường phải chừa nó ra, không thì bốn con hoá thành năm.
+	if ten == "quai":
+		return _quai_thuong().size()
 	return get_tree().get_nodes_in_group(ten).size()
+
+## Quái thường đang còn trong scene — không tính boss.
+func _quai_thuong() -> Array:
+	var ds: Array = []
+	for n in get_tree().get_nodes_in_group("quai"):
+		if not n.is_in_group("boss"):
+			ds.append(n)
+	return ds
 
 func _bia() -> BiaDa:
 	var ds := get_tree().get_nodes_in_group("bia_da")
@@ -488,7 +501,7 @@ func _phan_nhin() -> void:
 
 ## Kéo một con quái còn sống ra làm bao cát, và tắt não nó đi.
 func _quai_de_danh() -> Quai:
-	for n in get_tree().get_nodes_in_group("quai"):
+	for n in _quai_thuong():
 		var q := n as Quai
 		if q != null and q.con_song():
 			q.nguoi_choi = null
@@ -592,11 +605,89 @@ func _do_quang_duong(nut: String, _bo: float) -> float:
 	await _cho(1.6)
 	return xa
 
+## Boss hai giai đoạn (mốc 5).
+##
+## Canh đúng thứ phân biệt boss với một con quái nhiều máu: máu tụt qua ngưỡng
+## thì nó ĐỔI LUẬT — moveset dài ra, có đòn chưa từng thấy. Và khung chuyển
+## giai đoạn phải BẤT TỬ, không thì người chơi học được đúng một điều là cứ
+## thấy boss đổi dạng thì xông vào chém miễn phí.
+func _boss_hai_giai_doan() -> void:
+	_nhom("Boss hai giai đoạn")
+	var ds := get_tree().get_nodes_in_group("boss")
+	if ds.is_empty():
+		_dung(false, "phòng thử không có boss nào")
+		return
+	var b := ds[0] as Boss
+	_dung(b != null, "boss dựng lên được")
+	_dung(b.mau_toi_da >= 1000.0, "boss máu lấy từ boss.csv (%.0f)" % b.mau_toi_da)
+	_bang(b.giai_doan, 1, "vào trận là giai đoạn một")
+
+	var don_gd1 := b.cac_don()
+	var don_gd2: Array = b.d.get("moveset_2", [])
+	_dung(don_gd1.size() > 0, "giai đoạn một có moveset (%d đòn)" % don_gd1.size())
+	_dung(don_gd2.size() > don_gd1.size(),
+		"giai đoạn hai có nhiều đòn hơn (%d so với %d)" % [don_gd2.size(), don_gd1.size()])
+	var la := []
+	for x in don_gd2:
+		if not don_gd1.has(x):
+			la.append(String(x))
+	_dung(not la.is_empty(), "và có đòn CHƯA TỪNG THẤY ở giai đoạn một: %s"
+		% " ".join(la))
+
+	# --- Đánh tụt qua ngưỡng ---
+	# Kéo boss về sát người chơi: boss đứng ở góc xa, mà cửa boss thật thì
+	# người chơi bước hẳn vào phòng nó. Không kéo lại thì nó mất dấu và về chỗ.
+	b.nguoi_choi = _nc
+	b.global_position = _nc.global_position + _nc.huong_mat() * 4.0
+	b.diem_goc = b.global_position
+	_dung(b.thay_nguoi_choi(), "đứng trong phòng thì boss thấy người chơi")
+	_dung(float(b.d.get("toc_do_duoi", 0)) == float(b.d.get("toc_do", -1)),
+		"tốc độ đuổi lấy từ cột toc_do của boss.csv (%.1f)"
+		% float(b.d.get("toc_do_duoi", 0)))
+	var nguong := b.nguong_gd2()
+	b.an_don(int(b.mau_toi_da * (1.0 - nguong) + 20.0), 1.0, _nc.global_position)
+	await _hai_khung()
+	_bang(b.giai_doan, 2, "tụt qua ngưỡng %.0f%% là sang giai đoạn hai"
+		% (nguong * 100.0))
+	_bang(b.may.ten_hien_tai, "boss_doi_gd", "và vào khung chuyển giai đoạn")
+	_bang(b.cac_don().size(), don_gd2.size(), "moveset đã đổi sang bảng hai")
+
+	# --- Khung đó phải BẤT TỬ ---
+	var mau_truoc := b.mau
+	_bang(b.an_don(9999, 50.0, _nc.global_position), 0,
+		"đánh lúc đang đổi giai đoạn: 0 sát thương")
+	_bang(b.mau, mau_truoc, "máu boss không suy suyển")
+	_dung(b.dang_ngay, "nó đứng ngây thật, không phải chỉ bất tử")
+
+	# --- Hết khung thì đánh tiếp, và KHÔNG đổi giai đoạn lần nữa ---
+	await _cho(Boss.NGAY_DOI_GIAI_DOAN + 0.3)
+	_bang(b.may.ten_hien_tai, "quai_duoi", "hết khung là quay lại đuổi đánh")
+	b.an_don(10, 1.0, _nc.global_position)
+	await _hai_khung()
+	_bang(b.giai_doan, 2, "không có giai đoạn ba")
+
+	# --- Hạ boss: dạy chữ + cho hồn ---
+	var hon_truoc := Tui.hon
+	var chu_thuong: Array = b.d.get("thuong_chu", [])
+	for c in chu_thuong:
+		TriNho.so.erase(String(c))
+	b.an_don(99999, 1.0, _nc.global_position)
+	await _hai_khung()
+	_dung(not b.con_song(), "hạ được boss")
+	await _cho(0.6)
+	_dung(Tui.hon > hon_truoc, "boss cho hồn (%d → %d)" % [hon_truoc, Tui.hon])
+	var day_du := true
+	for c in chu_thuong:
+		if String(c) != "" and not TriNho.doc_duoc(String(c)):
+			day_du = false
+	_dung(day_du, "hạ boss là HỌC LUÔN mấy chữ ở cột thuong_chu (%s)"
+		% " ".join(chu_thuong))
+
 ## Máy trạng thái quái. Chạy CUỐI CÙNG vì nó xê dịch và hạ quái — mấy nhóm
 ## trước đếm đúng bốn con.
 func _may_trang_thai_quai() -> void:
 	_nhom("Máy trạng thái quái")
-	var ds := get_tree().get_nodes_in_group("quai")
+	var ds := _quai_thuong()
 	if ds.is_empty():
 		_dung(false, "không còn con quái nào để thử")
 		return
@@ -655,7 +746,7 @@ func _bit_mat_quai(bit: bool) -> void:
 		if q == null or not q.con_song():
 			continue
 		q.nguoi_choi = null if bit else _nc
-		if bit:
+		if bit and q.may.ten_hien_tai != "boss_doi_gd":
 			q.may.doi("quai_dung")
 
 ## Nhét một cái khiên vào tay trái, hoặc lấy ra. Khiên là điều kiện để parry
