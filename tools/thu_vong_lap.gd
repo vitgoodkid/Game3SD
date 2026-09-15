@@ -37,6 +37,7 @@ func _ready() -> void:
 	await _dat_canh()
 	await _the_luc_va_nut_danh()
 	await _cam_ket_va_iframe()
+	await _sieu_giap_va_phan_do()
 	await _phim_hanh_trang()
 	await _quai_roi_do()
 	await _nghi_bia_da()
@@ -100,6 +101,15 @@ func _hai_khung() -> void:
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 
+## Bấm một nút và GIỮ NGUYÊN (hoặc nhả ra). Khác _giu() ở chỗ không tự nhả —
+## cần cho giơ khiên, vì do_don.gd thoát ngay khi phím thôi được giữ.
+func _nut(hanh_dong: String, giu: bool) -> void:
+	var e := InputEventAction.new()
+	e.action = hanh_dong
+	e.pressed = giu
+	Input.parse_input_event(e)
+	await _hai_khung()
+
 func _dem_nhom(ten: String) -> int:
 	return get_tree().get_nodes_in_group(ten).size()
 
@@ -138,21 +148,28 @@ func _the_luc_va_nut_danh() -> void:
 		_dung(false, "không có người chơi để thử")
 		return
 	_nc.the_luc = _nc.the_luc_max
-	_nc.khung_tl = 0.0
+	_nc.tre_hoi = 0.0
 	await get_tree().physics_frame
 
-	# --- Bấm nhanh = đòn nhẹ, và KHÔNG tốn thể lực ---
+	# --- Bấm nhanh = đòn nhẹ, và TỐN thể lực (Elden Ring) ---
 	var truoc := _nc.the_luc
 	await _giu("don_nhe", 0.05)
 	await _hai_khung()
 	_bang(_nc.may.ten_hien_tai, "danh", "bấm nhanh chuột trái thì vào trạng thái đánh")
-	_bang(_nc.the_luc, truoc, "đòn nhẹ KHÔNG tốn thể lực")
-	_bang(_nc.khung_tl, 0.0, "đánh xong không bị khựng hồi thể lực")
-	await _cho(1.2)
+	var ton_nhe := truoc - _nc.the_luc
+	_dung(ton_nhe > 0.0, "đòn nhẹ TỐN thể lực (%.0f điểm)" % ton_nhe)
+	await _cho(1.6)
 
-	# --- Giữ lâu = đòn nặng, cũng không tốn ---
+	# --- Đánh xong là hồi lại, KHÔNG khựng ---
+	# Đây là chỗ hỏng cũ: mỗi lần tiêu đặt lại trọn 0.8s cấm hồi, ba nhát liên
+	# tiếp là thanh thể lực đứng hình. Mô hình ER chờ từ lúc đòn KẾT THÚC.
+	_dung(_nc.the_luc >= _nc.the_luc_max - 0.5,
+		"đánh xong chờ một nhịp là hồi đầy lại (%.0f/%.0f)"
+		% [_nc.the_luc, _nc.the_luc_max])
+
+	# --- Giữ lâu = đòn nặng, tốn nhiều hơn đòn nhẹ ---
 	_nc.the_luc = _nc.the_luc_max
-	_nc.khung_tl = 0.0
+	_nc.tre_hoi = 0.0
 	truoc = _nc.the_luc
 	await _giu("don_nhe", NguoiChoi.NGUONG_GIU_NANG + 0.12)
 	await _hai_khung()
@@ -160,12 +177,13 @@ func _the_luc_va_nut_danh() -> void:
 		% _nc.may.ten_hien_tai)
 	var don: String = _nc.may.hien_tai._don if _nc.may.ten_hien_tai == "danh" else "?"
 	_dung(don.begins_with("nang"), "giữ lâu ra đòn NẶNG (được '%s')" % don)
-	_bang(_nc.the_luc, truoc, "đòn nặng cũng KHÔNG tốn thể lực")
+	_dung(truoc - _nc.the_luc > ton_nhe, "đòn nặng tốn NHIỀU HƠN đòn nhẹ (%.0f > %.0f)"
+		% [truoc - _nc.the_luc, ton_nhe])
 	await _cho(1.6)
 
 	# --- Lăn thì tốn ---
 	_nc.the_luc = _nc.the_luc_max
-	_nc.khung_tl = 0.0
+	_nc.tre_hoi = 0.0
 	_nc.hoi_lan = 0.0
 	truoc = _nc.the_luc
 	await _giu("lan_chay", 0.05)
@@ -176,24 +194,36 @@ func _the_luc_va_nut_danh() -> void:
 
 	# --- Đỡ phản thì tốn ---
 	_nc.the_luc = _nc.the_luc_max
-	_nc.khung_tl = 0.0
+	_nc.tre_hoi = 0.0
 	truoc = _nc.the_luc
+	# Elden Ring KHÔNG cho parry tay không. Thử trần trước.
+	_dung(not _nc.co_khien(), "phép thử chạy với tay trái đang trống")
 	await _bam("do_phan")
 	await _hai_khung()
-	_bang(_nc.may.ten_hien_tai, "do_phan", "chuột phải ra đỡ phản")
-	_bang(_nc.the_luc, truoc - SoulsLike.THE_LUC_DO_PHAN, "đỡ phản TỐN đúng THE_LUC_DO_PHAN")
+	_bang(_nc.may.ten_hien_tai, "dung", "tay không thì chuột phải KHÔNG ra đỡ phản")
+	_bang(_nc.the_luc, truoc, "và không mất thể lực oan")
+
+	_dat_khien(true)
+	_dung(_nc.co_khien(), "cầm khiên vào tay trái")
+	await _bam("do_phan")
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "do_phan", "có khiên thì chuột phải ra đỡ phản")
+	_bang(_nc.the_luc, truoc - SoulsLike.THE_LUC_DO_PHAN,
+		"đỡ phản TỐN đúng THE_LUC_DO_PHAN")
 	await _cho(1.0)
+	_dat_khien(false)
 
 	# --- Cạn thể lực vẫn đánh được: đó là cả điểm của thay đổi này ---
 	_nc.the_luc = 0.0
-	_nc.khung_tl = 0.0
+	_nc.tre_hoi = 0.0
 	await get_tree().physics_frame
 	await _giu("don_nhe", 0.05)
 	await _hai_khung()
-	_bang(_nc.may.ten_hien_tai, "danh", "cạn sạch thể lực vẫn đánh được")
+	_bang(_nc.may.ten_hien_tai, "danh",
+		"cạn sạch thể lực vẫn vung được nhát cuối — ER cũng cho")
 	await _cho(1.2)
 	_nc.the_luc = _nc.the_luc_max
-	_nc.khung_tl = 0.0
+	_nc.tre_hoi = 0.0
 
 ## Bốn luật ghìm trận đánh, cả bốn đều không nhìn thấy trên màn hình và vì thế
 ## rất dễ bị nới ra lúc nào không ai hay: cam kết đòn, i-frame của cú lăn, đỡ
@@ -240,6 +270,7 @@ func _cam_ket_va_iframe() -> void:
 
 	# --- Đỡ phản trúng ---
 	_lam_moi_nguoi_choi()
+	_dat_khien(true)     # Elden Ring: không khiên thì không parry được
 	await _bam("do_phan")
 	await _hai_khung()
 	_bang(_nc.may.ten_hien_tai, "do_phan", "vào đỡ phản")
@@ -247,6 +278,7 @@ func _cam_ket_va_iframe() -> void:
 		"đỡ phản TRÚNG trả -1 — dấu hiệu cho bên gọi bắt quái ngây ra")
 	_bang(_nc.mau, _nc.mau_toi_da, "đỡ phản trúng thì không mất máu")
 	await _cho(1.0)
+	_dat_khien(false)
 
 	# --- Vỡ tư thế ---
 	_lam_moi_nguoi_choi()
@@ -269,6 +301,87 @@ func _cam_ket_va_iframe() -> void:
 	_bang(_nc.may.ten_hien_tai, "vo_the", "bị đánh tiếp cũng KHÔNG cắt được vỡ thế")
 	await _cho(SoulsLike.NGAY_SAU_VO + 0.3)
 	_bang(_nc.may.ten_hien_tai, "dung", "ngây hết giờ thì đứng dậy")
+	_lam_moi_nguoi_choi()
+	_bit_mat_quai(false)
+
+## Ba cơ chế lấy nguyên của Elden Ring, và cả ba đều vô hình trên màn hình.
+##
+##   siêu giáp   thế đứng TẠM THỜI trong mấy khung vung tay. Thiếu nó thì vũ
+##               khí nặng vô dụng — vung 1.2 giây mà ai chạm cũng cắt được.
+##   đòn phản đỡ vừa chặn được một đòn thì bấm đòn nặng ra đòn riêng. Đây là
+##               thứ biến giơ khiên từ phòng thủ thuần thành nước đi tấn công.
+##   vỡ đỡ       đỡ tới cạn thể lực thì choáng ra cho ăn kết liễu.
+func _sieu_giap_va_phan_do() -> void:
+	_nhom("Siêu giáp, đòn phản đỡ, vỡ đỡ")
+	if _nc == null:
+		_dung(false, "không có người chơi để thử")
+		return
+	_bit_mat_quai(true)
+	_lam_moi_nguoi_choi()
+
+	# --- Siêu giáp: đòn nặng của kiếm phải cõng được một đòn vặt ---
+	var nen := _nc.the_dung()
+	_bang(_nc.sieu_giap, 0.0, "đứng yên thì không có siêu giáp")
+	await _giu("don_nhe", NguoiChoi.NGUONG_GIU_NANG + 0.12)
+	await _hai_khung()
+	var don: String = _nc.may.hien_tai._don if _nc.may.ten_hien_tai == "danh" else "?"
+	var sg := float(VocabDB.don_cua(Tui.moveset_dang_dung(), don).get("sieu_giap", 0))
+	_dung(sg > 0.0, "đòn nặng '%s' có siêu giáp trong moveset.csv (%.0f)" % [don, sg])
+	_dung(_nc.sieu_giap > 0.0, "đang vung đòn nặng thì siêu giáp BẬT (%.0f)" % _nc.sieu_giap)
+	_dung(_nc.the_dung() > nen, "thế đứng lúc vung cao hơn lúc đứng yên (%.0f > %.0f)"
+		% [_nc.the_dung(), nen])
+
+	# Một đòn vặt mạnh hơn thế đứng thường, nhưng yếu hơn siêu giáp → không cắt.
+	_nc.an_don(1, nen + 1.0, _truoc_mat())
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "danh", "đòn vặt KHÔNG cắt được đòn đang vung")
+
+	# Đòn to hơn cả siêu giáp thì vẫn cắt được — siêu giáp không phải bất tử.
+	_nc.an_don(1, _nc.the_dung() + 1.0, _truoc_mat())
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "trung_don", "đòn to hơn siêu giáp thì vẫn cắt được")
+	await _cho(1.2)
+	_lam_moi_nguoi_choi()
+
+	# --- Siêu giáp phải TẮT trong khung hồi, nếu không thì đánh là bất khả xâm phạm ---
+	await _giu("don_nhe", NguoiChoi.NGUONG_GIU_NANG + 0.12)
+	await _cho(1.1)
+	_bang(_nc.sieu_giap, 0.0, "hết khung gây sát thương là siêu giáp TẮT")
+	await _cho(0.8)
+	_lam_moi_nguoi_choi()
+
+	# --- Đòn phản đỡ ---
+	_dat_khien(true)
+	await _nut("do_don", true)
+	_bang(_nc.may.ten_hien_tai, "do_don", "giơ khiên lên")
+	_bang(_nc.cho_phan_do, 0.0, "chưa đỡ được gì thì chưa có cửa sổ phản đỡ")
+	var mau_truoc := _nc.mau
+	_nc.an_don(40, 5.0, _truoc_mat())
+	_dung(_nc.mau > mau_truoc - 40.0, "đỡ được thì ăn ít sát thương hơn")
+	_dung(_nc.cho_phan_do > 0.0, "đỡ TRÚNG thì mở cửa sổ đòn phản (%.2fs)"
+		% _nc.cho_phan_do)
+	await _giu("don_nhe", NguoiChoi.NGUONG_GIU_NANG + 0.12)
+	await _hai_khung()
+	var pd: String = _nc.may.hien_tai._don if _nc.may.ten_hien_tai == "danh" else "?"
+	_bang(pd, "phan_do", "bấm đòn nặng trong cửa sổ đó ra ĐÒN PHẢN")
+	var m_pd := VocabDB.don_cua(Tui.moveset_dang_dung(), "phan_do")
+	var m_nhe := VocabDB.don_cua(Tui.moveset_dang_dung(), "nhe_1")
+	_dung(float(m_pd["pha_the"]) == float(m_nhe["pha_the"]) * 6.0,
+		"đòn phản phá thế gấp 6 lần đòn nhẹ — đúng tỉ lệ ER (%d vs %d)"
+		% [int(m_pd["pha_the"]), int(m_nhe["pha_the"])])
+	await _cho(1.2)
+
+	# --- Vỡ đỡ: đỡ tới cạn thể lực thì choáng ---
+	await _nut("do_don", false)
+	_lam_moi_nguoi_choi()
+	await _nut("do_don", true)
+	_nc.the_luc = 1.0
+	_nc.an_don(90, 5.0, _truoc_mat())
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "vo_the", "đỡ tới cạn thể lực là VỠ ĐỠ")
+	await _nut("do_don", false)
+	await _cho(SoulsLike.NGAY_SAU_VO + 0.3)
+	_dat_khien(false)
 	_lam_moi_nguoi_choi()
 	_bit_mat_quai(false)
 
@@ -338,12 +451,24 @@ func _bit_mat_quai(bit: bool) -> void:
 		if bit:
 			q.may.doi("quai_dung")
 
+## Nhét một cái khiên vào tay trái, hoặc lấy ra. Khiên là điều kiện để parry
+## và là thứ quyết định đỡ tốn bao nhiêu thể lực (Elden Ring).
+func _dat_khien(co: bool) -> void:
+	if not co:
+		Tui.mac["tay_trai"][Tui.tay_trai_dang] = null
+		Tui.doi_trang_bi.emit()
+		return
+	TriNho.hoc("盾")
+	var khien := MonDo.new(["盾"], 1)
+	Tui.mac["tay_trai"][Tui.tay_trai_dang] = khien
+	Tui.doi_trang_bi.emit()
+
 ## Đưa người chơi về trạng thái sạch giữa hai phép thử — đầy máu, đầy thể lực,
 ## không còn khựng, không còn dư i-frame hay hồi lăn của cú trước.
 func _lam_moi_nguoi_choi() -> void:
 	_nc.mau = _nc.mau_toi_da
 	_nc.the_luc = _nc.the_luc_max
-	_nc.khung_tl = 0.0
+	_nc.tre_hoi = 0.0
 	_nc.tu_the = 0.0
 	_nc.hoi_lan = 0.0
 	_nc.bat_tu = false

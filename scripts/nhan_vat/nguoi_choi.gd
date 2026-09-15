@@ -47,9 +47,17 @@ var mau_toi_da := 300.0
 var the_luc := 100.0
 var the_luc_max := 100.0
 ## Còn bao lâu nữa mới bắt đầu hồi thể lực (mục 5.1: khựng ~0.8s).
-var khung_tl := 0.0
+## Còn bao lâu nữa thì thể lực bắt đầu hồi. Đếm lùi khi KHÔNG bận hành động.
+var tre_hoi := 0.0
+var _phat_can := 0.0    ## phạt thêm vì vừa cạn sạch thể lực
 ## Đang bất tử (i-frame giữa cú lăn).
 var bat_tu := false
+## Siêu giáp (hyperarmor) của đòn đang vung. Cộng thẳng vào thế đứng, chỉ sống
+## trong mấy khung vung tay — xem danh.gd. Đây là thứ cho phép vung rìu 1.2
+## giây giữa bầy quái mà không bị nhát chém vặt nào cắt ngang.
+var sieu_giap := 0.0
+## Vừa đỡ trúng một đòn thì còn bấy nhiêu giây để bấm đòn nặng ra ĐÒN PHẢN.
+var cho_phan_do := 0.0
 ## Đang trong khung đỡ phản.
 var dang_do_phan := false
 ## Đang giơ khiên.
@@ -104,6 +112,7 @@ func _physics_process(delta: float) -> void:
 	hoi_lan = maxf(0.0, hoi_lan - delta)
 	_hoi_the_luc(delta)
 	_tut_tu_the(delta)
+	cho_phan_do = maxf(0.0, cho_phan_do - delta)
 	_don_dem(delta)
 	_doc_huong_nhap()
 	may.chay(delta)
@@ -236,25 +245,40 @@ func huong_mat() -> Vector3:
 
 # --- Thể lực --------------------------------------------------------
 
+## Hồi thể lực theo mô hình Elden Ring, không phải mô hình cũ.
+##
+## Cũ: mỗi lần TIÊU là đặt lại trọn 0.8s cấm hồi ⇒ đánh ba nhát liên tiếp là
+##     ba lần đặt lại, thanh thể lực đứng hình, trận đánh khựng cứng.
+## Nay: đang BẬN (đánh/lăn/chạy/giơ khiên) thì không hồi; hết bận rồi chờ
+##     `tre_hoi_the_luc` giây là hồi, và hồi nhanh.
+##
+## Khác biệt nằm ở chỗ mốc trễ tính từ lúc hành động KẾT THÚC, nên nó không
+## cộng dồn theo số nhát chém.
 func _hoi_the_luc(delta: float) -> void:
-	if khung_tl > 0.0:
-		khung_tl -= delta
+	var ban := may.hien_tai != null and not may.hien_tai.cho_hoi_the_luc()
+	if ban:
+		# Còn đang bận thì mốc trễ nằm im, chờ sẵn cho lúc xong việc.
+		tre_hoi = SoulsLike.tre_hoi_the_luc + _phat_can
 		return
-	if dang_do:
-		return  # giơ khiên thì không hồi — đó là giá của việc đứng thủ
+	if tre_hoi > 0.0:
+		tre_hoi -= delta
+		return
+	_phat_can = 0.0
 	if the_luc >= the_luc_max:
 		return
 	the_luc = minf(the_luc_max, the_luc + SoulsLike.hoi_the_luc * delta)
 	doi_the_luc.emit(the_luc, the_luc_max)
 
-## Tiêu thể lực. Cạn sạch thì khựng lâu hơn (mục 5.1).
+## Tiêu thể lực. Cạn SẠCH thì bị phạt thêm một khoảng trễ nữa — cạn kiệt phải
+## đau hơn tiêu vừa đủ, nếu không thì không ai buồn quản lý thể lực (mục 5.1).
 func ton_the_luc(luong: float) -> void:
 	if luong <= 0.0:
 		return
 	the_luc = maxf(0.0, the_luc - luong)
-	khung_tl = SoulsLike.khung_the_luc
+	tre_hoi = maxf(tre_hoi, SoulsLike.tre_hoi_the_luc)
 	if the_luc <= 0.0:
-		khung_tl += SoulsLike.phat_can_the_luc
+		_phat_can = SoulsLike.phat_can_the_luc
+		tre_hoi += _phat_can
 	doi_the_luc.emit(the_luc, the_luc_max)
 
 func du_the_luc() -> bool:
@@ -272,9 +296,12 @@ func them_tu_the(luong: float) -> bool:
 	tu_the = 0.0
 	return true
 
-## Thế đứng hiện tại — từ giáp đang mặc. Giáp nặng thì ăn đòn nhỏ không khựng.
+## Thế đứng hiện tại = phần BỊ ĐỘNG từ giáp đang mặc, cộng SIÊU GIÁP tạm thời
+## của đòn đang vung (nếu đang vung). Elden Ring tách đôi đúng như vậy: mặc
+## giáp cho thế đứng thường trực, còn siêu giáp chỉ bật trong khung của một số
+## đòn — và chính siêu giáp mới là thứ quyết định vũ khí nặng có chơi được không.
 func the_dung() -> float:
-	return Tui.tong_nang() * 0.9 + float(Tui.cs("韧")) * 0.6
+	return Tui.tong_nang() * 0.9 + float(Tui.cs("韧")) * 0.6 + sieu_giap
 
 # --- Ăn đòn ---------------------------------------------------------
 
@@ -300,12 +327,20 @@ func an_don(sat_thuong: int, pha_the: float, tu_dau: Vector3, hanh: String = "")
 
 	if dang_do and _don_tu_phia_truoc(tu_dau):
 		var chan := _chi_so_chan()
+		ton_the_luc(SoulsLike.the_luc_do(st, _chi_so_chan_do()))
 		st = SoulsLike.sat_thuong_sau_do(st, chan)
 		mat_mau(st)
-		# Đỡ KHÔNG còn tốn thể lực, nên thứ giữ cho "đứng giơ khiên" khỏi
-		# thành chiến thuật tối ưu ở mọi tình huống là TƯ THẾ: đỡ mãi thì
-		# thanh tư thế đầy rồi vỡ thế, kiểu Sekiro. Trước đây việc này do thể
-		# lực làm; đổi tay chứ không bỏ, vì bỏ hẳn là trận đánh chết tại chỗ.
+		if the_luc <= 0.0:
+			# VỠ ĐỠ (guard break của ER): đỡ một đòn nặng hơn số thể lực còn
+			# lại thì đòn đó vẫn chặn được, nhưng người chơi choáng ra và ăn
+			# trọn một đòn kết liễu. Đây là giá của việc đứng thủ lì.
+			may.xin_doi("vo_the")
+			return st
+		# Đỡ TRÚNG thì mở cửa sổ đòn phản — bấm đòn nặng ngay là ra đòn riêng,
+		# phá thế ngang đòn nặng nạp. Không có cái này thì giơ khiên là hành
+		# động thuần phòng thủ và build khiên không bao giờ thắng nổi cuộc đua
+		# sát thương; ER thêm đúng cơ chế này để chữa.
+		cho_phan_do = SoulsLike.cua_so_phan_do
 		if them_tu_the(pha_the * SoulsLike.TU_THE_KHI_DO):
 			may.xin_doi("vo_the")
 		return st
@@ -331,9 +366,26 @@ func _hanh_giap() -> String:
 	var ds := Tui.hanh_dang_mac()
 	return "" if ds.is_empty() else String(ds[0])
 
+## Chặn được bao nhiêu phần sát thương (0-100).
+##
+## Không cầm khiên thì vẫn đỡ được, nhưng kém hẳn — đó là đỡ bằng chính cây vũ
+## khí, thứ Elden Ring cho phép khi cầm hai tay và cố tình để rất tệ. Con số
+## này trước đây là 55 cho tay không, cao hơn cả khiên tệ nhất (40), khiến khe
+## tay trái gần như vô nghĩa.
 func _chi_so_chan() -> int:
 	var kh = Tui.tay_trai_dang_cam()
-	return 55 if kh == null else clampi(int(kh.sat_thuong() * 1.6), 40, 95)
+	return 35 if kh == null else clampi(int(kh.sat_thuong() * 1.6), 40, 95)
+
+## Chặn đỡ (guard boost của ER, 0-100): càng cao thì đỡ một đòn càng đỡ tốn
+## thể lực. Khiên to chặn đỡ cao, tay không thì gần như không có.
+func _chi_so_chan_do() -> int:
+	var kh = Tui.tay_trai_dang_cam()
+	return 10 if kh == null else clampi(int(kh.nang() * 3.0), 20, 90)
+
+## Tay trái có đang cầm khiên không. Elden Ring KHÔNG cho parry tay không —
+## phải có khiên nhỏ/vừa, hoặc vũ khí được gắn Ash of War "Parry".
+func co_khien() -> bool:
+	return Tui.tay_trai_dang_cam() != null
 
 func mat_mau(n: int) -> void:
 	if n <= 0:
@@ -361,7 +413,8 @@ func song_lai(tai: Vector3) -> void:
 	mau = Tui.mau
 	the_luc_max = Tui.the_luc_toi_da()
 	the_luc = the_luc_max
-	khung_tl = 0.0
+	tre_hoi = 0.0
+	_phat_can = 0.0
 	hoi_lan = 0.0
 	tu_the = 0.0
 	dat_muc_tieu(null)

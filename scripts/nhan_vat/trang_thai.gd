@@ -28,6 +28,18 @@ func nhap(_su_kien: InputEvent) -> void:
 func tien_do() -> float:
 	return 0.0
 
+## State này có cho hồi thể lực trong lúc nó đang chạy không.
+##
+## MẶC ĐỊNH LÀ CHO. Bốn state nói không: đánh, lăn, chạy, giơ khiên — đúng như
+## Elden Ring. Đây là nửa đầu của mô hình hồi thể lực kiểu ER; nửa sau là
+## `NguoiChoi.tre_hoi`, đếm lùi SAU KHI state bận kết thúc.
+##
+## Vì sao phải là state tự khai chứ không phải đặt cờ lúc tiêu: đặt lúc tiêu
+## thì mỗi nhát chém lại đẩy lùi mốc hồi thêm một lần, và ba nhát liên tiếp là
+## thanh thể lực đứng hình. Đó đúng là lỗi từng làm combat game này khựng cứng.
+func cho_hoi_the_luc() -> bool:
+	return true
+
 ## Có cho đổi sang state `ten` không.
 ##
 ## MẶC ĐỊNH LÀ CHO. State nào muốn khoá thì tự chặn — cam kết đòn đánh nằm ở

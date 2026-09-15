@@ -35,7 +35,7 @@ const COT_SO_KV := ["cap", "x", "y", "rong", "cao", "so_quai", "boss"]
 const COT_SO_NL := ["cong"]
 const COT_NHIEU_TB := ["thanh_phan"]
 const COT_SO_TB := ["gia_tri"]
-const COT_SO_MV := ["t_vung", "t_dam_tu", "t_dam_den", "t_hoi", "the_luc",
+const COT_SO_MV := ["sieu_giap", "t_vung", "t_dam_tu", "t_dam_den", "t_hoi", "the_luc",
 	"he_so", "pha_the", "huy_duoc", "tam_voi", "goc_quet"]
 const COT_NHIEU_QUAI := ["moveset", "rot_bo_thu"]
 const COT_SO_QUAI := ["mau", "giap", "the_dung", "cao", "ban_kinh",
@@ -346,7 +346,8 @@ func ky_nang_cua(chu: String) -> Dictionary:
 func moveset_cua(chu: String) -> Array:
 	return _mv_theo_chu.get(chu, _mv_theo_chu.get("拳", []))
 
-## Một đòn cụ thể: don là nhe_1 / nhe_2 / nhe_3 / nang / nang_nap / chay / nhay.
+## Một đòn cụ thể: don là nhe_1 / nhe_2 / nhe_3 / nang / nang_nap / chay / nhay
+## / phan_do (đòn phản sau khi đỡ trúng).
 ## Thiếu đòn đó thì lùi về nhe_1 — dữ liệu thiếu thì xấu, chứ không được đứng im.
 func don_cua(chu: String, don: String) -> Dictionary:
 	var ds := moveset_cua(chu)

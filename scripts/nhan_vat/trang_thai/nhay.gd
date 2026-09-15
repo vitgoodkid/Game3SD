@@ -8,6 +8,7 @@ extends TTNguoiChoi
 
 func vao(_du_lieu: Dictionary = {}) -> void:
 	nc.velocity.y = NguoiChoi.LUC_NHAY
+	nc.ton_the_luc(SoulsLike.THE_LUC_NHAY)
 	nc.dang_do = false
 
 func chay(delta: float) -> void:

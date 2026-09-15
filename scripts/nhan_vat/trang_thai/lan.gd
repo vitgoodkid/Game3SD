@@ -30,7 +30,9 @@ func vao(_du_lieu: Dictionary = {}) -> void:
 	nc.dang_do = false
 	# Lăn xong mới được lăn tiếp — chặn ngay từ lúc vào, không đợi lúc ra,
 	# để thoát state giữa chừng (trúng đòn) cũng không lách được.
-	nc.hoi_lan = SoulsLike.hoi_lan + _dai
+	# ER phạt giáp nặng ở ĐÂY chứ không ở i-frame: lăn xong đứng ì gấp đôi
+	# (8 khung hồi ở tải nhẹ/vừa, 16 khung ở tải nặng).
+	nc.hoi_lan = SoulsLike.hoi_lan_thuc(nc.ti_le_tai()) + _dai
 
 func ra() -> void:
 	nc.bat_tu = false
@@ -57,3 +59,6 @@ func tien_do() -> float:
 ## bằng cách bấm đánh — nếu cho thì lăn thành nút "bất tử miễn phí".
 func cho_doi(ten: String) -> bool:
 	return ten in ["trung_don", "chet", "vo_the", "dung"]
+
+func cho_hoi_the_luc() -> bool:
+	return false

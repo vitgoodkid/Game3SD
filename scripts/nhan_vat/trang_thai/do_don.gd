@@ -21,8 +21,16 @@ func chay(delta: float) -> void:
 	if nc.lay_dem("lan") and nc.hoi_lan <= 0.0:
 		di("lan")
 		return
-	if nc.lay_dem("do_phan"):
+	if nc.lay_dem("do_phan") and nc.co_khien():
 		di("do_phan")
+		return
+	# ĐÒN PHẢN SAU KHI ĐỠ (guard counter). Vừa chặn được một đòn thì bấm đòn
+	# nặng trong cửa sổ ngắn sẽ ra đòn riêng, phá thế ngang đòn nặng nạp. Xét
+	# TRƯỚC đòn nhẹ vì đây là nước đi người chơi cố ý chọn, không được để một
+	# cú bấm nhầm đòn nhẹ nuốt mất.
+	if nc.cho_phan_do > 0.0 and nc.lay_dem("don_nang"):
+		nc.cho_phan_do = 0.0
+		di("danh", {"don": "phan_do"})
 		return
 	if nc.lay_dem("don_nhe"):
 		di("danh", {"don": "nhe_1"})
@@ -35,3 +43,8 @@ func chay(delta: float) -> void:
 		nc.xoay_ve(nc.huong_nhap, delta)
 	else:
 		nc.dung_lai(delta)
+
+## Giơ khiên thì KHÔNG hồi thể lực — đó là giá của việc đứng thủ, và là lý do
+## Elden Ring bảo chỉ giơ khiên khi đoán được đòn sắp tới.
+func cho_hoi_the_luc() -> bool:
+	return false

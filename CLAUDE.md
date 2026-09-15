@@ -43,12 +43,13 @@ Sửa file đó thì chạy lại test ngay.
 Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.exe`).
 
 ```bash
-# kiểm tầng luật — 170 test trong một khung hình, thoát mã 1 nếu hỏng
+# kiểm tầng luật — 171 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + combat — 84 test, nạp phòng thử thật và diễn lại:
-# đánh, cam kết đòn, i-frame, đỡ phản, vỡ thế, state machine quái, chết, rơi
-# vũng hồn, đứng dậy ở bia, quái sống lại. Chạy mất ~35 giây vì phải đợi thật.
+# kiểm vòng lặp souls + combat — 102 test, nạp phòng thử thật và diễn lại:
+# đánh, thể lực, cam kết đòn, i-frame, siêu giáp, đòn phản đỡ, vỡ đỡ, đỡ phản,
+# state machine quái, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại.
+# Chạy mất ~45 giây vì phải đợi thật.
 godot --headless --path . tools/thu_vong_lap.tscn
 
 # chạy thử game 10 giây, bắt lỗi lúc chạy
@@ -121,15 +122,23 @@ tools/           kiểm tra + sinh dữ liệu
   hack-n-slash. Đừng nới.
 - **Mọi con số cảm giác** nằm trong `souls_like.gd` và `data/moveset.csv`.
   Đừng rải hằng số vào state.
-- **Chỉ ba thứ tốn thể lực: lăn, đỡ phản, chạy.** Đánh / nhảy / đỡ đòn KHÔNG
-  tốn — quyết định của chủ dự án, xem mục "Cái gì tốn thể lực" ở đầu phần thể
-  lực trong `souls_like.gd`. Cột `the_luc` của `moveset.csv` vì vậy hiện không
-  ai đọc. Thứ ghìm nhịp đòn đánh là cam kết đòn + `t_hoi`; thứ ghìm "đứng giơ
-  khiên" là tư thế. Có test canh cả năm điều này trong `thu_vong_lap.gd`.
+- **Combat làm theo Elden Ring.** Chủ dự án yêu cầu bám ER. Xem mục "Combat
+  kiểu Elden Ring" ở cuối `TIEN_DO.md` để biết chỗ nào giống, chỗ nào cố ý
+  khác và vì sao. Đổi gì trong combat thì đối chiếu lại mục đó trước.
+- **Thể lực (ER):** đánh, lăn, nhảy, chạy, và đỡ một đòn đều TỐN. Cái quyết
+  định không phải là "tốn hay không" mà là CÁCH HỒI: đang bận hành động thì
+  không hồi (`TrangThaiMay.cho_hoi_the_luc()`), xong việc rồi chờ
+  `tre_hoi_the_luc` giây là hồi nhanh. **Đừng bao giờ đặt lại mốc trễ ở chỗ
+  TIÊU** — làm thế thì mỗi nhát chém đẩy lùi mốc hồi thêm một lần, ba nhát
+  liên tiếp là thanh thể lực đứng hình. Đó đúng là lỗi từng làm combat khựng.
 - **Chuột trái ra cả hai đòn**: nhả trước `NguoiChoi.NGUONG_GIU_NANG` là đòn
   nhẹ, giữ lâu hơn là đòn nặng (giữ tiếp nữa thành đòn nạp). Chuột phải là đỡ
-  phản. Không còn action `don_nang` trong input map; tên `don_nang` giờ chỉ là
-  tên trong bộ đệm phím.
+  phản, **cần khiên ở tay trái** (ER không cho parry tay không). Q giơ khiên;
+  đỡ trúng rồi bấm đòn nặng trong `cua_so_phan_do` giây là ra **đòn phản đỡ**.
+  Không còn action `don_nang` trong input map.
+- **Siêu giáp (hyperarmor)** là cột `sieu_giap` của `moveset.csv`, cộng vào
+  `NguoiChoi.the_dung()` chỉ trong khung vung tay rồi TẮT ở khung hồi. Gỡ chỗ
+  tắt đi là vũ khí nặng thành bất khả xâm phạm và trận đánh mất hết rủi ro.
 - **Ba con số quyết định** (mục 5.2 của bản yêu cầu), có test canh khoảng:
   i-frame lăn 0.30–0.40s · khựng thể lực 0.6–1.0s · hồi đòn nặng 0.7–1.2s.
 - Chưa có model nào. Nhân vật và quái dựng bằng khối hộp sinh trong code
@@ -152,6 +161,7 @@ Hộp đòn người chơi bắt lớp 3; hộp đòn quái bắt lớp 2.
 |---|---|
 | chữ mới | `data/tu_vung.csv` |
 | loại vũ khí mới | `data/nguyen_lieu.csv` (vi_tri=trung_tam) + `data/moveset.csv` |
+| khiên mới | `data/nguyen_lieu.csv` với `loai=khien`, `bo_phan=tay_trai` |
 | quái mới | `data/quai.csv`, đòn của nó vào `data/don_quai.csv` |
 | boss mới | `data/boss.csv` |
 | vùng mới | `data/vung.csv` |

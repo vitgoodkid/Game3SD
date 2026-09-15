@@ -83,12 +83,52 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 
 | Lệnh | Kiểm gì |
 |---|---|
-| `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 170 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 84 test theo thời gian |
+| `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 171 test trong một khung hình |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat trong phòng thử thật, 102 test theo thời gian |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
 qua nhiều node**, tầng luật không với tới được.
+
+## Combat kiểu Elden Ring
+
+Chủ dự án yêu cầu bám ER. Đây là bảng đối chiếu — **đọc trước khi đổi gì trong
+combat**, vì mấy chỗ "cố ý khác" rất dễ bị sửa nhầm về ER rồi hỏng thứ khác.
+
+### Đã làm y hệt
+
+| Cơ chế | Elden Ring | Ở đây |
+|---|---|---|
+| Ngưỡng tải trọng | 30% / 70% / 100% | `SoulsLike.NGUONG_TAI`, đúng ba mốc |
+| i-frame theo tải | gần như PHẲNG (13/13/12 khung) | 1.00 / 1.00 / 0.92, quá tải = 0 |
+| Phạt giáp nặng | ở HỒI LĂN (8 khung → 16 khung) | `HOI_LAN_TAI`, nặng ×2 |
+| Quãng lăn theo tải | 4.09 / 3.21 / 2.66 / 0.51 m | cột `xa`: 1.00 / 0.78 / 0.65 / 0.12 |
+| Cái gì tốn thể lực | đánh, lăn, nhảy, chạy, đỡ một đòn | y hệt |
+| Hồi thể lực | không hồi lúc bận, xong việc chờ ngắn rồi hồi nhanh | `cho_hoi_the_luc()` + `tre_hoi` |
+| Không hồi khi giơ khiên | có | `do_don.cho_hoi_the_luc()` |
+| Siêu giáp (hyperarmor) | thế đứng tạm trong khung vung, đòn nặng/vũ khí to mới có | cột `sieu_giap` của `moveset.csv` |
+| Tỉ lệ phá thế | nhẹ 5 · nhảy-nhẹ 8 · nặng 10 · nhảy-nặng 20 · nạp 30 · phản đỡ 30 | ×1 / ×1.6 / ×2 / ×4 / ×6 / ×6 trên nền đòn nhẹ |
+| Đòn phản đỡ (guard counter) | đỡ trúng rồi bấm đòn nặng, phá thế ngang đòn nạp | đòn `phan_do`, `cua_so_phan_do` |
+| Vỡ đỡ (guard break) | đỡ tới cạn thể lực → choáng, ăn kết liễu | `NguoiChoi.an_don()` |
+| Parry cần khiên | không parry tay không được | `NguoiChoi.co_khien()`, khe `tay_trai` chỉ nhận `loai=khien` |
+| Chặn đỡ (guard boost) | khiên tốt thì đỡ đỡ tốn thể lực | `_chi_so_chan_do()` |
+
+### Cố ý KHÁC, và vì sao
+
+- **i-frame 0.35s chứ không phải 0.217s.** ER cho 13 khung ở 60fps = 0.217s.
+  Mục 5.2 của `PROMPT_3D.md` lại bắt i-frame nằm trong **0.30–0.40s**, và có
+  test canh. Hai bên đá nhau; chọn theo bản yêu cầu của chính dự án. Muốn đúng
+  ER thì đổi `SoulsLike.iframe_lan` về 0.22 và sửa khoảng trong `kiem_tra.gd`.
+- **Không có cầm hai tay.** ER cho cầm hai tay để đỡ bằng vũ khí và +30% phá
+  thế. Ở đây tay trái là khe khiên riêng; tay không vẫn đỡ được nhưng chặn
+  chỉ 35 (khiên tệ nhất là 40), coi như thay cho "đỡ bằng vũ khí".
+- **Thế đứng và phá thế dùng CHUNG một con số** (`pha_the`). ER tách đôi:
+  poise damage quyết định có khựng không, stance damage mới tích vào thanh vỡ
+  thế. Gộp lại để `moveset.csv` khỏi có hai cột phải cân riêng — tách ra là
+  việc làm sau nếu thấy thiếu.
+- **Không có Ash of War.** ER cho gắn kỹ năng lên vũ khí, gồm cả Parry lên dao
+  và nắm đấm. Ở đây parry buộc phải có khiên, không có đường vòng.
+- **Nhảy né đòn quét** có, nhưng chưa có đòn quét ngang nào của boss để né.
 
 ## Cần người, agent không làm thay được
 

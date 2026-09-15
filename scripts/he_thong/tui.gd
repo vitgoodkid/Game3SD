@@ -306,8 +306,13 @@ func mac_vao(mon: MonDo, khe: String, o: int = -1) -> bool:
 func _hop_khe(mon: MonDo, khe: String, o: int) -> bool:
 	var loai := mon.loai()
 	match khe:
-		"vu_khi", "tay_trai":
+		"vu_khi":
 			return loai == "vukhi"
+		"tay_trai":
+			# Tay trái là khe KHIÊN, không phải khe vũ khí thứ hai. Elden Ring
+			# tách hẳn hai thứ: khiên có chỉ số chặn đỡ riêng, và parry chỉ
+			# làm được khi tay trái có khiên.
+			return loai == "khien"
 		"giap":
 			# Bốn ô giáp cố định theo bộ phận: đầu / thân / tay / chân.
 			if loai != "giap":

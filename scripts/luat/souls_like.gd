@@ -18,14 +18,26 @@ extends Node
 ## Đây là con số quan trọng nhất của cả game.
 @export var iframe_lan := 0.35
 ## Lăn xong bao lâu mới lăn tiếp được — không có cái này thì spam lăn là bất tử.
+## ER: 8 khung hồi ở tải nhẹ/vừa, 16 khung ở tải nặng — nhân theo HOI_LAN_TAI.
 @export var hoi_lan := 0.45
+## Hệ số hồi lăn theo mức tải. Đây mới là chỗ ER phạt giáp nặng, không phải
+## i-frame: lăn xong đứng ì gấp đôi thì vẫn ăn đòn thứ hai của chuỗi.
+const HOI_LAN_TAI := {"nhe": 1.0, "vua": 1.0, "nang": 2.0, "qua_tai": 3.0}
 ## Tổng thời gian một cú lăn (gồm cả phần đã hết bất tử nhưng chưa đứng dậy).
 @export var thoi_gian_lan := 0.62
 
-## Cạn/tốn thể lực xong KHỰNG bấy nhiêu giây rồi mới bắt đầu hồi.
-## Đây là thứ ép người chơi phải nhịp, không phải bấm liên tục.
-@export var khung_the_luc := 0.80
-## Thể lực hồi mỗi giây (khi đã qua khựng và không chạy/đỡ).
+## Hành động xong bao lâu thì thể lực bắt đầu hồi lại.
+##
+## ĐỌC KỸ CHỖ NÀY TRƯỚC KHI SỬA. Đây từng là chỗ hỏng nặng nhất của combat:
+## con số này trước kia bị đặt lại MỖI LẦN tiêu thể lực, mà một đòn đánh tiêu
+## ngay lúc bắt đầu vung — nên đánh liên tiếp ba nhát là ba lần đặt lại, thanh
+## thể lực gần như không bao giờ được hồi, và trận đánh khựng cứng.
+##
+## Elden Ring không làm vậy. Nó không hồi thể lực TRONG LÚC hành động (đánh,
+## lăn, chạy, giơ khiên), rồi chờ một khoảng NGẮN sau khi hành động KẾT THÚC
+## và hồi rất nhanh. Cài ở `TrangThaiMay.cho_hoi_the_luc()` + `tre_hoi`.
+@export var tre_hoi_the_luc := 0.40
+## Thể lực hồi mỗi giây, khi đã qua trễ và không đang bận hành động nào.
 @export var hoi_the_luc := 45.0
 ## Cạn sạch thể lực thì phạt thêm bấy nhiêu giây nữa mới hồi — cạn kiệt phải
 ## đau hơn là tiêu vừa đủ, nếu không thì không ai buồn quản lý thể lực.
@@ -40,23 +52,25 @@ extends Node
 const THE_LUC_GOC := 90.0
 const THE_LUC_MOI_NHAN := 2.4
 
-## CÁI GÌ TỐN THỂ LỰC — danh sách đóng, đúng ba thứ:
+## CÁI GÌ TỐN THỂ LỰC — theo đúng Elden Ring: đánh, lăn, nhảy, chạy, và đỡ
+## một đòn. Tất cả đều tiêu.
 ##
-##   lăn        THE_LUC_LAN, theo mốc
-##   đỡ phản    THE_LUC_DO_PHAN, theo mốc
+##   đánh       cột `the_luc` của moveset.csv, theo mốc, lúc bắt đầu vung
+##   lăn        THE_LUC_LAN
+##   nhảy       THE_LUC_NHAY
+##   đỡ phản    THE_LUC_DO_PHAN
+##   đỡ một đòn = sát thương gốc × THE_LUC_DO_MOI_SAT_THUONG, giảm theo
+##              chỉ số CHẶN ĐỠ của khiên (guard boost của ER)
 ##   chạy       THE_LUC_CHAY_MOI_GIAY, liên tục theo giây
 ##
-## Đánh, nhảy, và đỡ đòn KHÔNG tốn. Đây là quyết định của chủ dự án, không
-## phải thiếu sót: thanh thể lực chỉ còn trả lời đúng một câu — "còn mấy cú
-## lăn nữa" — nên người chơi đọc nó bằng liếc mắt giữa trận.
-##
-## Hệ quả phải bù ở chỗ khác, đừng gỡ mất:
-##   · nhịp đòn đánh giờ do cam kết đòn + khung hồi (t_hoi) ghìm, xem danh.gd
-##   · giơ khiên giờ do TƯ THẾ ghìm, không do thể lực, xem NguoiChoi.an_don()
-## Cột `the_luc` của moveset.csv vì vậy hiện không ai đọc.
+## Cái KHÔNG tốn: đứng giơ khiên mà không ăn đòn nào. Nhưng giơ khiên thì
+## không hồi — xem cho_hoi_the_luc().
 const THE_LUC_CHAY_MOI_GIAY := 14.0
 const THE_LUC_LAN := 22.0
+const THE_LUC_NHAY := 12.0
 const THE_LUC_DO_PHAN := 10.0
+## Đỡ một đòn tốn = sát thương gốc × hệ số này, rồi giảm theo chặn đỡ.
+const THE_LUC_DO_MOI_SAT_THUONG := 0.55
 
 func the_luc_toi_da(nhan: int) -> float:
 	return THE_LUC_GOC + THE_LUC_MOI_NHAN * float(maxi(nhan, 0))
@@ -68,13 +82,24 @@ func du_the_luc(hien_tai: float) -> bool:
 
 # --- i-frame và tải trọng -------------------------------------------
 
-## Mức tải: nhẹ / vừa / nặng / quá tải (mục 6.1). Ngưỡng tính theo % sức chứa.
+## Mức tải: nhẹ / vừa / nặng / quá tải (mục 6.1). Ngưỡng tính theo % sức chứa
+## — ba con số 30% / 70% / 100% lấy đúng của Elden Ring.
+##
+## Cột `iframe` bám theo ER và vì thế gần như PHẲNG: ER cho 13 khung bất tử ở
+## tải nhẹ, 13 ở tải vừa, 12 ở tải nặng — chênh nhau đúng một khung hình. Mặc
+## nặng ở ER KHÔNG làm cửa sổ né hẹp đi đáng kể; thứ tụt hẳn là QUÃNG ĐƯỜNG
+## lăn (4.09m / 3.21m / 2.66m / 0.51m — đó là cột `xa`) và độ ì khi hồi.
+##
+## Bản trước của file này cho tải nặng 0.85 và quá tải 0.60 — mặc giáp nặng là
+## mất gần nửa cửa sổ né. Đó là luật của Dark Souls 1, không phải của ER, và nó
+## làm mọi build giáp nặng thành không chơi được.
 const NGUONG_TAI := [
-	{"tu": 1.00, "muc": "qua_tai", "ten": "Quá tải", "iframe": 0.60, "xa": 0.40, "toc_do": 0.45},
-	{"tu": 0.70, "muc": "nang",    "ten": "Nặng",    "iframe": 0.85, "xa": 0.75, "toc_do": 0.88},
-	{"tu": 0.30, "muc": "vua",     "ten": "Vừa",     "iframe": 1.00, "xa": 1.00, "toc_do": 1.00},
-	{"tu": 0.00, "muc": "nhe",     "ten": "Nhẹ",     "iframe": 1.15, "xa": 1.25, "toc_do": 1.06},
+	{"tu": 1.00, "muc": "qua_tai", "ten": "Quá tải", "iframe": 0.00, "xa": 0.12, "toc_do": 0.45},
+	{"tu": 0.70, "muc": "nang",    "ten": "Nặng",    "iframe": 0.92, "xa": 0.65, "toc_do": 0.88},
+	{"tu": 0.30, "muc": "vua",     "ten": "Vừa",     "iframe": 1.00, "xa": 0.78, "toc_do": 1.00},
+	{"tu": 0.00, "muc": "nhe",     "ten": "Nhẹ",     "iframe": 1.00, "xa": 1.00, "toc_do": 1.06},
 ]
+## Quá tải thì ER KHÔNG cho lăn, chỉ lết. iframe 0.00 ở trên là chỗ thi hành.
 
 ## Sức chứa = gốc + theo 韧. Mặc quá ngưỡng này là lết.
 const SUC_CHUA_GOC := 40.0
@@ -95,13 +120,34 @@ func muc_tai(ti_le: float) -> Dictionary:
 ## để không bao giờ lệch nhau.
 func iframe_thuc(ti_le_tai: float, nhan: int) -> float:
 	var m := muc_tai(ti_le_tai)
+	var hs := float(m["iframe"])
+	if hs <= 0.0:
+		return 0.0   # quá tải: lết, không có cửa sổ bất tử nào
 	var them := 0.0012 * float(maxi(nhan, 0))  # 韧 40 ⇒ +0.048s, đáng kể mà không vỡ
-	return iframe_lan * float(m["iframe"]) + them
+	return iframe_lan * hs + them
 
-# --- Thế đứng (poise) -----------------------------------------------
+## Lăn xong bao lâu mới lăn tiếp được, theo mức tải.
+func hoi_lan_thuc(ti_le_tai: float) -> float:
+	var m := muc_tai(ti_le_tai)
+	return hoi_lan * float(HOI_LAN_TAI.get(String(m["muc"]), 1.0))
+
+# --- Thế đứng (poise) và SIÊU GIÁP (hyperarmor) ---------------------
+#
+# Elden Ring tách hai thứ mà nhìn ngoài dễ tưởng là một:
+#
+#   THẾ ĐỨNG (poise)   chỉ số bị động từ giáp đang mặc. Cao thì ăn đòn nhỏ
+#                      không khựng. ER có ba mốc nổi tiếng: 51 chịu được phần
+#                      lớn đòn thường, 61, và 101.
+#   SIÊU GIÁP          thế đứng TẠM THỜI, chỉ bật trong mấy khung của một đòn
+#   (hyperarmor)       đang vung. ER cho đòn nặng và vũ khí to có siêu giáp,
+#                      đòn nhẹ thì hầu như không. Đây là lý do người chơi dám
+#                      đổi đòn tay đôi với boss bằng búa tạ mà không bị cắt.
+#
+# Thiếu siêu giáp thì vũ khí nặng ở game này vô dụng: vung 1.2 giây mà con quái
+# nào chạm vào cũng cắt được thì không ai cầm rìu.
 
 ## Trúng đòn có khựng không: đòn phá thế mạnh hơn thế đứng thì khựng.
-## Giáp nặng → thế đứng cao → ăn đòn nhỏ vẫn vung tiếp được.
+## `the_dung` đã gồm cả siêu giáp của đòn đang vung, nếu đang vung đòn nào.
 func co_khung(the_dung: float, pha_the: float) -> bool:
 	return pha_the >= the_dung
 
@@ -143,6 +189,29 @@ const CHAN_TOI_DA := 0.90
 func sat_thuong_sau_do(sat_thuong: int, chan: int) -> int:
 	var ti_le: float = minf(float(chan) / 100.0, CHAN_TOI_DA)
 	return maxi(1, int(round(float(sat_thuong) * (1.0 - ti_le))))
+
+## Đỡ một đòn tốn bao nhiêu thể lực. `on_dinh` là CHẶN ĐỠ của khiên (guard
+## boost của ER, 0-100): càng cao thì đỡ càng đỡ tốn. Cạn thể lực giữa lúc đỡ
+## là VỠ ĐỠ — xem NguoiChoi.an_don().
+func the_luc_do(sat_thuong: int, on_dinh: int) -> float:
+	var giam: float = 1.0 - minf(float(on_dinh) / 100.0, 0.75)
+	return float(sat_thuong) * THE_LUC_DO_MOI_SAT_THUONG * giam
+
+# --- Đòn phản sau khi đỡ (guard counter) ----------------------------
+#
+# Cơ chế riêng của Elden Ring, không có trong Dark Souls: vừa đỡ trúng một đòn
+# thì bấm đòn NẶNG ra một đòn phản riêng, phá thế rất mạnh (30 stance — ngang
+# đòn nặng nạp, gấp 6 lần đòn nhẹ).
+#
+# Vì sao nó quan trọng: không có nó thì giơ khiên là hành động THUẦN phòng thủ,
+# và người chơi cầm khiên không bao giờ thắng được cuộc đua sát thương. Có nó
+# thì đỡ trở thành một nước đi tấn công, và đó là cách ER làm cho build khiên
+# chơi được.
+
+## Đỡ trúng xong còn bấy nhiêu giây để bấm đòn nặng ra đòn phản.
+@export var cua_so_phan_do := 0.60
+## Đòn phản nhân sát thương bấy nhiêu lần.
+const HS_PHAN_DO := 1.35
 
 # --- Trạng thái tích dần (mục 5.3) ----------------------------------
 #

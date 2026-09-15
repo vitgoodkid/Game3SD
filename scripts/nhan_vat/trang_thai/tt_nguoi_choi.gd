@@ -31,7 +31,9 @@ func thu_hanh_dong() -> bool:
 	if nc.lay_dem("don_nang"):
 		di("danh", {"don": _don_dau("nang")})
 		return true
-	if nc.lay_dem("do_phan"):
+	# Parry CẦN khiên (Elden Ring). Tay không thì nút này không ra gì — và
+	# phím bấm vẫn bị ăn khỏi bộ đệm, để không dồn lại rồi nổ ra sau đó.
+	if nc.lay_dem("do_phan") and nc.co_khien():
 		di("do_phan")
 		return true
 	if nc.lay_dem("nhay") and nc.is_on_floor():

@@ -81,7 +81,14 @@ func _du_lieu() -> void:
 	_dung(VocabDB.tu_vung.size() >= 1011,
 		"tu_vung.csv có %d chữ (>= 1011)" % VocabDB.tu_vung.size())
 	_dung(VocabDB.ngu_phap.size() == 41, "ngu_phap.csv giữ đủ 41 câu")
-	_dung(VocabDB.nguyen_lieu.size() == 38, "nguyen_lieu.csv giữ đủ 38 nguyên liệu")
+	# 38 nguyên liệu của bản 2D + 盾 (khiên, thêm lúc làm combat kiểu Elden Ring
+	# — ER tách khiên khỏi vũ khí và chỉ khiên mới parry được).
+	_dung(VocabDB.nguyen_lieu.size() == 39, "nguyen_lieu.csv giữ đủ 39 nguyên liệu")
+	var khien := 0
+	for n in VocabDB.nguyen_lieu:
+		if String(n.get("loai", "")) == "khien":
+			khien += 1
+	_dung(khien >= 1, "có ít nhất một món loại 'khien' — không có thì không ai parry được")
 	_dung(VocabDB.trang_bi.size() == 18, "trang_bi.csv giữ đủ 18 công thức")
 	_dung(VocabDB.vung.size() == 7, "vung.csv có đủ 7 vùng")
 	_dung(not VocabDB.quai.is_empty(), "quai.csv nạp được")
@@ -295,8 +302,11 @@ func _souls() -> void:
 	# Ba con số của mục 5.2 phải nằm trong khoảng đã chốt.
 	_dung(SoulsLike.iframe_lan >= 0.30 and SoulsLike.iframe_lan <= 0.40,
 		"i-frame lăn %.2fs nằm trong 0.30–0.40" % SoulsLike.iframe_lan)
-	_dung(SoulsLike.khung_the_luc >= 0.6 and SoulsLike.khung_the_luc <= 1.0,
-		"khựng thể lực %.2fs nằm trong 0.6–1.0" % SoulsLike.khung_the_luc)
+	# Mục 5.2 gọi con số này là "khựng thể lực". Sau khi combat đổi sang mô hình
+	# Elden Ring nó không còn là khựng-mỗi-lần-tiêu nữa mà là TRỄ HỒI sau khi
+	# hành động kết thúc, nên khoảng hợp lệ cũng đổi: ER hồi lại rất nhanh.
+	_dung(SoulsLike.tre_hoi_the_luc >= 0.25 and SoulsLike.tre_hoi_the_luc <= 0.60,
+		"trễ hồi thể lực %.2fs nằm trong 0.25–0.60" % SoulsLike.tre_hoi_the_luc)
 	var nang := VocabDB.don_cua("剑", "nang")
 	_dung(float(nang["t_hoi"]) >= 0.7 and float(nang["t_hoi"]) <= 1.2,
 		"khung hồi đòn nặng %.2fs nằm trong 0.7–1.2" % float(nang["t_hoi"]))

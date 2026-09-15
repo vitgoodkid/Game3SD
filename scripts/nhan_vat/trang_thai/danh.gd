@@ -40,9 +40,11 @@ func vao(du_lieu: Dictionary = {}) -> void:
 	_da_bat = false
 	_da_tat = false
 	_noi = ""
+	# Đòn phản đỡ không nạp được — nó là một nhát dứt khoát, không phải đòn nặng.
 	_nap = _don == "nang" and nc.dang_giu_danh()
 	_t_nap = 0.0
 	nc.dang_do = false
+	nc.ton_the_luc(float(_m.get("the_luc", 15)))
 	# Xoay về hướng đang nhắm NGAY lúc bắt đầu vung. Sau đó khoá cứng —
 	# xoay được giữa đòn là cách nhanh nhất giết chết cảm giác souls.
 	var h := nc.huong_nhap if nc.huong_nhap != Vector3.ZERO else nc.huong_mat()
@@ -54,6 +56,7 @@ func vao(du_lieu: Dictionary = {}) -> void:
 
 func ra() -> void:
 	nc.hop_don.monitoring = false
+	nc.sieu_giap = 0.0
 
 func chay(delta: float) -> void:
 	# Bám chân tại chỗ: đòn đánh souls-like gần như không tự di chuyển, trừ
@@ -76,6 +79,12 @@ func chay(delta: float) -> void:
 	# này sẽ do animation track gọi (mục 9); ở đây dùng mốc thời gian trong
 	# CSV, và CSV chính là thứ animation track sẽ đọc lại — nên đổi engine
 	# animation không phải sửa lại cân bằng.
+	# SIÊU GIÁP bật từ lúc bắt đầu vung tới hết khung gây sát thương, rồi TẮT
+	# trong khung hồi. Elden Ring đặt đúng như vậy, và chỗ tắt mới là chỗ quan
+	# trọng: khung hồi phải ăn đòn bình thường, nếu không thì vung vũ khí nặng
+	# là bất khả xâm phạm và cả trận đánh mất hết rủi ro.
+	nc.sieu_giap = float(_m.get("sieu_giap", 0)) if t < t_den else 0.0
+
 	if not _da_bat and t >= t_tu:
 		_bat_hop_don()
 	if _da_bat and not _da_tat and t >= t_den:
@@ -99,6 +108,9 @@ func _chay_nap(delta: float) -> void:
 		_nap = false
 		_don = ra_don
 		_m = VocabDB.don_cua(_chu_mv, ra_don)
+		# Giữ đủ lâu thành đòn nạp thì tiêu thêm — ER cũng tính đòn nạp đắt hơn.
+		if ra_don == "nang_nap":
+			nc.ton_the_luc(float(_m.get("the_luc", 30)) * 0.4)
 		may.t = 0.0
 
 func _thu_noi() -> void:
@@ -135,3 +147,8 @@ func tien_do() -> float:
 ## vô nghĩa nếu người chơi bấm lăn giữa đòn là thoát được hậu quả.
 func cho_doi(ten: String) -> bool:
 	return ten in ["trung_don", "chet", "vo_the", "danh", "dung"]
+
+## Đang vung thì không hồi thể lực (Elden Ring). Hồi lại ngay giữa đòn là mất
+## hết sức ép của việc "tiêu bao nhiêu cho nhát này".
+func cho_hoi_the_luc() -> bool:
+	return false
