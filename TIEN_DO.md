@@ -21,22 +21,50 @@ test canh.
 
 ## Việc tiếp theo, theo thứ tự
 
-1. **Boss hai giai đoạn** (mốc 5). Dữ liệu đã có trong `data/boss.csv`, thiếu
-   scene và state machine riêng — đổi moveset khi máu dưới `nguong_gd2`. Đây là
-   việc lớn tiếp theo làm được mà không cần máy có màn hình.
-2. **Địa hình vùng đầu** (mốc 6). Tự viết, không dùng Terrain3D — xem mục "Đã
-   đổi so với bản yêu cầu" bên dưới. Bắt đầu bằng `ria_bien`: `vung.csv` đã khai
-   sẵn hạt giống, cao độ, độ gồ ghề, mật độ cây đá.
-   Kèm theo: mỗi vùng một `WorldEnvironment` riêng sinh từ `vung.csv` lúc chạy
-   (`scripts/the_gioi/moi_truong_vung.gd`, **chưa viết**), lấy
-   `scenes/the_gioi/moi_truong_mac_dinh.tres` làm nền chung. Mục 7.4 của bản
-   yêu cầu nói thẳng: chỗ đáng đầu tư để "đẹp" là **ÁNH SÁNG**, không phải hình
-   khối — một quả đồi đơn giản + ánh sáng tốt đẹp hơn hẳn quả đồi chi tiết +
-   ánh sáng mặc định. Và ánh sáng là thứ chỉnh được bằng số.
-3. **Đổi phòng thử thành vùng thật.** `phong_thu.gd` đặt quái bằng một mảng
-   hằng; vùng thật phải đọc `quai.csv` theo cột `vung`.
-4. **Tune ba con số của mục 5.2.** Việc này **phải làm bằng tay, trên máy có màn
-   hình** — không agent nào thay được. Xem mục "Cần người" bên dưới.
+Bảy mốc của mục 12 đã hết bảng. Cái còn lại là những lỗ hổng lộ ra KHI GHÉP
+mọi thứ vào nhau — không mốc nào sở hữu chúng, nên không mốc nào làm.
+
+### 1. GAME KHÔNG BAO GIỜ LƯU — lỗ nặng nhất
+
+`Tui.luu()` và `Tui.nap()` viết xong từ lâu, ghi JSON ra `user://`, đầy đủ túi
+đồ, trí nhớ chữ, hồn, bia đá đã bật. **Không một dòng code nào gọi chúng.**
+Thoát game là mất sạch: chữ đã học, đồ đã khắc, boss đã hạ.
+
+Trong một game souls, chỗ lưu là **bia đá** — nghỉ ở bia là lưu, chết là lưu.
+Kèm theo hai việc nhỏ:
+
+- `DuHanh.thanh_du_lieu()` chưa nằm trong gói save ⇒ nạp lại là khoá hết vùng.
+- Nạp save lúc khởi động, và xử lý trường hợp save của bản cũ (thiếu khoá).
+
+### 2. Vào thẳng phòng thử, không vào thế giới
+
+`run/main_scene` vẫn là `phong_thu.tscn` — một căn phòng phẳng dựng tay. Bảy
+vùng thật chỉ tới được bằng cách bấm E ở bia rồi chọn thẻ Du hành. Với một bản
+chơi được thì ngược: vào là ở `thi_tran`, phòng thử để riêng cho việc tune.
+
+Vướng: cả `thu_vong_lap.tscn` (151 test) đang nạp `phong_thu.tscn`. Đổi main
+scene thì không được đụng vào phòng thử, chỉ đổi chỗ bắt đầu.
+
+Chưa có màn hình đầu game (mới / tiếp tục / thoát). Cần một cái tối thiểu.
+
+### 3. `HINH_VU_KHI` phá luật 1
+
+`than_khoi.gd` gán cứng `剑 刀 斧 弓 拳` để chọn hình khối vũ khí. Thêm loại vũ
+khí mới vào CSV thì nó hiện nhầm hình kiếm. Sửa bằng một cột hình dáng trong
+`nguyen_lieu.csv`. Đã biết từ lâu, chưa ai làm.
+
+### 4. Một nút đánh còn đờ (nếu chủ dự án muốn)
+
+Bấm nhanh thì đòn nhẹ nổ lúc NHẢ (trễ 0.18s); giữ thì 0.18s đầu nhân vật đứng
+im rồi mới giơ tay. Cách game khác chữa: **khung giơ tay dùng chung** — bấm là
+vào `danh` ngay, tới cuối khung giơ mới xem còn giữ nút không rồi phân nhánh.
+Đòi `danh.gd` cho đổi `_don` giữa chừng (file đó đang cố tình khoá cứng), và
+đòi `nhe_1` với `nang` của mỗi vũ khí có `t_vung` bằng nhau.
+
+### 5. Tune ba con số của mục 5.2
+
+**Phải làm bằng tay, trên máy có màn hình** — không agent nào thay được. Xem
+mục "Cần người" bên dưới.
 
 ## Đã làm được gì (chi tiết)
 
