@@ -12,7 +12,7 @@ Sổ tiến độ theo 7 mốc ở mục 12 của `PROMPT_3D.md`.
 | 4 | Vòng lặp souls — bia đá, chết rơi chữ, nhặt lại, hồi sinh quái, ghép chữ | ✅ xong trong phòng thử |
 | 5 | Ngũ hành + boss — tương sinh tương khắc, thang chồng bộ, boss hai giai đoạn | ✅ xong |
 | 6 | Thế giới — 7 vùng, địa hình, streaming, du hành, "vùng bị xoá" | ✅ xong |
-| 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, 18 loài, boss ẩn 无 | 🟡 người chơi có model + 37 clip động tác thật; quái vẫn khối hộp |
+| 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, 18 loài, boss ẩn 无 | 🟡 người chơi có model + 43 clip động tác thật; quái vẫn khối hộp |
 | — | **Giao diện** — HUD hai quả cầu, minimap, menu tạm dừng, tuỳ chọn, font | ✅ xong (ngoài bảy mốc, chủ dự án đặt thêm) |
 
 ## ĐANG LÀM DỞ — đọc trước khi viết gì mới
@@ -25,17 +25,17 @@ test canh.
 Bảy mốc của mục 12 đã hết bảng. Cái còn lại là những lỗ hổng lộ ra KHI GHÉP
 mọi thứ vào nhau — không mốc nào sở hữu chúng, nên không mốc nào làm.
 
-### 1. GAME KHÔNG BAO GIỜ LƯU — lỗ nặng nhất
+### 1. Có save, nhưng KHÔNG có màn hình nạp lúc khởi động
 
-`Tui.luu()` và `Tui.nap()` viết xong từ lâu, ghi JSON ra `user://`, đầy đủ túi
-đồ, trí nhớ chữ, hồn, bia đá đã bật. **Không một dòng code nào gọi chúng.**
-Thoát game là mất sạch: chữ đã học, đồ đã khắc, boss đã hạ.
+**Đã sửa phần nặng nhất.** `LuuGame` (autoload, ba ô tay + một ô tự lưu) thay
+hẳn cho `Tui.luu()`/`Tui.nap()` cũ — hai hàm đó vẫn còn trong `tui.gd` nhưng
+không ai gọi nữa, chỉ `LuuGame` đọc/ghi túi đồ, trí nhớ, thế giới. Tự lưu chạy
+khi **nghỉ/bật bia đá**, **hạ boss**, và **bấm Thoát ở menu tạm dừng**.
 
-Trong một game souls, chỗ lưu là **bia đá** — nghỉ ở bia là lưu, chết là lưu.
-Kèm theo hai việc nhỏ:
-
-- `DuHanh.thanh_du_lieu()` chưa nằm trong gói save ⇒ nạp lại là khoá hết vùng.
-- Nạp save lúc khởi động, và xử lý trường hợp save của bản cũ (thiếu khoá).
+Cái còn thiếu thật: **không gì gọi `LuuGame.nap()` / `choi_tiep()` lúc khởi
+động.** Mở game lên luôn là một ván MỚI, dù `user://saves/` có sẵn file. Vá
+đúng bằng việc dựng **màn hình ĐẦU game** (mới / tiếp tục / thoát) — xem mục 2,
+chưa có màn đó nên chưa có chỗ để bấm "Tiếp tục" cả.
 
 ### 2. Vào thẳng phòng thử, không vào thế giới
 
@@ -50,11 +50,15 @@ Chưa có màn hình ĐẦU game (mới / tiếp tục / thoát). Menu **tạm d
 rồi (`man_cai_dat.gd`, bấm Esc) — dựng màn đầu game thì chép lại khuôn đó, đừng
 viết mới: nó đã có sẵn nút kiểu bản mẫu, trang Tuỳ chọn và trang Điều khiển.
 
-### 3. `HINH_VU_KHI` phá luật 1
+### 3. `HINH_VU_KHI` — đã hết là đường chính, còn lại là dọn rác
 
-`than_khoi.gd` gán cứng `剑 刀 斧 弓 拳` để chọn hình khối vũ khí. Thêm loại vũ
-khí mới vào CSV thì nó hiện nhầm hình kiếm. Sửa bằng một cột hình dáng trong
-`nguyen_lieu.csv`. Đã biết từ lâu, chưa ai làm.
+**Phần lớn đã sửa.** Vũ khí có model thật đọc hình từ cột `mo_hinh` của
+`nguyen_lieu.csv` rồi (đợt "Model thật, 43 clip động tác"). `than_khoi.gd` vẫn
+còn gán cứng `剑 刀 斧 弓 拳`, nhưng giờ nó chỉ là **khối hộp dự phòng cho vũ khí
+CHƯA có file `.fbx`** — không còn là đường đi chính, không còn phá luật 1 theo
+kiểu nghiêm trọng như trước. Việc còn lại (không gấp): vũ khí mới thêm vào CSV
+mà chưa có model thì vẫn hiện nhầm hình kiếm ở khối hộp dự phòng — chấp nhận
+được vì đằng nào cũng là hình tạm.
 
 ### 4. Hai nút "gõ nhanh / giữ" còn đờ (nếu chủ dự án muốn)
 
@@ -72,7 +76,7 @@ Cùng một bệnh ở hai chỗ, vì cùng một khuôn:
   hỏng không — **đo được rồi mới quyết**. Chữa rẻ nhất là hạ con số; chữa hẳn
   thì phải tách nhảy sang nút riêng, và lúc đó Space về lại nhiệm vụ đơn.
 
-### 5. Tune ba con số của mục 5.2
+### 5. Tune bốn con số của mục 5.2
 
 **Phải làm bằng tay, trên máy có màn hình** — không agent nào thay được. Xem
 mục "Cần người" bên dưới.
@@ -109,21 +113,29 @@ mục "Cần người" bên dưới.
 ### Chơi được
 Chạy `godot --path .` là vào thẳng phòng thử. Làm được trọn vòng souls:
 
-- vào phòng là **đã cầm sẵn 长剑 và 长盾** (hiện `□□` — phát đồ sẵn không tắt
-  cơ chế ???). Đổi `HAT_VU_KHI` trong `phong_thu.gd` là đổi vũ khí khởi đầu.
-- chạy quanh, đổi camera F5, khoá mục tiêu, đánh bốn con quái. Phím đánh:
+- vào phòng là **đã cầm sẵn kiếm hai tay 刃** + một khiên trong túi (hiện `□`
+  — phát đồ sẵn không tắt cơ chế ???). Cầm hai tay thì khiên trong túi KHÔNG
+  dùng được (`Tui.tay_trai_dang_cam()` trả null) — đó là cái giá của vũ khí
+  lớn. Đổi `CHU_VU_KHI_DAU`/`HAT_VU_KHI` trong `phong_thu.gd` là đổi vũ khí
+  khởi đầu.
+- chạy quanh, đổi camera F5, khoá mục tiêu, đánh quái và một boss. Phím đánh:
   **bấm chuột trái** = đòn nhẹ, **giữ chuột trái** = đòn nặng rồi đòn nạp,
   **E** (hoặc chuột phải) = đỡ phản, bấm sớm = **đỡ phản hoàn hảo**,
   Space = lăn (giữ = **nhảy**), **Shift** giữ = chạy,
-  Q = giơ khiên → đỡ trúng rồi giữ chuột trái = **đòn phản đỡ**
+  Q = giơ khiên → đỡ trúng rồi giữ chuột trái = **đòn phản đỡ**,
+  R = cất/rút vũ khí (chạy nhanh hơn, tốn ít thể lực hơn, nhưng không đánh được)
 - **đòn nhảy**: đánh lúc đang ở trên không ra một moveset riêng, bấm = nhẹ,
   giữ = nặng. Mỗi lần rời đất đúng một đòn.
 - nhặt đồ dưới đất (bấm **F**), mở hành trang (bấm **I**) — chữ chưa đọc được
   hiện `□`, chỉ số hiện `???`
-- bấm **F** ở bia đá: bật bia, hồi đầy máu và bình, quái sống lại hết, mở màn
-  ba thẻ — **ghép chữ / khắc chữ / nâng chỉ số**
-- chết: rơi hết hồn chưa tiêu thành **vũng hồn** tại chỗ, đứng dậy ở bia đá, về
-  nhặt lại được. Chết lần nữa trước khi nhặt là mất vĩnh viễn.
+- bấm **F** ở bia đá: bật bia, hồi đầy máu và bình, quái sống lại hết (boss
+  KHÔNG sống lại), mở màn **bốn thẻ** — **ghép chữ / khắc chữ / nâng chỉ số /
+  du hành** (du hành đi sang vùng khác, mốc 6)
+- chết: dáng ngã theo hướng đòn tới, màn **BẠN ĐÃ CHẾT** đợi bấm phím chứ
+  không đợi đồng hồ. Rơi hết hồn chưa tiêu thành **vũng hồn** tại chỗ, đứng
+  dậy ở bia đá, về nhặt lại được. Chết lần nữa trước khi nhặt là mất vĩnh viễn.
+- nghỉ bia / hạ boss / thoát game đều **tự lưu** (`LuuGame`) — xem README.md
+  mục "Lưu game".
 
 ### Giao diện
 - **Bộ asset** chép vào `assets/ui/` (12 MB PNG) và `assets/font/` (1.5 MB).
@@ -182,13 +194,15 @@ Chạy `godot --path .` là vào thẳng phòng thử. Làm được trọn vòn
   chữ Hán ở các màn Label xưa nay vẫn là ô vuông.
 
 ### Kiểm tra
-Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
+Năm bước, GitHub Actions chạy cả năm mỗi lần đẩy code (`606` phép thử tự động
+cộng một lần chạy game thật) — lệnh đầy đủ ở `CLAUDE.md`, tóm tắt ở đây:
 
 | Lệnh | Kiểm gì |
 |---|---|
-| `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 196 test trong một khung hình |
+| `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 197 test trong một khung hình |
 | `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 342 test theo thời gian |
-| `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 66 test |
+| `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 67 test |
+| `godot --headless --path . --quit-after 600` | chạy game thật 10 giây, bắt lỗi lúc chạy mà ba bộ trên không với tới (vòng tròn autoload chẳng hạn) |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
 Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
@@ -357,7 +371,7 @@ mô tả, `phat()` không bao giờ nổ, và đếm được bao nhiêu tiếng
 ## Model nhân vật: đã có
 
 > **Đã thay lần hai.** Model elf dưới đây là bản đầu; bản đang chạy là
-> `nhan_vat_chinh.fbx` (rig Mixamo) — xem mục "Model mới + 37 clip động tác" ở
+> `nhan_vat_chinh.fbx` (rig Mixamo) — xem mục "Model mới + 43 clip động tác" ở
 > cuối trang. Giữ lại đoạn này vì ba bài học về rig thì không đổi.
 
 Người chơi từng là một **elf nữ thật** (`assets/model/_elf_commoner_2.fbx`),
@@ -500,11 +514,11 @@ Nên đã dựng sẵn **đường nạp animation thật**: thả `.fbx` vào
 **Việc này CẦN NGƯỜI**: Mixamo đòi tài khoản Adobe, agent không đăng nhập được.
 Chủ dự án đã tải về, và mục dưới là chuyện lắp chúng vào.
 
-## Model mới + 37 clip động tác
+## Model mới + 43 clip động tác
 
 Nhân vật giờ là `assets/model/nhan_vat_chinh.fbx` (rig Mixamo, 58 xương, da
-`katz.jpg`), và **mọi dáng đều là animation thật** trừ hai cái còn thiếu. Bảng
-gán clip nào cho trạng thái nào, kèm lý do từng cái, ở
+`katz.jpg`), và **mọi dáng đều là animation thật** trừ một cái còn thiếu
+(`uong`). Bảng gán clip nào cho trạng thái nào, kèm lý do từng cái, ở
 `assets/model/dong_tac/DOC_TRUOC.md`.
 
 ### Hai bộ clip, vì phím R phải nhìn thấy được
@@ -586,15 +600,15 @@ chúng vào một ô trong bảng. `Dying2` không thừa — nó là bản ĐÚ
 nằm giữa một hằng số trong code và độ dài một file `.fbx`, không có chỗ nào ghi
 nó và không công cụ nào tự bắt được.
 
-### Còn thiếu hai clip
+### Còn thiếu một clip — `uong` (uống bình)
 
-`lan` (lăn né) và `uong` (uống bình). `lan` là cái nặng: lăn né là cơ chế trung
-tâm của souls-like, bấm nhiều hơn mọi phím khác cộng lại, mà nó vẫn đang dùng
-dáng gõ tay. Tìm chữ "Roll" / "Dodge" trên Mixamo.
+**`lan` (lăn né) đã có** (Sprinting Forward Roll, 1.17s) — đoạn "còn thiếu hai
+clip" của bản trước đã lỗi thời, xoá đi. Chỉ còn `uong` đang dùng dáng gõ tay.
+Tìm chữ "Drinking" trên Mixamo.
 
-Và đòn nặng chưa đúng là **Bổ**: trong cả 52 file Great Sword không có clip nào
-bổ dọc thật. Đang tạm dùng cú vung dài nhất, cam kết nhất — đọc ra là đòn nặng,
-nhưng là cú xoay chứ không phải cú bổ.
+**Đòn nặng đã đúng là Bổ** — xem mục "Đợt sửa lớn" phía dưới ("Chủ dự án chỉ
+đúng clip"): đổi sang `great sword casting`, đo ra tay đi dọc 1.27m, cú bổ thật
+chứ không còn là cú xoay.
 
 ### Còn dở
 
@@ -603,10 +617,10 @@ nhưng là cú xoay chứ không phải cú bổ.
   sẵn 20 cái khiên, cùng thư mục với đám kiếm.
 - **Quái vẫn là khối hộp.** Bộ model elf cũ còn nguyên 14 con dùng được, giờ
   không còn chỗ nào trỏ tới.
-- **Bề dẹt của lưỡi kiếm** chưa canh — phép đo cho được trục thanh kiếm nhưng
-  không cho được vòng xoay quanh trục ấy. Nút vặn ở nhóm "Cầm trên tay".
-- **Kiếm lúc cất nằm dọc sau lưng**, chưa chéo qua vai như Elden Ring. Đọc ra
-  được là "đã cất", chỉ chưa đẹp. Hai nút `vu_khi_lech_lung` / `vu_khi_xoay_lung`.
+
+  (Hai bullet cũ ở đây — "bề dẹt lưỡi kiếm chưa canh" và "kiếm lúc cất chưa
+  chéo qua vai" — đã xoá vì đã fix: xem `vu_khi_lan` = 90°, `vu_khi_lech_lung`
+  / `vu_khi_xoay_lung` đã có số thật, ở mục "Kiếm cầm sai" phía dưới.)
 
 ## Đợt sửa lớn: điều khiển, combat, save
 
@@ -752,14 +766,18 @@ vào một phán đoán — và phán đoán thì sai được.
 
 ## Cần người, agent không làm thay được
 
-1. **Tune ba con số của mục 5.2.** Mốc 2 là điểm quyết định của cả dự án và nó
-   chỉ tune được bằng cách CHƠI. Ba con số: `SoulsLike.iframe_lan`,
-   `SoulsLike.khung_the_luc`, và cột `t_hoi` của đòn nặng trong `moveset.csv`.
-   Test chỉ canh được khoảng hợp lệ, không canh được "đã đã tay chưa".
+1. **Tune bốn con số của mục 5.2.** Mốc 2 là điểm quyết định của cả dự án và nó
+   chỉ tune được bằng cách CHƠI. Bốn con số: `SoulsLike.iframe_lan`,
+   `SoulsLike.tre_hoi_the_luc`, cột `t_hoi` của đòn nặng trong `moveset.csv`,
+   và `SoulsLike.HS_SAT_THUONG_NGUOI_CHOI`. Test chỉ canh được khoảng hợp lệ,
+   không canh được "đã đã tay chưa".
 2. **Thiết kế màn.** Đường tắt, mai phục, vòng lặp — mục 7.1 của bản yêu cầu nói
    thẳng là AI làm dở việc này. Vùng hoang dã thì sinh tự động được.
-3. **Kho model.** Chưa có file `.glb` nào. Xem mục "Quy ước" trong `CLAUDE.md`
-   về chuẩn cần đạt.
+3. **Model quái + khiên.** Người chơi đã có model thật (`nhan_vat_chinh.fbx`,
+   43 clip); quái vẫn khối hộp, khiên vẫn khối hộp. Chuẩn cần đạt — cùng bộ
+   xương với `nhan_vat_chinh.fbx` nếu muốn dùng chung animation, hoặc rig
+   humanoid riêng cho quái. Mixamo đòi tài khoản Adobe, agent không đăng nhập
+   được — việc tải file vẫn cần người.
 4. **Đọc thử tên đồ rơi ra.** Bộ sinh đồ ghép chữ theo đúng ngữ pháp, nhưng
    nghĩa thì có cái hay (战斧 chiến phủ) có cái ngô nghê. Cần người đọc một loạt
    rồi quyết xem có cần lọc chữ nào ra khỏi kho bổ nghĩa không.
@@ -804,7 +822,8 @@ Ghi lại để không ai tưởng là quên:
   Bộ test gọi action theo TÊN nên đổi phím không làm đỏ test nào — đó đúng là
   chỗ nguy hiểm, nên nhóm "Nút mới" trong `thu_vong_lap.gd` canh riêng việc này.
 - **Không dùng Terrain3D / ProtonScatter** (mục 7.3). Chủ dự án chọn tự viết —
-  repo sạch, không phụ thuộc phiên bản addon. Địa hình sẽ viết ở mốc 6.
+  repo sạch, không phụ thuộc phiên bản addon. Địa hình sinh tự động, viết ở
+  mốc 6 (xong).
 - **Điểm chỉ số của chữ ngoài `nguyen_lieu.csv`** suy từ độ khó của chữ, không
   chỉnh tay. 38 nguyên liệu của bản 2D giữ nguyên giá trị đã cân bằng, nhưng bản
   3D cho khắc bất kỳ chữ nào đã học lên vũ khí, mà 1011 chữ thì không gán tay

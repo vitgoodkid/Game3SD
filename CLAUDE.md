@@ -229,9 +229,10 @@ tools/           kiểm tra + sinh dữ liệu
 - **NGƯỜI CHƠI có model thật VÀ animation thật** (`than_mo_hinh.gd`;
   `assets/model/nhan_vat_chinh.fbx`, rig Mixamo 58 xương, da `katz.jpg`).
   Quái vẫn là khối hộp (`than_quai.gd`).
-  37 clip đang chạy, **hai bộ**: cầm kiếm ở `assets/model/dong_tac/`, tay không
-  ở `dong_tac/khong_vu_khi/` (dùng khi đã cất vũ khí). Trạng thái nào thiếu
-  clip thì tự quay về dáng gõ tay trong file — hiện chỉ còn `lan` và `uong`.
+  43 clip đang chạy, **hai bộ**: cầm kiếm ở `assets/model/dong_tac/` (32 clip),
+  tay không ở `dong_tac/khong_vu_khi/` (11 clip, dùng khi đã cất vũ khí).
+  Trạng thái nào thiếu clip thì tự quay về dáng gõ tay trong file — hiện chỉ
+  còn `uong` (uống bình).
   `NguoiChoi._dien_hinh()` hỏi thân theo HÀM `dien()` chứ không ép kiểu, nên
   hai thân thay nhau được mà không phải sửa gì.
   Ba cửa cho bộ kiểm tra — `goc_tay_phai()`, `khien_hien()`,

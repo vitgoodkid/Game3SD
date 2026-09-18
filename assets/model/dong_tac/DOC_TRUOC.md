@@ -1,6 +1,6 @@
 # Động tác nhân vật — ĐÃ LẮP XONG
 
-37 clip đang chạy: **26 clip cầm kiếm** ở thư mục này, **11 clip tay không** ở
+43 clip đang chạy: **32 clip cầm kiếm** ở thư mục này, **11 clip tay không** ở
 `khong_vu_khi/`. Nguồn: hai thư mục `Downloads/Animation/Great Sword` và
 `Downloads/Animation/Normal`.
 
@@ -43,7 +43,7 @@ godot --headless --path . tools/soi_quy_dao.tscn    # quỹ đạo bàn tay, cao
 
 ---
 
-## BỘ CẦM KIẾM — 26 clip
+## BỘ CẦM KIẾM — 32 clip
 
 ### Di chuyển
 
@@ -59,6 +59,7 @@ godot --headless --path . tools/soi_quy_dao.tscn    # quỹ đạo bàn tay, cao
 | `chay_trai` | great sword strafe (3) | 0.57s, trôi +X |
 | `chay_phai` | great sword strafe (4) | 0.63s, trôi −X |
 | `nhay` | great sword jump | 0.63s |
+| `lan` | Sprinting Forward Roll | 1.17s — lăn né, cơ chế trung tâm của souls-like |
 
 ### Đánh — 7 loại đòn, 7 dáng khác nhau
 
@@ -117,20 +118,13 @@ Hai clip cất/rút là **một cặp ngược nhau đọc từ cùng một bộ
 |---|---|---|
 | `uong` (uống bình) | Uống bình nhìn y như đứng yên — mà uống bình là lúc **hở sườn**, người chơi cần đọc được là mình đang không thủ được | **"Drinking"** |
 
-Chỉ còn một cái. `lan` (lăn né) đã có: *Sprinting Forward Roll*, 1.17s.
+Chỉ còn một cái — `uong`. `lan` (lăn né), `nang` (đòn Bổ), năm `chet_*` theo
+hướng, và `khong_vu_khi/nhay` đều **đã gán xong**, xem bảng ở trên. (Bản trước
+của tài liệu này liệt chúng vào mục "Thêm sau" như thể còn thiếu — sai, đã xoá.)
 
 **Leo thang chưa lắp.** `Climbing Up` và `Climbing Down Wall` đều đo ra là vòng
 lặp tại chỗ (2.00s, hông đứng yên ở 0.69m, hở ~0.01) — leo thang, không phải đu
 người qua mép đá. Game chưa có cái thang nào; xem mục cuối trang.
-
-### Thêm sau
-
-| Đích | Nguồn |
-|---|---|
-| `lan` | Sprinting Forward Roll (1.17s) |
-| `nang` | great sword casting |
-| `chet_sau` `chet_truoc` `chet_trai` `chet_phai` `chet_manh` | thư mục `Death/` |
-| `khong_vu_khi/nhay` | Jump (1) |
 
 ---
 
