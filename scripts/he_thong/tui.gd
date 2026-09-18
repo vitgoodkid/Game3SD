@@ -341,7 +341,20 @@ func thao(khe: String, o: int) -> void:
 func vu_khi_dang_cam() -> MonDo:
 	return mac["vu_khi"][tay_phai_dang]
 
+## Đang cầm vũ khí HAI TAY không.
+##
+## Hai tay thì tay trái bận giữ chuôi, nên không cầm khiên được — mất parry
+## bằng khiên, mất đòn phản đỡ, mất cả chỉ số chặn. Đó là cái giá đổi lấy sát
+## thương và tầm với của vũ khí lớn.
+func dang_cam_hai_tay() -> bool:
+	return VocabDB.hai_tay(moveset_dang_dung())
+
+## Món ở tay trái. Cầm vũ khí HAI TAY thì trả null DÙ khe có đồ: tay trái đang
+## bận giữ chuôi, và mọi thứ hỏi hàm này — khiên có hiện không, parry được
+## không, chặn bao nhiêu — phải thấy đúng như vậy mà không cần biết vì sao.
 func tay_trai_dang_cam() -> MonDo:
+	if dang_cam_hai_tay():
+		return null
 	return mac["tay_trai"][tay_trai_dang]
 
 ## Đổi sang vũ khí tiếp theo có trong khe. Bỏ qua ô trống — bấm đổi mà đổi

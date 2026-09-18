@@ -10,6 +10,7 @@ func vao(_du_lieu: Dictionary = {}) -> void:
 	nc.dang_do = false
 	nc.dang_do_phan = false
 	nc.tu_the = 0.0
+	nc.xoa_dem()
 
 func chay(delta: float) -> void:
 	nc.dung_lai(delta, 30.0)

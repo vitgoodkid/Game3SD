@@ -17,20 +17,21 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
 
-; AmThanh đứng ĐẦU vì nó không phụ thuộc autoload nào. Autoload nạp theo
-; thứ tự trong danh sách này, và một cái hỏng là mọi cái SAU nó không
-; đăng ký được — đã dính: du_hanh.gd gãy kéo AmThanh mất theo, cả game đỏ.
+CaiDat="*res://scripts/he_thong/cai_dat.gd"
+GiaoDien="*res://scripts/he_thong/giao_dien.gd"
 AmThanh="*res://scripts/he_thong/am_thanh.gd"
 VocabDB="*res://scripts/he_thong/vocab_db.gd"
 ChienDau="*res://scripts/luat/chien_dau.gd"
 DoHiem="*res://scripts/luat/do_hiem.gd"
 SoulsLike="*res://scripts/luat/souls_like.gd"
+KhungDung="*res://scripts/he_thong/khung_dung.gd"
 NguHanh="*res://scripts/luat/ngu_hanh.gd"
 TenDoVat="*res://scripts/luat/ten_do_vat.gd"
 TriNho="*res://scripts/he_thong/tri_nho.gd"
 Tui="*res://scripts/he_thong/tui.gd"
 TheGioi="*res://scripts/he_thong/the_gioi.gd"
 DuHanh="*res://scripts/the_gioi/du_hanh.gd"
+LuuGame="*res://scripts/he_thong/luu_game.gd"
 
 [display]
 
@@ -60,14 +61,14 @@ di_phai={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":68,"key_label":0,"unicode":100,"location":0,"echo":false,"script":null)
 ]
 }
-lan_chay={
+lan_nhay={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":32,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
-nhay={
+chay_nhanh={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":70,"key_label":0,"unicode":102,"location":0,"echo":false,"script":null)
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194325,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
 don_nhe={
@@ -82,8 +83,8 @@ do_don={
 }
 do_phan={
 "deadzone": 0.2,
-"events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":0,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":2,"canceled":false,"pressed":false,"double_click":false,"script":null)
-, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":82,"key_label":0,"unicode":114,"location":0,"echo":false,"script":null)
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":69,"key_label":0,"unicode":101,"location":0,"echo":false,"script":null)
+, Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":0,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":2,"canceled":false,"pressed":false,"double_click":false,"script":null)
 ]
 }
 khoa_muc_tieu={
@@ -104,12 +105,17 @@ doi_muc_tieu_phai={
 }
 tuong_tac={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":69,"key_label":0,"unicode":101,"location":0,"echo":false,"script":null)
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":70,"key_label":0,"unicode":102,"location":0,"echo":false,"script":null)
 ]
 }
 uong_binh={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":49,"key_label":0,"unicode":49,"location":0,"echo":false,"script":null)
+]
+}
+cat_rut={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":82,"key_label":0,"unicode":114,"location":0,"echo":false,"script":null)
 ]
 }
 doi_vu_khi={
@@ -139,6 +145,8 @@ thoat={
 }
 
 [physics]
+
+common/physics_ticks_per_second=120
 
 3d/physics_engine="Jolt Physics"
 

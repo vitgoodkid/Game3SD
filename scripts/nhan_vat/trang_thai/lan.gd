@@ -7,8 +7,16 @@ extends TTNguoiChoi
 ##   iframe → cuối     còn trượt nhưng ăn đòn bình thường
 ##   cuối              đứng dậy, mới lăn tiếp được sau hoi_lan giây
 ##
-## Đứng yên mà lăn thì lăn về sau — kiểu backstep của souls. Không phải chi
-## tiết thừa: đó là cách duy nhất lùi ra mà vẫn có i-frame.
+## Đứng yên mà lăn thì lăn THEO HƯỚNG MẶT.
+##
+## Bản trước lấy hướng NGƯỢC lại, định làm backstep kiểu souls. Nhưng nó vẫn
+## xoay cả người về hướng lăn ở dòng dưới — nên cái ra được không phải backstep
+## mà là **quay ngoắt 180° rồi lăn tới**. Đo bằng `tools/soi_lan.tscn`: lăn
+## đứng yên lệch hướng mặt đúng 180°, còn lăn có phím thì lệch 0–1°.
+##
+## Muốn backstep thật thì phải GIỮ NGUYÊN hướng mặt và lùi người ra — tức là
+## một dáng riêng, không dùng chung clip lăn tới được. Chưa có dáng đó thì lăn
+## tới là thứ đọc ra đúng.
 
 var _huong := Vector3.ZERO
 var _iframe := 0.0
@@ -24,7 +32,7 @@ func vao(_du_lieu: Dictionary = {}) -> void:
 
 	_huong = nc.huong_nhap
 	if _huong == Vector3.ZERO:
-		_huong = -nc.huong_mat()   # đứng yên mà lăn = lùi lại
+		_huong = nc.huong_mat()   # đứng yên mà lăn = lăn thẳng theo hướng mặt
 	nc.ton_the_luc(SoulsLike.THE_LUC_LAN)
 	AmThanh.phat("lan")
 	nc.bat_tu = true

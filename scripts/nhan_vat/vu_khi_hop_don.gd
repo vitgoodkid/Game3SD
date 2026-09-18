@@ -77,7 +77,15 @@ func _cham(vat: Node) -> void:
 		st = int(round(float(st) * SoulsLike.HS_SAU_LUNG))
 		pha *= 1.8
 
-	muc.an_don(st, pha, _nguon.global_position if _nguon != null else global_position, hanh)
+	var thuc: int = muc.an_don(st, pha,
+		_nguon.global_position if _nguon != null else global_position, hanh)
+	# Khựng hình theo sát thương THỰC ĂN, không theo sát thương khai.
+	#
+	# Khác nhau ở đúng chỗ đáng khác: đánh vào con giáp dày thì cú chạm nhẹ
+	# hều, và nó PHẢI nghe nhẹ hều — đó là cách người chơi biết mình đang đánh
+	# sai hệ mà không cần đọc con số nào.
+	if thuc is int and thuc > 0:
+		KhungDung.theo_sat_thuong(float(thuc))
 
 func _sau_lung(muc: Node) -> bool:
 	if _nguon == null or not (muc is Node3D):

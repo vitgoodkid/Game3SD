@@ -344,24 +344,40 @@ func _npc_cot_truyen() -> void:
 
 func _am_thanh() -> void:
 	_nhom("Âm thanh (mốc 7)")
-	# Dự án không có một file .wav nào — mọi tiếng tổng hợp bằng code lúc
-	# khởi động. Phép thử canh chúng DỰNG ĐƯỢC, vì hỏng ở đây thì im lặng
-	# hoàn toàn: game vẫn chạy, chỉ là không nghe thấy gì.
+	# Game hiện KHÔNG PHÁT TIẾNG NÀO, và đó là chủ ý — tiếng tổng hợp bằng code
+	# đã bị xoá vì nghe nhức đầu. Nên nhóm này KHÔNG canh "có phát ra tiếng";
+	# nó canh ba thứ vẫn phải đúng để thả file .wav vào là chạy được ngay:
+	#   1. bản kê tên tiếng còn nguyên — đó là danh sách việc cho người làm âm
+	#   2. gọi phat() không bao giờ nổ, kể cả tên không tồn tại
+	#   3. tên nào cũng nạp được nếu có file, và im nếu chưa có
 	_dung(AmThanh.TIENG.size() >= 12, "có đủ bảng tiếng (%d tiếng)"
 		% AmThanh.TIENG.size())
-	var hong: Array[String] = []
-	for ten in AmThanh.TIENG.keys():
-		var w: AudioStreamWAV = AmThanh._kho.get(ten)
-		if w == null or w.data.size() < 100:
-			hong.append(String(ten))
-	_dung(hong.is_empty(), "mọi tiếng đều tổng hợp ra sóng thật%s"
-		% ("" if hong.is_empty() else " — hỏng: " + " ".join(hong)))
 	for can in ["vung_nhe", "vung_nang", "trung", "do_phan", "chet", "gam_boss"]:
 		_dung(AmThanh.TIENG.has(can), "có tiếng '%s'" % can)
-	# Phát thử không được nổ.
+
+	# Mỗi khoá phải kèm một dòng mô tả việc nó làm. Bản kê mà chỉ có tên thì
+	# người thu âm không biết "trung_to" khác "trung" ở chỗ nào.
+	var trong: Array[String] = []
+	for ten in AmThanh.TIENG.keys():
+		if String(AmThanh.TIENG[ten]).strip_edges().is_empty():
+			trong.append(String(ten))
+	_dung(trong.is_empty(), "tiếng nào cũng có mô tả việc nó làm%s"
+		% ("" if trong.is_empty() else " — trống: " + " ".join(trong)))
+
+	# Chưa thả file nào vào assets/tieng/ thì im lặng — đó là đường đi BÌNH
+	# THƯỜNG lúc này, không phải hỏng.
+	var co := 0
+	for ten in AmThanh.TIENG.keys():
+		if AmThanh.co_tieng(ten):
+			co += 1
+	_dung(true, "có %d/%d tiếng thật trong assets/tieng/ (0 là bình thường)"
+		% [co, AmThanh.TIENG.size()])
+
+	# Phát thử không được nổ, dù có file hay không.
 	AmThanh.phat("trung")
+	AmThanh.phat("gam_boss", 1.2, 0.8)
 	AmThanh.phat("khong_co_tieng_nay")
-	_dung(true, "phát một tiếng không tồn tại cũng không nổ")
+	_dung(true, "gọi phat() không nổ, kể cả tên không tồn tại")
 
 # --- Mốc 7: nội dung -------------------------------------------------
 

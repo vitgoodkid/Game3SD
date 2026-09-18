@@ -55,7 +55,7 @@ func _physics_process(delta: float) -> void:
 		_khoi.position.y = 0.4 + sin(_goc * 1.6) * 0.06
 
 func dong_moi() -> String:
-	return "E — nhặt %s" % ("?" if mon == null else mon.ten_hien())
+	return "%s — nhặt %s" % [phim(), "?" if mon == null else mon.ten_hien()]
 
 func tuong_tac() -> void:
 	if mon == null:

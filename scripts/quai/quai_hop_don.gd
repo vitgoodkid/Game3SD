@@ -51,5 +51,8 @@ func _cham(vat: Node) -> void:
 	var pha := float(m.get("pha_the", 20))
 	var kq: int = vat.an_don(st, pha, _nguon.global_position, _nguon.ngu_hanh)
 	if kq < 0:
-		# -1 = người chơi ĐỠ PHẢN trúng. Quái đứng ngây, mở đòn kết liễu.
-		_nguon.bi_do_phan()
+		# Âm = người chơi ĐỠ PHẢN trúng. Quái đứng ngây, mở đòn kết liễu.
+		# -1 là parry thường, -2 là parry HOÀN HẢO — ngây lâu hơn hẳn, đủ để
+		# chạy vòng ra sau lưng rồi mới kết liễu.
+		_nguon.bi_do_phan(SoulsLike.NGAY_SAU_PERFECT if kq <= -2
+			else SoulsLike.NGAY_SAU_DO_PHAN)

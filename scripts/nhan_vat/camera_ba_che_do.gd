@@ -43,6 +43,8 @@ func _ready() -> void:
 	_tay = $Tay
 	_cam = $Tay/Camera
 	top_level = true          # không xoay theo thân nhân vật
+	# Chạy SAU nhân vật trong cùng một nhịp vật lý — xem _physics_process().
+	process_physics_priority = 10
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	_ap_che_do()
 
@@ -56,8 +58,13 @@ func _unhandled_input(su_kien: InputEvent) -> void:
 		# hất đổi mục tiêu (xử ở khoa_muc_tieu.gd) nên không xoay ở đây.
 		if _nc != null and _nc.muc_tieu != null and che_do != THU_NHAT:
 			return
-		rotation.y -= mm.relative.x * do_nhay_chuot * hs
-		rotation.x = clampf(rotation.x - mm.relative.y * do_nhay_chuot * hs,
+		# Độ nhạy = con số gốc × hệ số người chơi chỉnh trong Tuỳ chọn. Nhân chứ
+		# không thay: con số gốc đã cân với tốc độ xoay của nhân vật, còn hệ số là
+		# thứ mỗi người một khác tuỳ con chuột và tuỳ DPI màn hình.
+		var nhay := do_nhay_chuot * hs * float(CaiDat.lay("do_nhay_chuot"))
+		var doc := -1.0 if bool(CaiDat.lay("dao_truc_y")) else 1.0
+		rotation.y -= mm.relative.x * nhay
+		rotation.x = clampf(rotation.x - mm.relative.y * nhay * doc,
 			goc_duoi, goc_tren)
 
 	if su_kien.is_action_pressed("doi_camera"):
@@ -65,11 +72,27 @@ func _unhandled_input(su_kien: InputEvent) -> void:
 		_ap_che_do()
 		doi_che_do.emit(che_do)
 
-	if su_kien.is_action_pressed("thoat"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if \
-			Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
+	# Esc KHÔNG còn thả chuột ở đây. Từ khi có màn Tuỳ chọn thì Esc là phím mở
+	# menu tạm dừng, và menu đó tự lo chuyện chuột (ManChung.mo()/dong()). Để
+	# cả hai cùng nghe Esc thì một cú bấm ra hai việc, mà thứ tự _unhandled_input
+	# giữa các node là thứ không nên phải đoán.
 
-func _process(delta: float) -> void:
+## Bám nhân vật trong _physics_process, KHÔNG phải _process.
+##
+## Nhân vật là CharacterBody3D: vị trí của nó chỉ đổi ở nhịp vật lý (60 lần một
+## giây). Camera bám ở _process thì nó chạy theo nhịp MÀN HÌNH — 144 lần một
+## giây trên máy màn hình 144Hz. Hai nhịp khác nhau, và cái ra được là nhân vật
+## GIẬT so với khung hình: mỗi khung camera nhích một ít trong khi nhân vật chỉ
+## nhích ở đúng 60 mốc.
+##
+## Đây là lý do quay màn hình lại thì không thấy lỗi mà chơi thì thấy: bản quay
+## lấy mẫu ở một nhịp khác, thường trùng nhịp vật lý, nên nó "sửa" luôn cái
+## giật trong lúc ghi.
+##
+## `process_physics_priority` đặt ở _ready(): camera phải chạy SAU move_and_slide()
+## của nhân vật trong CÙNG một tick, không thì nó bám vị trí của tick trước và
+## lúc nào cũng trễ một nhịp.
+func _physics_process(delta: float) -> void:
 	if _nc == null:
 		return
 	# Bám theo nhân vật, mượt nhẹ. Bám cứng thì mọi va giật của

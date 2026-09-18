@@ -54,6 +54,64 @@ const HOI_LAN_TAI := {"nhe": 1.0, "vua": 1.0, "nang": 2.0, "qua_tai": 3.0}
 ## thành miễn phí, và người chơi không bao giờ chọn đòn nào khác.
 const TOC_DO_KHI_NAP := 0.30
 
+# --- Cửa sổ huỷ đòn (mục 5.1) ---------------------------------------
+#
+# Một cú đánh chia làm NĂM ĐOẠN, và người chơi được làm gì phụ thuộc đang ở
+# đoạn nào. Đây là bộ khung mà Elden Ring dùng, và nó là thứ biến "đã vung là
+# chịu trận" thành "đã vung là phải chịu ĐÚNG PHẦN NGUY HIỂM".
+#
+#   1 KHỞI   0 → t_dam_tu           khoá cứng, không huỷ được gì
+#   2 CHẠM   t_dam_tu → t_dam_den   hộp đòn bật, vẫn khoá cứng
+#   3 NỐI    t_dam_den → +TI_LE_NOI mở đệm ĐÒN KẾ, nối combo
+#   4 THỦ    → hết                  mở đệm LĂN / GIƠ KHIÊN, huỷ ngay lập tức
+#   5 XONG   hết                    về đứng
+#
+# Vì sao đoạn 4 phải MỞ SAU đoạn 3: mở cùng lúc thì lăn luôn thắng combo, vì
+# lăn an toàn hơn. Xếp nối combo trước, thủ sau, thì người chơi phải chọn —
+# đánh tiếp hay rút ra — và đó chính là quyết định mà cả trận đánh xoay quanh.
+
+## Khung hồi đi được bấy nhiêu phần thì mở cửa sổ THỦ (lăn / giơ khiên).
+##
+## 0.45 chứ không phải 0: huỷ được ngay từ khung hình đầu của khung hồi thì cú
+## đánh hết rủi ro, và hết rủi ro thì không còn gì để tính toán. Cũng không
+## phải 0.9: muộn quá thì cửa sổ hẹp tới mức người chơi không tin là nó có.
+## Khung hồi đi được bấy nhiêu phần thì mở CỬA SỔ NỐI (đoạn 3).
+##
+## Không phải 0. Mở ngay lúc hộp đòn tắt thì lưỡi kiếm nhảy cóc từ cuối nhát
+## này sang đầu nhát sau, và đòn nhẹ của kiếm một tay ra 0.28 giây một nhát —
+## nhanh gấp đôi Elden Ring. Phần đầu khung hồi là cú THU CHIÊU, và nó phải
+## được nhìn thấy.
+##
+## Nhân với `t_hoi` của TỪNG đòn, nên vũ khí nặng tự nối chậm hơn vũ khí nhẹ
+## mà không phải khai riêng dòng nào. Đo được: kiếm một tay 0.41s giữa hai
+## nhát, kiếm hai tay 1.04s — cả hai nằm đúng khoảng của Elden Ring.
+@export var ti_le_cua_so_noi := 0.40
+
+## Khung hồi đi được bấy nhiêu phần thì mở CỬA SỔ THỦ (đoạn 4) — lăn, giơ
+## khiên, đỡ phản.
+##
+## PHẢI LỚN HƠN `ti_le_cua_so_noi`. Đó là cả thiết kế: giữa hai mốc có một
+## quãng chỉ nối được combo chứ chưa né được, và quãng đó buộc người chơi chọn
+## — đánh tiếp hay rút ra. Mở cùng lúc thì lăn luôn thắng vì nó an toàn hơn,
+## và cái quyết định biến mất.
+@export var ti_le_cua_so_thu := 0.65
+
+# --- Khựng hình khi trúng đòn (hitlag) -------------------------------
+#
+# Dừng cả game vài phần trăm giây đúng lúc lưỡi kiếm chạm vào thịt. Không phải
+# hiệu ứng trang trí: đó là thứ duy nhất phân biệt "trúng" với "quét trượt qua"
+# khi nhìn, vì hộp đòn thì vô hình còn máu tụt thì nằm tận trên HUD.
+#
+# Ngắn thôi. Trên 0.1 giây là người chơi đọc ra thành GAME GIẬT, không thành
+# cú đánh nặng tay.
+
+## Khựng bao lâu cho một đòn nhẹ nhất, và cho đòn nặng nhất.
+const KHUNG_DUNG_NHE := 0.03
+const KHUNG_DUNG_NANG := 0.08
+## Sát thương bằng bấy nhiêu thì tính là "nặng nhất" — trên nữa không khựng lâu
+## hơn, vì trần 0.08 giây là trần của cảm giác chứ không phải của con số.
+const SAT_THUONG_KHUNG_DUNG_MAX := 120.0
+
 # --- Thể lực --------------------------------------------------------
 
 # --- Quy thang sát thương 2D sang 3D --------------------------------
@@ -71,6 +129,26 @@ const TOC_DO_KHI_NAP := 0.30
 ## đã cân với nhau rồi, chỉ sai thang. Đổi số này là đổi nhịp cả game —
 ## quái thường nên chết trong 4–8 nhát đòn nhẹ như Elden Ring.
 const HS_SAT_THUONG_NGUOI_CHOI := 3.5
+
+# --- MP (linh lực) --------------------------------------------------
+#
+# 心 (Tâm) quyết định TRẦN, 智 (Trí) quyết định sức mạnh phép — hai chỉ số này
+# đã khai trong Tui.TEN_CHI_SO từ đầu, và màn bia đá đã cho nâng chúng. Cái
+# thiếu suốt tới giờ là phần THI HÀNH: không gì tiêu MP, không gì hồi MP, và
+# không màn nào hiện nó. Thanh MP vì thế đứng yên ở mức đầy suốt cả game.
+#
+# CHƯA CÓ PHÉP NÀO tiêu MP. Đây cố ý là cái khung trống: chủ dự án chốt thêm
+# mana thật, nên hai chỉ số kia thôi là lời hứa suông, còn phép thì là việc
+# của đợt sau. `NguoiChoi.tieu_mp()` là chỗ phép sẽ cắm vào.
+#
+# Elden Ring KHÔNG cho MP tự hồi (phải uống bình xanh). Ở đây cho hồi chậm,
+# vì chưa có bình xanh — không hồi thì cạn một lần là hết game. Có bình xanh
+# rồi thì hạ MP_HOI_MOI_GIAY về 0 và bỏ đoạn hồi đi.
+
+## MP hồi mỗi giây, sau khi đã qua khoảng trễ.
+const MP_HOI_MOI_GIAY := 2.5
+## Tiêu MP xong bao lâu mới bắt đầu hồi lại.
+const MP_TRE_HOI := 1.2
 
 ## Thể lực gốc khi 韧 (Nhận) = 0. Mỗi điểm 韧 cộng thêm THE_LUC_MOI_NHAN.
 const THE_LUC_GOC := 90.0
@@ -209,6 +287,26 @@ const HS_SAU_LUNG := 2.6
 @export var hoi_do_phan := 0.45
 ## Đỡ phản trúng thì đối phương ngây bấy nhiêu giây.
 const NGAY_SAU_DO_PHAN := 2.2
+
+## ĐỠ PHẢN HOÀN HẢO — phần ĐẦU của cửa sổ đỡ phản, không phải một cửa sổ riêng.
+##
+## Cả cú parry dài `cua_so_do_phan` giây; bấy nhiêu giây đầu của nó là HOÀN HẢO.
+## Cài kiểu lồng nhau chứ không phải hai cửa sổ tách rời là cố ý: bấm sớm quá
+## thì vẫn còn ăn được parry thường, nên học cách bấm sớm KHÔNG bị phạt. Người
+## chơi tiến từ "parry được" lên "parry hoàn hảo" bằng cách siết dần thời điểm,
+## không phải bằng cách đánh cược giữa hai cửa sổ rời nhau.
+##
+## Để 0.10 trên nền 0.24: đủ hẹp để phải đọc đòn thật, đủ rộng để tay người
+## với tới. Hẹp hơn nữa thì nó thành thứ chỉ xảy ra do may, mà may thì không
+## dạy được gì.
+@export var cua_so_perfect := 0.10
+## Đỡ phản HOÀN HẢO thì đối phương ngây lâu hơn hẳn — đủ để chạy vòng ra sau
+## lưng rồi mới kết liễu, chứ không chỉ vừa đủ với tới.
+const NGAY_SAU_PERFECT := 3.4
+## Parry hoàn hảo thì HOÀN LẠI phần thể lực đã tiêu. Đọc đòn đúng tới mức đó
+## thì không có lý do gì để còn bị phạt — và đây là thứ cho phép parry liên
+## tiếp cả một chuỗi đòn của boss, khoảnh khắc đã đời nhất của cơ chế này.
+const HOAN_THE_LUC_PERFECT := 1.0
 
 ## Đỡ được bao nhiêu phần sát thương. `chan` là chỉ số chặn của khiên (0-100).
 ## Không bao giờ chặn trọn 100% — giơ khiên đứng im phải có giá, nếu không

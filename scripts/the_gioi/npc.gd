@@ -64,7 +64,7 @@ func ten_hien() -> String:
 	return s
 
 func dong_moi() -> String:
-	return "E — nói chuyện"
+	return "%s — nói chuyện" % phim()
 
 func tuong_tac() -> void:
 	_cau = 0

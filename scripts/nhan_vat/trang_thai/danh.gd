@@ -44,7 +44,9 @@ func vao(du_lieu: Dictionary = {}) -> void:
 	_da_bat = false
 	_da_tat = false
 	_noi = ""
-	# Đòn phản đỡ không nạp được — nó là một nhát dứt khoát, không phải đòn nặng.
+	# CHỈ đòn "nang" dưới đất mới nạp được. Đòn phản đỡ là một nhát dứt khoát,
+	# không phải đòn nặng; còn đòn nhảy nặng thì đang rơi — giữ để nạp giữa
+	# không trung là thứ không có nghĩa, và nó sẽ đóng băng nhân vật lơ lửng.
 	_nap = _don == "nang" and nc.dang_giu_danh()
 	_giu_dinh = false
 	_tu_nap = false
@@ -53,7 +55,9 @@ func vao(du_lieu: Dictionary = {}) -> void:
 	nc.ton_the_luc(float(_m.get("the_luc", 15)))
 	# Tiếng vung tay là tiếng BÁO TRƯỚC — quái nghe được đòn của mình, và
 	# người chơi nghe được đòn của quái khi mắt đang nhìn chỗ khác.
-	AmThanh.phat("vung_nang" if _don.begins_with("nang") else "vung_nhe")
+	# "nang" ở BẤT KỲ đâu trong tên, không chỉ ở đầu: "nhay_nang" cũng là một cú
+	# vung nặng và phải nghe ra như vậy.
+	AmThanh.phat("vung_nang" if "nang" in _don else "vung_nhe")
 	_nham()
 
 ## Xoay về hướng đang nhắm. Gọi lúc bắt đầu vung, và gọi LẠI lúc nhả nạp —
@@ -66,6 +70,18 @@ func _nham() -> void:
 		h.y = 0.0
 	if h.length_squared() > 0.001:
 		nc.than.rotation.y = atan2(h.x, h.z)
+
+## Đòn này có GÃY khi bị đánh trúng không (cột `huy_duoc` của moveset.csv).
+##
+## Khác hẳn "không có siêu giáp". Không có siêu giáp nghĩa là thế đứng chỉ còn
+## phần của tải trọng và 韧 — vẫn đủ nuốt một đòn vặt. Còn `huy_duoc` nghĩa là
+## thế đứng bằng KHÔNG cho riêng đòn này: chạm là gãy, bất kể mặc giáp gì.
+##
+## Dùng cho đòn nặng của kiếm hai tay: sát thương ×2.95, vung 0.72 giây, và cái
+## giá là suốt 0.72 giây đó ai chạm cũng cắt được. Đó là chỗ để con quái phản
+## đòn, và là lý do người chơi phải chọn LÚC NÀO mới bổ.
+func de_gay() -> bool:
+	return int(_m.get("huy_duoc", 0)) != 0
 
 func ra() -> void:
 	nc.hop_don.monitoring = false
@@ -82,7 +98,7 @@ func chay(delta: float) -> void:
 		nc.dat_toc_ngang(nc.huong_nhap,
 			nc.toc_do_di * tai * SoulsLike.TOC_DO_KHI_NAP)
 		nc.xoay_ve(nc.huong_nhap, delta)
-	elif _don in ["chay", "nhay"]:
+	elif _don in ["chay", "nhay", "nhay_nang"]:
 		nc.dung_lai(delta, 6.0)
 	else:
 		nc.dung_lai(delta, 22.0)
@@ -90,7 +106,8 @@ func chay(delta: float) -> void:
 	var t_vung := float(_m.get("t_vung", 0.2))
 	var t_tu := float(_m.get("t_dam_tu", t_vung))
 	var t_den := float(_m.get("t_dam_den", t_tu + 0.12))
-	var t_het := t_den + float(_m.get("t_hoi", 0.5))
+	var t_hoi := float(_m.get("t_hoi", 0.5))
+	var t_het := t_den + t_hoi
 
 	# SIÊU GIÁP bật từ lúc bắt đầu vung tới hết khung gây sát thương, rồi TẮT
 	# trong khung hồi. Elden Ring đặt đúng như vậy, và chỗ tắt mới là chỗ quan
@@ -99,6 +116,10 @@ func chay(delta: float) -> void:
 	#
 	# Tính cả lúc ĐANG NẠP — nạp mà ai chạm cũng cắt được thì không ai dám nạp,
 	# và đòn nạp thành nút chết. ER cũng cho siêu giáp suốt khung giữ.
+	#
+	# TRỪ đòn có `huy_duoc` (xem `de_gay()`): đòn đó CỐ Ý không có giáp, kể cả
+	# lúc nạp. Chủ dự án chốt như vậy cho đòn Bổ. Muốn trả giáp về thì sửa cột
+	# `sieu_giap` trong `moveset.csv`, không phải sửa file này.
 	nc.sieu_giap = float(_m.get("sieu_giap", 0)) if (_nap or t < t_den) else 0.0
 
 	if _nap:
@@ -114,15 +135,24 @@ func chay(delta: float) -> void:
 	if _da_bat and not _da_tat and t >= t_den:
 		_tat_hop_don()
 
-	# Đệm đòn kế tiếp trong lúc đang hồi → nối combo cho mượt.
-	if t >= t_den and _noi == "":
-		_thu_noi()
+	# XẢ BỘ ĐỆM theo đúng cửa sổ đang mở.
+	#
+	# Thứ tự trong khung hình này là MA TRẬN ƯU TIÊN, không phải thứ tự cửa sổ:
+	# cửa sổ NÉ mở SAU cửa sổ NỐI, nhưng khi cả hai đã mở thì NÉ THẮNG — phòng
+	# thủ trên tấn công. Nhờ vậy quãng giữa hai mốc vẫn là quãng chỉ nối được,
+	# còn từ mốc né trở đi thì người chơi rút ra được kể cả khi đã lỡ bấm đánh.
+	if cho_ne() and _huy_sang_thu():
+		return
+	if cho_noi():
+		if _noi == "":
+			_thu_noi()
+		if _noi != "":
+			_tat_hop_don()
+			di("danh", {"don": _noi})
+			return
 
 	if t >= t_het:
-		if _noi != "":
-			di("danh", {"don": _noi})
-		else:
-			di("dung")
+		di("dung")
 
 ## Nạp đòn.
 ##
@@ -156,6 +186,22 @@ func _chay_nap(delta: float, t_vung: float) -> void:
 	# Tay đã vung lên xong rồi, vào THẲNG khung gây sát thương — đừng bắt vung
 	# lại từ đầu, đó đúng là chỗ làm đòn nặng dài gấp đôi cần thiết.
 	may.t = float(_m.get("t_vung", t_vung))
+
+## Rút ra khỏi cú đánh bằng lăn hoặc khiên. Trả về true nếu đã đổi state.
+func _huy_sang_thu() -> bool:
+	if nc.lay_dem("lan"):
+		if nc.hoi_lan <= 0.0 and nc.du_the_luc():
+			_tat_hop_don()
+			di("lan")
+			return true
+		# Không đủ thể lực thì cú bấm coi như mất — giữ lại trong đệm thì nó
+		# nổ ra muộn hơn, đúng lúc người chơi đã đổi ý.
+		return false
+	if Input.is_action_pressed("do_don") and nc.du_the_luc():
+		_tat_hop_don()
+		di("do_don")
+		return true
+	return false
 
 func _thu_noi() -> void:
 	var combo := VocabDB.combo_nhe(_chu_mv)
@@ -212,13 +258,74 @@ func tien_do() -> float:
 func muc_nap() -> float:
 	return clampf(_t_nap / T_NAP_TOI_DA, 0.0, 1.0)
 
+## Năm đoạn của một cú đánh — xem `SoulsLike` mục "Cửa sổ huỷ đòn".
+##
+## Tính từ MỐC THỜI GIAN TRONG CSV, không từ animation. Đây là chỗ dự án này
+## cố ý khác với khuôn "Call Method Track" thường thấy: gắn mốc vào file
+## animation là chuyển cân bằng game sang cho file `.fbx` giữ, và đổi một clip
+## là lệch cả bảng số mà không ai thấy. CSV giữ sự thật, animation co giãn theo
+## nó (xem `ThanMoHinh._toc_do()`).
+const GD_KHOI := 1   ## Startup — khoá cứng
+const GD_CHAM := 2   ## Active — hộp đòn bật, vẫn khoá cứng, và cú THU CHIÊU
+const GD_NOI := 3    ## Combo Window — nối được, chưa né được
+const GD_THU := 4    ## Defense Window — né / đỡ / đỡ phản cắt ngang
+const GD_XONG := 5   ## End — về đứng, đi lại tự do
+
+## Đoạn 2 kéo DÀI HƠN khung hộp đòn.
+##
+## Hộp đòn tắt ở `t_dam_den`, nhưng cửa sổ nối chỉ mở sau đó một quãng bằng
+## `ti_le_cua_so_noi` phần khung hồi. Quãng ở giữa là cú THU CHIÊU — vẫn khoá
+## cứng, và vẫn phải nhìn thấy. Bỏ nó đi thì lưỡi kiếm nhảy cóc từ cuối nhát
+## này sang đầu nhát sau.
+func giai_doan() -> int:
+	if _nap:
+		return GD_KHOI
+	var t_tu := float(_m.get("t_dam_tu", 0.2))
+	var t_den := float(_m.get("t_dam_den", t_tu + 0.12))
+	var t_hoi := float(_m.get("t_hoi", 0.5))
+	if t < t_tu:
+		return GD_KHOI
+	if t >= t_den + t_hoi:
+		return GD_XONG
+	if t < t_den + t_hoi * SoulsLike.ti_le_cua_so_noi:
+		return GD_CHAM
+	if t < t_den + t_hoi * SoulsLike.ti_le_cua_so_thu:
+		return GD_NOI
+	return GD_THU
+
+# --- Bốn cờ trạng thái (isLocked / canCombo / canDodge / canMove) ----
+#
+# Đặt tên theo đúng bốn cờ của bản thiết kế. Công khai vì cả bộ kiểm tra lẫn
+# phần nhìn đều cần hỏi, và hỏi bằng cờ thì không ai phải biết công thức mốc
+# thời gian nằm ở đâu.
+
+## Khoá cứng: mọi phím chỉ được đẩy vào bộ đệm, không cắt được gì.
+func bi_khoa() -> bool:
+	return giai_doan() <= GD_CHAM
+
+## Nhận lệnh nối đòn.
+func cho_noi() -> bool:
+	return giai_doan() >= GD_NOI
+
+## Nhận lệnh né / đỡ / đỡ phản.
+func cho_ne() -> bool:
+	return giai_doan() >= GD_THU
+
+## Hết hẳn, đi lại tự do.
+func cho_di() -> bool:
+	return giai_doan() >= GD_XONG
+
 ## CAM KẾT ĐÒN ĐÁNH. Đã vung là không huỷ.
 ##
 ## Đây là một dòng code, và nó là thứ phân biệt souls-like với hack-n-slash.
 ## Mọi thứ khác trong repo này — thể lực, i-frame, ngũ hành, chữ Hán — đều
 ## vô nghĩa nếu người chơi bấm lăn giữa đòn là thoát được hậu quả.
 func cho_doi(ten: String) -> bool:
-	return ten in ["trung_don", "chet", "vo_the", "danh", "dung"]
+	# NGẮT BẮT BUỘC — bậc 1 của ma trận ưu tiên. Không cửa sổ nào chặn được.
+	if ten in ["trung_don", "chet", "vo_the", "danh", "dung"]:
+		return true
+	# Phòng thủ chỉ cắt được từ đoạn 4 — xem `cho_ne()`.
+	return cho_ne() and ten in ["lan", "do_don", "do_phan"]
 
 ## Đang vung thì không hồi thể lực (Elden Ring). Hồi lại ngay giữa đòn là mất
 ## hết sức ép của việc "tiêu bao nhiêu cho nhát này".

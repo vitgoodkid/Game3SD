@@ -56,6 +56,9 @@ const DAT_DO := [
 ## không thử được đòn cận chiến nào. Đổi hạt là đổi vũ khí khởi đầu; muốn thử
 ## SIÊU GIÁP cho rõ thì đổi sang hạt ra rìu (31337), vì rìu là lớp duy nhất có
 ## siêu giáp ngay cả ở đòn nhẹ.
+## Chữ trung tâm của vũ khí khởi đầu. Đổi chữ này là đổi hẳn loại vũ khí —
+## moveset, sát thương, hình dáng đều đi theo nó (nguyen_lieu.csv + moveset.csv).
+const CHU_VU_KHI_DAU := "刃"
 const HAT_VU_KHI := 1000
 const HAT_KHIEN := 1000
 
@@ -183,7 +186,12 @@ func _trang_bi_san() -> void:
 	# Chơi tiếp một ván cũ thì đã có đồ rồi, đừng nhét thêm mỗi lần vào phòng.
 	if Tui.vu_khi_dang_cam() != null or Tui.tay_trai_dang_cam() != null:
 		return
-	var vk := SinhMonDo.sinh_theo_loai("vukhi", "thi_tran", HAT_VU_KHI)
+	# Phát thẳng KIẾM HAI TAY làm vũ khí khởi đầu. `sinh_theo_loai` bốc ngẫu
+	# nhiên trong đám vũ khí, mà phòng thử là chỗ tune combat nên phải biết
+	# chắc mình đang cầm gì.
+	var vk := SinhMonDo.sinh_mon_tu_chu(CHU_VU_KHI_DAU, "thi_tran", HAT_VU_KHI)
+	if vk == null:
+		vk = SinhMonDo.sinh_theo_loai("vukhi", "thi_tran", HAT_VU_KHI)
 	if vk != null:
 		Tui.nhat(vk)
 		Tui.mac_vao(vk, "vu_khi")

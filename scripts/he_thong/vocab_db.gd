@@ -280,6 +280,20 @@ func ca_thang(chu: String) -> Array:
 func vi_tri_cua(chu: String) -> String:
 	return String(nguyen_lieu_cua(chu).get("vi_tri", ""))
 
+## File model của vũ khí mang chữ này, đọc từ cột `mo_hinh` của
+## nguyen_lieu.csv. Rỗng nghĩa là chưa có model — bên gọi tự lo vẽ khối hộp.
+##
+## Cột này thay cho bảng `ThanKhoi.HINH_VU_KHI` gán cứng năm chữ trong code.
+## Bảng đó phá luật 1 và đã ghi nợ ở TIEN_DO.md từ lâu: thêm loại vũ khí mới
+## vào CSV thì nó hiện nhầm hình kiếm.
+func mo_hinh_cua(chu: String) -> String:
+	return String(nguyen_lieu_cua(chu).get("mo_hinh", ""))
+
+## Vũ khí mang chữ này có phải loại CẦM HAI TAY không (cột `hai_tay`).
+## Hai tay thì không cầm khiên được — đó là cả cái giá của nó.
+func hai_tay(chu: String) -> bool:
+	return String(nguyen_lieu_cua(chu).get("hai_tay", "")).strip_edges() == "1"
+
 ## Loại của một nguyên liệu nền: vukhi / giap / tieu_hao.
 func loai_nguyen_lieu_cua(chu: String) -> String:
 	return String(nguyen_lieu_cua(chu).get("loai", ""))
@@ -364,8 +378,8 @@ func ky_nang_cua(chu: String) -> Dictionary:
 func moveset_cua(chu: String) -> Array:
 	return _mv_theo_chu.get(chu, _mv_theo_chu.get("拳", []))
 
-## Một đòn cụ thể: don là nhe_1 / nhe_2 / nhe_3 / nang / nang_nap / chay / nhay
-## / phan_do (đòn phản sau khi đỡ trúng).
+## Một đòn cụ thể: don là nhe_1 / nhe_2 / nhe_3 / nang / nang_nap / chay /
+## nhay / nhay_nang (hai bậc đòn trên không) / phan_do (đòn phản sau khi đỡ).
 ## Thiếu đòn đó thì lùi về nhe_1 — dữ liệu thiếu thì xấu, chứ không được đứng im.
 func don_cua(chu: String, don: String) -> Dictionary:
 	var ds := moveset_cua(chu)

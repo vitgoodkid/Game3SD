@@ -52,7 +52,7 @@ func _physics_process(delta: float) -> void:
 		_khoi.scale = Vector3.ONE * (1.0 + sin(_t * 2.0) * 0.12)
 
 func dong_moi() -> String:
-	return "E — nhặt lại %d hồn" % so_hon
+	return "%s — nhặt lại %d hồn" % [phim(), so_hon]
 
 func tuong_tac() -> void:
 	AmThanh.phat("hon")

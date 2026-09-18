@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tools/chup_man_hinh.gd" id="1_chup"]
+
+[node name="ChupManHinh" type="Node"]
+script = ExtResource("1_chup")

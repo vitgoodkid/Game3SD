@@ -12,7 +12,8 @@ Sổ tiến độ theo 7 mốc ở mục 12 của `PROMPT_3D.md`.
 | 4 | Vòng lặp souls — bia đá, chết rơi chữ, nhặt lại, hồi sinh quái, ghép chữ | ✅ xong trong phòng thử |
 | 5 | Ngũ hành + boss — tương sinh tương khắc, thang chồng bộ, boss hai giai đoạn | ✅ xong |
 | 6 | Thế giới — 7 vùng, địa hình, streaming, du hành, "vùng bị xoá" | ✅ xong |
-| 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, 18 loài, boss ẩn 无 | 🟡 xong trừ animation thật (cần model) |
+| 7 | Nội dung & đánh bóng — NPC, cốt truyện, âm thanh, 18 loài, boss ẩn 无 | 🟡 người chơi có model + 37 clip động tác thật; quái vẫn khối hộp |
+| — | **Giao diện** — HUD hai quả cầu, minimap, menu tạm dừng, tuỳ chọn, font | ✅ xong (ngoài bảy mốc, chủ dự án đặt thêm) |
 
 ## ĐANG LÀM DỞ — đọc trước khi viết gì mới
 
@@ -39,13 +40,15 @@ Kèm theo hai việc nhỏ:
 ### 2. Vào thẳng phòng thử, không vào thế giới
 
 `run/main_scene` vẫn là `phong_thu.tscn` — một căn phòng phẳng dựng tay. Bảy
-vùng thật chỉ tới được bằng cách bấm E ở bia rồi chọn thẻ Du hành. Với một bản
+vùng thật chỉ tới được bằng cách bấm F ở bia rồi chọn thẻ Du hành. Với một bản
 chơi được thì ngược: vào là ở `thi_tran`, phòng thử để riêng cho việc tune.
 
-Vướng: cả `thu_vong_lap.tscn` (151 test) đang nạp `phong_thu.tscn`. Đổi main
+Vướng: cả `thu_vong_lap.tscn` (342 test) đang nạp `phong_thu.tscn`. Đổi main
 scene thì không được đụng vào phòng thử, chỉ đổi chỗ bắt đầu.
 
-Chưa có màn hình đầu game (mới / tiếp tục / thoát). Cần một cái tối thiểu.
+Chưa có màn hình ĐẦU game (mới / tiếp tục / thoát). Menu **tạm dừng** thì có
+rồi (`man_cai_dat.gd`, bấm Esc) — dựng màn đầu game thì chép lại khuôn đó, đừng
+viết mới: nó đã có sẵn nút kiểu bản mẫu, trang Tuỳ chọn và trang Điều khiển.
 
 ### 3. `HINH_VU_KHI` phá luật 1
 
@@ -53,13 +56,21 @@ Chưa có màn hình đầu game (mới / tiếp tục / thoát). Cần một c�
 khí mới vào CSV thì nó hiện nhầm hình kiếm. Sửa bằng một cột hình dáng trong
 `nguyen_lieu.csv`. Đã biết từ lâu, chưa ai làm.
 
-### 4. Một nút đánh còn đờ (nếu chủ dự án muốn)
+### 4. Hai nút "gõ nhanh / giữ" còn đờ (nếu chủ dự án muốn)
 
-Bấm nhanh thì đòn nhẹ nổ lúc NHẢ (trễ 0.18s); giữ thì 0.18s đầu nhân vật đứng
-im rồi mới giơ tay. Cách game khác chữa: **khung giơ tay dùng chung** — bấm là
-vào `danh` ngay, tới cuối khung giơ mới xem còn giữ nút không rồi phân nhánh.
-Đòi `danh.gd` cho đổi `_don` giữa chừng (file đó đang cố tình khoá cứng), và
-đòi `nhe_1` với `nang` của mỗi vũ khí có `t_vung` bằng nhau.
+Cùng một bệnh ở hai chỗ, vì cùng một khuôn:
+
+- **Chuột trái.** Bấm nhanh thì đòn nhẹ nổ lúc NHẢ (trễ 0.18s); giữ thì 0.18s
+  đầu nhân vật đứng im rồi mới giơ tay. Cách game khác chữa: **khung giơ tay
+  dùng chung** — bấm là vào `danh` ngay, tới cuối khung giơ mới xem còn giữ nút
+  không rồi phân nhánh. Đòi `danh.gd` cho đổi `_don` giữa chừng (file đó đang
+  cố tình khoá cứng), và đòi `nhe_1` với `nang` của mỗi vũ khí có `t_vung`
+  bằng nhau.
+- **Space.** Cú NHẢY trễ `NGUONG_GIU_NHAY` (0.16s) kể từ lúc bấm. Đáng lo hơn
+  vế trên: nhảy là để né đòn quét ngang của boss, mà né thì sống chết ở timing.
+  Chưa có đòn quét ngang nào của boss để đo thật, nên chưa biết 0.16s có đủ
+  hỏng không — **đo được rồi mới quyết**. Chữa rẻ nhất là hạ con số; chữa hẳn
+  thì phải tách nhảy sang nút riêng, và lúc đó Space về lại nhiệm vụ đơn.
 
 ### 5. Tune ba con số của mục 5.2
 
@@ -102,14 +113,73 @@ Chạy `godot --path .` là vào thẳng phòng thử. Làm được trọn vòn
   cơ chế ???). Đổi `HAT_VU_KHI` trong `phong_thu.gd` là đổi vũ khí khởi đầu.
 - chạy quanh, đổi camera F5, khoá mục tiêu, đánh bốn con quái. Phím đánh:
   **bấm chuột trái** = đòn nhẹ, **giữ chuột trái** = đòn nặng rồi đòn nạp,
-  **chuột phải** = đỡ phản (cần khiên), Space = lăn (giữ = chạy),
+  **E** (hoặc chuột phải) = đỡ phản, bấm sớm = **đỡ phản hoàn hảo**,
+  Space = lăn (giữ = **nhảy**), **Shift** giữ = chạy,
   Q = giơ khiên → đỡ trúng rồi giữ chuột trái = **đòn phản đỡ**
-- nhặt đồ dưới đất (bấm **E**), mở hành trang (bấm **I**) — chữ chưa đọc được
+- **đòn nhảy**: đánh lúc đang ở trên không ra một moveset riêng, bấm = nhẹ,
+  giữ = nặng. Mỗi lần rời đất đúng một đòn.
+- nhặt đồ dưới đất (bấm **F**), mở hành trang (bấm **I**) — chữ chưa đọc được
   hiện `□`, chỉ số hiện `???`
-- bấm **E** ở bia đá: bật bia, hồi đầy máu và bình, quái sống lại hết, mở màn
+- bấm **F** ở bia đá: bật bia, hồi đầy máu và bình, quái sống lại hết, mở màn
   ba thẻ — **ghép chữ / khắc chữ / nâng chỉ số**
 - chết: rơi hết hồn chưa tiêu thành **vũng hồn** tại chỗ, đứng dậy ở bia đá, về
   nhặt lại được. Chết lần nữa trước khi nhặt là mất vĩnh viễn.
+
+### Giao diện
+- **Bộ asset** chép vào `assets/ui/` (12 MB PNG) và `assets/font/` (1.5 MB).
+  File `.psd` gốc 377 MB **không** đưa vào repo.
+- **HUD**: giữa dưới là một CỤM LIỀN — cầu đỏ (máu) · thanh kỹ năng 10 ô ·
+  cầu xanh (MP), cùng một tâm ngang, **thanh thể lực ngay trên thanh kỹ năng**.
+  Khung nhân vật góc trái trên, minimap góc phải trên, **thanh máu boss ở ĐỈNH
+  màn hình, giữa, rộng 44% bề ngang**.
+- **Quả cầu kẹp hai đầu thanh kỹ năng, không ở góc màn hình.** Bản đầu ném
+  chúng ra hai góc; chủ dự án chỉ lại bản mẫu. Cụm liền nằm đúng chỗ mắt đã
+  phải nhìn để chọn ô kỹ năng, nên đọc máu không phải rời mắt khỏi con quái —
+  trong một game né-đòn thì đó là cái giá thật. Không có con số trong cầu, mức
+  nước chính là số liệu.
+- **Cụm dưới canh theo MỘT TÂM CHUNG**, và ảnh nền cao bằng quả cầu.
+  Chuyện này sửa ba lượt mới đúng, đáng ghi lại cả ba:
+  1. canh theo TÂM quả cầu ⇒ cầu cao hơn hàng ô nên nó đẩy hàng ô lên, hàng ô
+     treo lơ lửng cách đáy gần trăm pixel;
+  2. canh theo ĐÁY ⇒ đo ra thì ba thứ chung một đáy thật, mà nhìn vẫn sai —
+     cầu cao gấp ba hàng ô nên dồn hết lên trên, đọc ra như hai quả bóng treo
+     cạnh một cái thanh thấp;
+  3. **kéo ảnh nền cao bằng quả cầu và cho cả ba chung một tâm** ⇒ đúng.
+
+  Bài học: **"khớp toạ độ" không phải là "nhìn ra một khối".** Lượt 2 đo bằng
+  code thì hoàn hảo — cả ba cột đều kết thúc ở đúng một dòng pixel — và vẫn
+  sai, vì thứ mắt đọc là KHỐI chứ không phải mép dưới. Chỉ có cắt ảnh ra phóng
+  to mới thấy.
+- **Minimap bán kính 215 là PIXEL CỐ ĐỊNH**, không co theo cỡ cửa sổ. Ở màn
+  hình rộng 2000px thì vừa mắt; ở 1280×720 thì vẫn ngần ấy pixel, tức là gần
+  sáu phần mười chiều cao. Chơi cửa sổ nhỏ mà thấy bản đồ nuốt góc màn hình thì
+  đó là chỗ sửa — chưa ai gặp vì máy chủ dự án chạy màn rộng.
+- **Thanh máu boss chuyển từ đáy lên đỉnh.** Souls để nó sát đáy, và bản này
+  từng làm vậy — nhưng đáy giờ là cụm cầu–thanh–cầu, nên mỗi lần nới bán kính
+  quả cầu là thanh boss lại cắt ngang đỉnh hai quả cầu. Đưa lên đỉnh gỡ hẳn
+  ràng buộc đó: hai cụm thôi tranh chỗ, đổi cỡ cụm dưới không đụng gì tới thanh
+  boss. Rộng 44% bề ngang — đủ dài để đọc ra mình vừa ăn được bao nhiêu, chưa
+  dài tới mức một nhát chém trông như không ăn thua (boss nào cũng vài trăm máu).
+- **Thanh thể lực trước đây không ai thấy**: nó nằm chồng dưới thanh máu ở góc
+  trái trên, mà mắt người chơi souls bám giữa màn hình và bám con quái, không
+  bám góc trái. Đưa xuống giữa dưới là đưa vào đúng chỗ mắt đã nhìn sẵn.
+- **Minimap** quét theo NHÓM trong cây scene, không đọc địa hình — nên chạy y
+  hệt ở phòng thử lẫn bảy vùng thật, không phải nối vào `VungDat`.
+- **Menu tạm dừng** (Esc): Tiếp tục / Tuỳ chọn / Điều khiển / Thoát. Bỏ nút
+  LOGOUT của bản mẫu — game chơi một mình, không có tài khoản để đăng xuất.
+  Trang **Điều khiển** đọc tên phím thẳng từ `InputMap`, nên đổi phím trong
+  `project.godot` là bảng đó tự đúng.
+- **Tuỳ chọn** ghi `user://cai_dat.json` NGAY mỗi lần đổi, tách khỏi file save
+  của ván chơi — xoá save chơi lại không phải chỉnh lại âm lượng.
+- **MP thành thật.** 心 (trần) và 智 (sức mạnh phép) đã khai trong
+  `Tui.TEN_CHI_SO` từ đầu và màn bia đá đã cho nâng, nhưng không gì tiêu, không
+  gì hồi, không màn nào hiện — thanh MP đứng yên ở mức đầy suốt cả game. Giờ có
+  hồi, có `NguoiChoi.tieu_mp()`, có quả cầu. **Chưa có phép nào tiêu nó** — đó
+  cố ý là cái khung trống cho đợt sau.
+- **Font là một CHUỖI.** Không font nào trong bộ asset có chữ Hán; font chính
+  (Cambria) gắn `SystemFont` chữ Hán làm dự phòng. Trước đợt này mọi Label
+  trong game dùng font mặc định của Godot, vốn **không có chữ Hán** — nghĩa là
+  chữ Hán ở các màn Label xưa nay vẫn là ô vuông.
 
 ### Kiểm tra
 Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
@@ -117,7 +187,7 @@ Ba bộ, GitHub Actions chạy cả ba mỗi lần đẩy code:
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 196 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + boss trong phòng thử thật, 151 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 342 test theo thời gian |
 | `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 66 test |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
@@ -144,11 +214,30 @@ combat**, vì mấy chỗ "cố ý khác" rất dễ bị sửa nhầm về ER r
 | Tỉ lệ phá thế | nhẹ 5 · nhảy-nhẹ 8 · nặng 10 · nhảy-nặng 20 · nạp 30 · phản đỡ 30 | ×1 / ×1.6 / ×2 / ×4 / ×6 / ×6 trên nền đòn nhẹ |
 | Đòn phản đỡ (guard counter) | đỡ trúng rồi bấm đòn nặng, phá thế ngang đòn nạp | đòn `phan_do`, `cua_so_phan_do` |
 | Vỡ đỡ (guard break) | đỡ tới cạn thể lực → choáng, ăn kết liễu | `NguoiChoi.an_don()` |
-| Parry cần khiên | không parry tay không được | `NguoiChoi.co_khien()`, khe `tay_trai` chỉ nhận `loai=khien` |
 | Chặn đỡ (guard boost) | khiên tốt thì đỡ đỡ tốn thể lực | `_chi_so_chan_do()` |
+| Đòn nhảy | moveset riêng, phá thế rất mạnh, một đòn mỗi lần rời đất | `nhay` / `nhay_nang` trong `moveset.csv`, `con_don_tren_khong()` |
 
 ### Cố ý KHÁC, và vì sao
 
+- **Parry KHÔNG cần khiên.** ER cấm hẳn parry tay không (phải có khiên nhỏ/vừa
+  hoặc Ash of War "Parry"); chủ dự án chốt cho parry tay không được. Cái mất:
+  khe tay trái yếu đi một lý do tồn tại. Cái còn giữ cho khiên đáng cầm —
+  chặn sát thương (40–95 so với 35 của tay không), chặn đỡ, và **đòn phản đỡ
+  thì vẫn cần khiên**. Nếu sau này thấy tay không parry mạnh quá thì chỗ siết
+  là `cua_so_perfect` theo có khiên hay không, đừng cấm lại từ đầu.
+- **Đỡ phản có HAI BẬC**, ER chỉ có một. `cua_so_perfect` (0.10s đầu của
+  `cua_so_do_phan` 0.24s) là parry hoàn hảo: quái ngây `NGAY_SAU_PERFECT` 3.4s
+  thay vì 2.2s, và hoàn lại trọn phần thể lực đã tiêu — đủ để parry liên tiếp
+  cả một chuỗi đòn boss. Hai cửa sổ **lồng nhau** chứ không tách rời, nên bấm
+  sớm quá vẫn rơi vào parry thường: tập bấm sớm không bị phạt, người chơi tiến
+  lên bằng cách siết dần thời điểm chứ không bằng cách đánh cược.
+  `an_don()` trả -2 cho hoàn hảo, -1 cho thường.
+- **Space gánh lăn + nhảy, Shift gánh chạy.** ER trên PC gộp lăn/chạy vào một
+  nút và để nhảy riêng; ở đây gộp lăn/nhảy và tách chạy ra. Cái giá nằm đúng ở
+  `NGUONG_GIU_NHAY` (0.16s): cú NHẢY trễ bấy nhiêu kể từ lúc bấm, vì phải đợi
+  mới biết người chơi định gõ hay định giữ — cùng một đánh đổi đã chấp nhận ở
+  chuột trái. Nhảy vốn để né đòn quét ngang, mà né thì sống chết ở timing, nên
+  nếu tune thấy vướng thì đây là con số đầu tiên phải đụng tới.
 - **Một nút chuột trái ra cả đòn nhẹ lẫn đòn nặng**, thay vì R1/R2 như ER và
   như bản yêu cầu đầu. Chủ dự án chốt, và chấp nhận cái giá đi kèm: đòn nhẹ
   chỉ bắn ra lúc NHẢ chuột chứ không phải lúc bấm, vì phải đợi mới biết người
@@ -186,11 +275,8 @@ combat**, vì mấy chỗ "cố ý khác" rất dễ bị sửa nhầm về ER r
   màn thoại nói rõ THIẾU CHỮ NÀO — người chơi ra về với một việc cụ thể, không
   phải một lời từ chối. Đây là mục 13 được thi hành: phần thưởng của việc học
   là hiểu được cốt truyện.
-- **Âm thanh** — 15 tiếng, **tổng hợp bằng code** lúc khởi động (nhiễu lọc,
-  sin tụt cao độ, bao biên độ mũ). Repo không có một file `.wav` nào và sẽ
-  không có tới khi có người làm âm thanh; mục 14.6 nói game thiếu HẲN chiều
-  nghe, mà thiếu hẳn tệ hơn là có mà chưa hay. Thay bằng file thật sau: giữ
-  tên trong `AmThanh.TIENG`, nạp `AudioStream` vào `_kho`, chỗ gọi không sửa.
+- **Âm thanh** — 15 tiếng tổng hợp bằng code. **ĐÃ XOÁ ở đợt dọn giao diện**,
+  xem mục dưới.
 - **18 loài quái** (mục 12). Thêm 5 loài, vùng nào cũng có quái.
 - **Boss ẩn 无** (mục 14.8) — không hành nên ngũ hành vô dụng, và **vũ khí càng
   nhiều chữ khắc càng yếu** trước nó. Đo được: cây trần ăn trọn 100, cây khắc
@@ -214,6 +300,455 @@ combat**, vì mấy chỗ "cố ý khác" rất dễ bị sửa nhầm về ER r
 - **Thiết kế màn bằng tay** (đường tắt, mai phục, vòng lặp). Mục 7.1 của bản
   yêu cầu nói thẳng là AI làm dở việc này. `VungDat.CHOT_BIA` và `CHOT_BOSS`
   cố tình để là một bảng toạ độ thưa, dễ sửa tay.
+
+## Menu tạm dừng: xác nhận trước khi áp
+
+Bản đầu áp mọi tuỳ chọn NGAY lúc kéo thanh trượt. Chủ dự án yêu cầu thêm nút
+xác nhận, và yêu cầu đó đúng: chỉnh độ nhạy chuột thì phải kéo qua kéo lại mới
+tìm được con số đúng, mà áp ngay thì mỗi nhích giữa chừng là một lần ghi đĩa và
+một lần đổi cảm giác — người chơi mất luôn cái mốc cũ để so.
+
+`CaiDat` vì thế có **hai tầng**: `_gt` (đang áp dụng, game đọc tầng này) và
+`_nhap` (đang chờ xác nhận, chỉ màn Tuỳ chọn đọc). Nút **Áp dụng** TỐI khi
+`co_thay_doi()` false và SÁNG khi true — nó vừa là nút bấm vừa là câu trả lời
+cho "mình đã đổi gì chưa". Rời trang là vứt tầng chờ.
+
+**Trang Điều khiển thành gán lại phím được.** Không có nó thì nút Áp dụng ở
+trang đó là đồ trang trí, mà nút bấm vào không ra gì thì tệ hơn là không có nút
+— đúng lý do đã bỏ LOGOUT của bản mẫu. Bấm một hàng phím là vào chế độ bắt phím,
+Esc để bỏ. Hai điều cố ý:
+
+- **Esc không gán được.** Nó là đường thoát; gán nhầm một lần là mất luôn cách
+  mở menu để sửa lại.
+- **Override thay CHỖ ĐẦU, giữ nguyên phím thay thế.** `do_phan` có cả E lẫn
+  chuột phải; đổi E mà xoá luôn chuột phải là lấy mất thứ người chơi không hề
+  yêu cầu. Cài được nhờ `_phim_goc` — bản chụp sự kiện gốc của mọi action lúc
+  khởi động. Không có nó thì "về mặc định" không dựng lại được gì, vì InputMap
+  lúc ấy đã bị ghi đè mất rồi.
+
+Hàng gộp nhiều action ("Đi" = bốn phím) chỉ để xem: gán một phím cho cả bốn
+hướng là vô nghĩa, và cho gán thì lại phải giải thích vì sao nó không ăn.
+
+## Âm thanh: đã xoá, cố ý
+
+Mốc 7 tổng hợp 15 tiếng bằng code lúc khởi động — lý do lúc đó là mục 14.6:
+game thiếu HẲN chiều nghe, mà thiếu hẳn thì tệ hơn là có mà chưa hay.
+
+**Chủ dự án chơi thử và bác bỏ đúng cái tiền đề đó**: tiếng tổng hợp chói và ồn
+tới mức nghe nhức đầu, nên im lặng tốt hơn. Phần tổng hợp đã bị xoá sạch —
+đừng chép lại.
+
+Cái giữ lại, và vì sao:
+
+| Giữ | Vì sao |
+|---|---|
+| `AmThanh.TIENG` — 15 tên kèm mô tả | chính là danh sách việc cho người thu âm. Xoá đi là mất thông tin "game cần những tiếng nào", chỉ moi lại được bằng cách đọc 18 chỗ gọi |
+| 18 chỗ gọi `AmThanh.phat()` | đánh dấu ĐÚNG khoảnh khắc mỗi tiếng phải vang. Thông tin đó đắt hơn code phát tiếng nhiều |
+| kênh phát, `cao`/`to`, âm lượng trong Tuỳ chọn | nguyên vẹn, chờ file thật |
+
+**Thêm tiếng thật**: thả file vào `assets/tieng/<tên>.wav` (hoặc `.ogg`/`.mp3`),
+tên khớp khoá trong `TIENG`. Khởi động là nó tự nạp và tự phát — không sửa một
+dòng code nào. Thiếu file thì im, không nổ và không cảnh báo.
+
+Nhóm test "Âm thanh" vì thế KHÔNG canh "có phát ra tiếng" nữa; nó canh ba thứ
+phải đúng để việc thả file kia chạy được: bản kê còn nguyên và tên nào cũng có
+mô tả, `phat()` không bao giờ nổ, và đếm được bao nhiêu tiếng thật đã có.
+
+## Model nhân vật: đã có
+
+> **Đã thay lần hai.** Model elf dưới đây là bản đầu; bản đang chạy là
+> `nhan_vat_chinh.fbx` (rig Mixamo) — xem mục "Model mới + 37 clip động tác" ở
+> cuối trang. Giữ lại đoạn này vì ba bài học về rig thì không đổi.
+
+Người chơi từng là một **elf nữ thật** (`assets/model/_elf_commoner_2.fbx`),
+không còn là khối hộp. Bộ model có 14 con elf; chọn con này vì nó mặc đồ đi lại
+được — mấy con `upper_class` mặc váy dài, mà váy dài thì lăn và vung kiếm trông
+phi lý.
+
+Ba thứ đo được TRƯỚC khi chọn, bằng `tools/soi_model.tscn`:
+
+| | |
+|---|---|
+| xương | **41 khớp**, tên kiểu Unreal (`Pelvis` / `Spine_01..03` / `Upperarm_L` / `Calf_R`…) |
+| animation | **KHÔNG CÓ CON NÀO** |
+| cao / gốc | 1.66–1.82m, gốc toạ độ **dưới chân** — khớp luật của repo |
+
+Không có animation nghĩa là **vẫn phải xoay xương bằng tay**. `than_mo_hinh.gd`
+làm đúng việc `than_khoi.gd` từng làm, chỉ khác là xoay xương thật nên ra hình
+người. `NguoiChoi._dien_hinh()` giờ hỏi thân theo HÀM `dien()` chứ không ép kiểu
+`ThanKhoi`, nên hai thân thay nhau được mà không sửa gì.
+
+Ba thứ **không đoán được, phải đo hoặc phải nhìn**:
+
+- **Texture.** Vật liệu trong FBX trỏ tới đường dẫn không còn tồn tại nên 9/14
+  model nạp lên đen thui. Cả bộ dùng chung một atlas 64×64; ép thẳng vào là xong.
+- **Chiều xoay của xương vai.** Hai vai đối xứng gương nhau, nên cùng một góc
+  hạ tay bên này mà GIƠ bên kia. Bản đầu tay phải chỉ thẳng lên trời suốt mọi
+  tư thế. Chỗ sửa: `DAU_TAY_PHAI`.
+- **Trục của xương bàn tay.** Đo ra: trục Y của khớp trỏ RA SAU LƯNG, nên hướng
+  ra trước là −Y, và kiếm/khiên phải xoay +90° quanh X. Đo bằng cách in
+  `global_transform.basis` của `BoneAttachment3D`; đoán thì ba lượt vẫn sai.
+
+**Trục xoay cả thân phải ở HÔNG, không ở bàn chân.** Gốc model nằm dưới chân nên
+xoay thẳng nó là cú lăn hất cả người văng ra xa cả mét rồi mất hút khỏi khung
+hình. Node `_truc` ở 0.52 chiều cao lo việc đó.
+
+**Một bug mà chỉ bộ kiểm tra thấy.** Cuối hàm dáng đánh có một lời gọi
+`_tay_buong()` để vung tay trái cho cân — nhưng hàm đó đặt CẢ HAI tay, nên nó
+kéo tay phải về tư thế buông và xoá sạch cú chém vừa vẽ ngay dòng trên. Mắt chỉ
+thấy "hơi giật lúc nhả nạp"; test đo góc thì thấy cánh tay **nhảy 41°** và báo
+đỏ. Đúng loại lỗi mà nhóm test "Phần nhìn" sinh ra để bắt.
+
+### Vũ khí: kiếm hai tay 刃
+
+Người chơi cầm **kiếm hai tay** (`_sword_23.fbx`), moveset riêng dưới chữ **刃**
+(nhận — lưỡi). Chữ này mới thêm vào `tu_vung.csv`; chọn nó vì nó là DANH TỪ vũ
+khí thật, nên tên món đồ đọc ra vẫn đúng ngữ pháp (火刃 = Hoả Nhận).
+
+Ba việc, đều nằm ở CSV chứ không ở code:
+
+| Muốn | Sửa |
+|---|---|
+| hình vũ khí | cột `mo_hinh` của `nguyen_lieu.csv` (tên file trong `assets/model/vu_khi/`) |
+| hai tay hay một tay | cột `hai_tay` |
+| nhanh chậm, mạnh yếu | 9 dòng 刃 trong `moveset.csv` |
+
+**Đây là lúc trả món nợ `HINH_VU_KHI`.** Bảng gán cứng năm chữ trong
+`than_khoi.gd` đã ghi nợ ở đây từ lâu ("thêm loại vũ khí mới vào CSV thì nó hiện
+nhầm hình kiếm"). Giờ hình đọc từ CSV; bảng cũ chỉ còn làm khối hộp dự phòng cho
+vũ khí chưa có model.
+
+**Cầm hai tay = không có khiên.** `Tui.tay_trai_dang_cam()` trả null dù khe tay
+trái có đồ. Mất parry bằng khiên, mất đòn phản đỡ, mất chỉ số chặn — đó là cái
+giá, và thi hành ở MỘT chỗ nên không bên gọi nào quên được.
+
+**Chậm hơn, mạnh hơn — nhưng có trần.** Bản đầu để `cong` 14 và `he_so` 2.30:
+một nhát nhẹ HẠ GỌN một con quái thường. Bộ kiểm tra bắt ngay (ngưỡng 2–14 nhát
+kiểu Elden Ring), và nó đúng — một nhát một mạng thì không còn trận đánh nào.
+Hạ về `cong` 11 / `he_so` 1.75: mỗi nhát đau hơn 斧 chừng một phần tư, mà vung
+chậm hơn hẳn, nên DPS thấp hơn. Đó mới là "vũ khí nặng".
+Khung hồi đòn nặng cũng phải kéo về 1.15s — mục 5.2 chốt 0.45–1.2s và có test canh.
+
+**Bộ kiểm tra phải GHIM vũ khí.** Đổi vũ khí khởi đầu của phòng thử làm tám phép
+thử đỏ cùng lúc, mà không phép nào sai — chúng chỉ đang đo một cây kiếm khác.
+Giờ có `_dat_vu_khi()` và mọi phép thử đo NHỊP đều ghim về 剑 trước.
+Cạm bẫy trong đó: `mac_vao()` không truyền ô thì nhét vào khe TRỐNG đầu tiên,
+nên vũ khí mới rơi xuống ô 1 trong khi tay vẫn cầm ô 0. Ghim mà không đổi tay
+là không ghim gì cả.
+
+### Cất / rút vũ khí (phím R)
+
+Chủ dự án yêu cầu thêm, kiểu Elden Ring, **một động tác cho mọi vũ khí**.
+
+Làm nó thành cơ chế thật chứ không phải hai cái animation, vì cất kiếm phải
+ĐƯỢC cái gì đó — không thì không ai bấm, và nó thành nút trang trí đúng loại đã
+bị bỏ đi ở màn tạm dừng.
+
+| | |
+|---|---|
+| được | chạy nhanh hơn ×1.30, chạy tốn thể lực ×0.55 |
+| giá | **không đánh được**; bấm đánh là tự rút ra trước, mất 0.55s |
+
+Hai phần thưởng chứ không một, và chúng **nhân vào nhau**: nhanh hơn 30% mà vẫn
+hết hơi sau đúng ngần ấy giây thì quãng đường chỉ nhích chút ít. Có cả hai thì
+một hơi chạy dài gần gấp đôi — **đo thật: 5.42s so với 2.93s**. Lúc đó mới đáng
+bấm R trước khi băng qua một vùng.
+
+Ba điều cố ý:
+
+- **Bấm đánh lúc đang cất thì TỰ RÚT**, và cú bấm nằm chờ trong bộ đệm để nổ
+  ngay khi rút xong. Bắt người chơi bấm R rồi mới bấm đánh là một bước thừa mà
+  họ sẽ chửi — và họ đúng.
+- **Hai state có CAM KẾT**: lăn không cắt được. Cho huỷ giữa chừng thì cất kiếm
+  hết rủi ro, mà hết rủi ro thì phần thưởng thành miễn phí.
+- **Vũ khí chuyển ra sau LƯNG**, không phải ẩn đi. Ẩn thì thanh kiếm biến mất
+  giữa không khí và người chơi đọc ra là lỗi, không phải "đã cất".
+
+Cần thêm hai file động tác: `rut_vu_khi.fbx` và `cat_vu_khi.fbx`. Thiếu thì
+vẫn chạy, chỉ là không có dáng riêng.
+
+**Một bẫy trong chính bộ kiểm tra.** Phép thử "một hơi chạy được bao xa" lúc
+đầu đo QUÃNG ĐƯỜNG và ra 32.5m cho cả hai lượt — vì nhân vật đâm vào rìa phòng
+thử chứ không phải vì hết thể lực. Phép đo phụ thuộc cỡ căn phòng thì nó đang
+đo căn phòng, không đo cơ chế. Đổi sang đo THỜI GIAN thì đúng ngay.
+Kèm theo: quên trả nhân vật về chỗ cũ sau khi chạy 30m làm **bốn phép thử sau
+đó đánh vào khoảng không** — phép thử nào xê dịch nhân vật thì phải dọn sau mình.
+
+### Dáng nhân vật: gõ tay là hết trần, cần animation thật
+
+Chủ dự án xem và nói thẳng: nhìn cứng và ngược. Đúng, và đây là lý do kỹ thuật
+chứ không phải tune chưa tới:
+
+1. **Bàn chân trượt trên đất** — chân đung đưa theo `sin()` mà không bám mặt
+   đất. Đây là tín hiệu "sai" mạnh nhất mắt người bắt được.
+2. **Hông đứng chết** — người đi thật thì xương chậu nhấp nhô và xoay mỗi bước.
+3. **Chỉ 14 khớp, gần như mỗi khớp một trục.** Animation thật xoay 20–30 khớp
+   trên cả ba trục.
+4. **Mọi chuyển tiếp cùng một kiểu giảm tốc** — không lấy đà, không đà thừa,
+   không độ trễ giữa các bộ phận.
+5. **Vòng kiểm là ẢNH TĨNH.** Agent gõ góc rồi nhìn một khung đông cứng mà
+   đoán. Một dáng đi sai nhịp thì từng khung vẫn có thể trông ổn.
+
+Điểm 5 đáng nhớ nhất: **thứ gì chỉ sai khi CHUYỂN ĐỘNG thì ảnh tĩnh không bắt
+được**, y như chuyện bố cục HUD chỉ sai khi nhìn tổng thể.
+
+Nên đã dựng sẵn **đường nạp animation thật**: thả `.fbx` vào
+`assets/model/dong_tac/` với tên theo bảng, trạng thái nào có file thì
+`AnimationPlayer` giành quyền, thiếu thì quay về dáng gõ tay. Hướng dẫn đầy đủ
+ở `assets/model/dong_tac/DOC_TRUOC.md`.
+
+**Việc này CẦN NGƯỜI**: Mixamo đòi tài khoản Adobe, agent không đăng nhập được.
+Chủ dự án đã tải về, và mục dưới là chuyện lắp chúng vào.
+
+## Model mới + 37 clip động tác
+
+Nhân vật giờ là `assets/model/nhan_vat_chinh.fbx` (rig Mixamo, 58 xương, da
+`katz.jpg`), và **mọi dáng đều là animation thật** trừ hai cái còn thiếu. Bảng
+gán clip nào cho trạng thái nào, kèm lý do từng cái, ở
+`assets/model/dong_tac/DOC_TRUOC.md`.
+
+### Hai bộ clip, vì phím R phải nhìn thấy được
+
+Cất kiếm rồi mà vẫn chạy bằng dáng ôm kiếm hai tay thì phần thưởng của phím R
+không có mặt nào để đọc — thanh thể lực tụt chậm hơn, nhưng không ai nhìn thanh
+thể lực lúc đang chạy. Nên có hai bộ: cầm kiếm ở `dong_tac/`, tay không ở
+`dong_tac/khong_vu_khi/`, và `_co()` chọn bộ theo `da_rut`. Thiếu clip nào ở bộ
+tay không thì tự mượn bộ cầm kiếm, nên bộ đó không cần đủ.
+
+### Năm thứ hỏng IM LẶNG, và cách bắt được chúng
+
+Không cái nào trong năm cái này làm test đỏ. Bốn cái đầu bắt được bằng máy đo,
+cái thứ năm bắt được bằng mắt.
+
+| Hỏng | Triệu chứng | Đo bằng |
+|---|---|---|
+| Tên xương có dấu **hai chấm** | Godot đổi `mixamorig:Hips` thành `mixamorig_Hips` lúc nhập. Tìm theo tên cũ thì `find_bone()` trả −1 cho MỌI xương, mỗi xương một `push_warning` rồi thôi — nhân vật đứng nguyên tư thế chữ T trượt quanh map | in tên xương ra |
+| Đường dẫn rãnh | Rãnh Mixamo ghi theo cây của CHÍNH file đó (`Armature/Skeleton3D:...`). Sai gốc thì Godot in "couldn't resolve track" rồi phát clip RỖNG — nhìn ra ngoài y hệt cảnh chưa có file nào | `_sua_duong()` |
+| **Chiều cao đo bằng mesh** | Mesh có skin thì hộp bao của nó vô nghĩa: model này ra **7,6mm**. Phóng cho "vừa 1.8m" từ số đó là nhân nhân vật lên **236 lần** | `_cao_mo_hinh()` đo bằng XƯƠNG, bỏ xương lá tên `_end` |
+| **"In Place" chưa tick** | `chay` tự đi 1.86m một vòng, cộng với `move_and_slide()` là chạy gần gấp đôi luật và trượt như đi trên băng. Test vẫn xanh vì nó đo `velocity` của thân vật lý, thứ không đổi | `_khu_troi()` trừ đường thẳng đầu→cuối, giữ nguyên trục Y |
+| Kiếm dài 1.55m | Nhân vật mới là kiểu chibi: cao 1.8m nhưng bàn tay lúc buông chỉ ở 1.04m. Nửa mét lưỡi cắm xuyên sàn | ảnh `tools/chup_tu_the.tscn` |
+
+### Máy đo lại chính nó cũng sai
+
+Lượt đo "In Place" đầu tiên báo **mọi clip đều 0.00m** — tức là đã tick sẵn.
+Sai: hằng tên xương trong máy đo vẫn còn dấu hai chấm, nên nó không tìm thấy
+rãnh hông và trả về 0 cho tất cả. Một máy đo không tìm thấy thứ cần đo trông y
+hệt một máy đo báo "không có vấn đề gì".
+
+Sửa rồi đo lại thì ra `chay` 1.86m, `di` 1.07m, strafe tới 1.42m — ngược hẳn
+kết luận cũ. **Số 0 đẹp quá thì phải hỏi lại xem phép đo có chạm được vào thứ
+nó đo không.**
+
+### Tên file nói SAI ba lần
+
+Chọn clip theo số đo, không theo tên. Đo hướng trôi của hông thì ra:
+
+- `great sword run` là chạy **LÙI**; bản chạy tới là `great sword run (2)`
+- `great sword walk (2)` là đi **LÙI** — tưởng thừa, hoá ra đúng thứ đang thiếu
+- `great sword slash (5)` là chém lúc **ĐANG KHOM** (hông 0.33m thay vì 0.67m)
+
+Tin tên file thì nhân vật chạy tới trước bằng dáng chạy giật lùi, và một nhát
+trong combo ba nhát thì thụp xuống đất.
+
+### Góc cầm kiếm: đo được, không phải dò
+
+Ghi chú cũ bảo bốn con số nhóm "Cầm trên tay" phải chỉnh bằng mắt. Không đúng
+nữa: **clip kiếm hai tay giữ CẢ HAI bàn tay trên chuôi** (đo được hai tay cách
+nhau 13,7cm), nên vector tay phải → tay trái CHÍNH LÀ trục thanh kiếm. Đổi sang
+hệ của khớp bàn tay phải thì ra `(-0.67, 0.38, 0.64)`, và đó là góc mặc định.
+
+Vẫn để chỉnh tay được, vì phép đo không nói được VÒNG XOAY quanh chính trục ấy
+— bề dẹt của lưỡi quay hướng nào thì vẫn phải nhìn.
+
+Kèm một lỗi cũ: `_chuan_hoa_vu_khi()` ghim cứng `rotation_degrees = (180,0,0)`,
+nên `vu_khi_xoay` chỉ ăn vào khối hộp dự phòng còn model thật thì mặc kệ. Chỉnh
+mỏi tay trong editor mà thanh kiếm không nhúc nhích một độ nào.
+
+### Một phép thử phải đổi ngôn ngữ
+
+Phép thử "nạp đòn không được vung hụt một nhát trước" canh bằng **góc tay**. Có
+clip thật thì `dien()` nhường hẳn cho `AnimationPlayer` và không xoay xương nữa
+— góc tay đứng im, phép thử đỏ, dù game đúng hơn trước.
+
+Sửa bằng cách hỏi cùng một câu bằng thứ tiếng mà phần nhìn đang nói: thêm cửa
+`dong_tac_dang_phat()`, và suốt cú nạp thì clip đang chạy phải là `nap`, không
+được là clip vung nào. Còn không có clip thì vẫn đo góc tay như cũ.
+
+### Clip chết dài quá thì người chơi biến mất lúc đang rơi
+
+`TrangThaiChet.T_CHO = 2.8` — đúng giây đó nhân vật bị bốc về bia đá. Lượt gán
+đầu tôi chọn `Death1` cho bộ tay không vì nó dài hơn (3.90s), tưởng là đầy đặn
+hơn. Đo độ cao hông ở đúng giây 2.8 thì hông vẫn ở **0.35m**: cái xác còn đang
+đổ xuống thì màn hình đã cắt. Đổi sang `Dying2` (2.60s, xong ở 0.10m).
+
+Bài học rộng hơn: **"dự phòng" và "thừa" là hai thứ khác nhau**, và tôi đã gộp
+chúng vào một ô trong bảng. `Dying2` không thừa — nó là bản ĐÚNG. Ràng buộc này
+nằm giữa một hằng số trong code và độ dài một file `.fbx`, không có chỗ nào ghi
+nó và không công cụ nào tự bắt được.
+
+### Còn thiếu hai clip
+
+`lan` (lăn né) và `uong` (uống bình). `lan` là cái nặng: lăn né là cơ chế trung
+tâm của souls-like, bấm nhiều hơn mọi phím khác cộng lại, mà nó vẫn đang dùng
+dáng gõ tay. Tìm chữ "Roll" / "Dodge" trên Mixamo.
+
+Và đòn nặng chưa đúng là **Bổ**: trong cả 52 file Great Sword không có clip nào
+bổ dọc thật. Đang tạm dùng cú vung dài nhất, cam kết nhất — đọc ra là đòn nặng,
+nhưng là cú xoay chứ không phải cú bổ.
+
+### Còn dở
+
+- **Khiên chưa có model** — vẫn là khối hộp. Chủ dự án chốt tạm bỏ qua vì
+  vũ khí hiện tại cầm hai tay nên không dùng khiên. Bộ asset ngoài repo có
+  sẵn 20 cái khiên, cùng thư mục với đám kiếm.
+- **Quái vẫn là khối hộp.** Bộ model elf cũ còn nguyên 14 con dùng được, giờ
+  không còn chỗ nào trỏ tới.
+- **Bề dẹt của lưỡi kiếm** chưa canh — phép đo cho được trục thanh kiếm nhưng
+  không cho được vòng xoay quanh trục ấy. Nút vặn ở nhóm "Cầm trên tay".
+- **Kiếm lúc cất nằm dọc sau lưng**, chưa chéo qua vai như Elden Ring. Đọc ra
+  được là "đã cất", chỉ chưa đẹp. Hai nút `vu_khi_lech_lung` / `vu_khi_xoay_lung`.
+
+## Đợt sửa lớn: điều khiển, combat, save
+
+Chủ dự án liệt kê chín việc sau khi chơi thử bản có model thật. Ghi lại ở đây
+những chỗ mà **đọc code không ra, phải đo mới thấy**.
+
+### Lăn ngược 180°: không phải lỗi hướng, là backstep tự mâu thuẫn
+
+Đọc code thì mọi thứ tự nhất quán — `xoay_ve()` và `lan.gd` cùng dùng
+`atan2(h.x, h.z)`. Đo bằng `tools/soi_lan.tscn` mới ra: lăn CÓ bấm phím lệch
+hướng mặt 0–1°, lăn ĐỨNG YÊN lệch đúng 180°.
+
+Thủ phạm là hai dòng cạnh nhau tự cãi nhau: `_huong = -huong_mat()` (định làm
+backstep kiểu souls) rồi ngay dưới lại xoay cả người VỀ hướng đó. Cái ra được
+không phải backstep mà là **quay ngoắt 180° rồi lăn tới**. Backstep thật đòi
+giữ nguyên hướng mặt, tức là một dáng riêng — chưa có thì lăn tới là thứ đọc ra
+đúng.
+
+### Bàn chân trượt: hai con số, chỉnh một mình con nào cũng không hết
+
+Đo ra đi bộ **4.45 m/s** trong khi clip `di` tự đi **0.84 m/s** — chậm hơn 5.3
+lần. Dạt ngang còn tệ hơn: 5.6 lần, và đó đúng là hướng chủ dự án báo.
+
+Sửa hai đầu:
+- `_toc_theo_van_toc()` khớp tốc độ phát clip với vận tốc thật của thân vật lý.
+- Gán lại `di` / `di_lui` / `di_trai` / `di_phai` sang các clip CHẠY, vì 4.45
+  m/s vốn đã là tốc độ chạy chứ không phải đi bộ.
+
+Kết quả: hệ số phát 1.33 (có kiếm) và 1.77 (tay không), không cái nào chạm trần
+2.6. `he_so_phat()` công khai để phép thử canh đúng chuyện đó — đổi một file
+`.fbx` sang clip chậm hơn là test đỏ trước khi ai kịp nhìn thấy trượt.
+
+Ngưỡng chia hướng lúc khoá mục tiêu cũng sai: 0.5 (60°) làm tiến/lùi nuốt 120°
+mỗi cái, nên đi chéo vẫn phát clip đi thẳng. Đổi về 0.70711 = bốn phần tư đều.
+
+### Giật hình: quay màn hình lại thì không thấy
+
+Chủ dự án chẩn đoán đúng. Camera bám nhân vật ở `_process` (nhịp màn hình) còn
+`CharacterBody3D` chỉ đổi vị trí ở `_physics_process` (60 lần/giây). Hai nhịp
+khác nhau ⇒ nhân vật giật so với khung hình.
+
+Và đó là lý do bản quay màn hình sạch: nó lấy mẫu ở một nhịp khác, thường trùng
+nhịp vật lý, nên nó "sửa" luôn cái giật trong lúc ghi. **Bằng chứng vắng mặt ở
+bản ghi không phải bằng chứng không có lỗi.**
+
+Chuyển camera sang `_physics_process` với `process_physics_priority = 10` (chạy
+SAU `move_and_slide()` cùng tick), và nâng nhịp vật lý 60 → 120.
+
+### Kiếm cầm sai: phép đo cho được trục, không cho được vòng xoay
+
+Góc cầm đo từ vector tay phải → tay trái là ĐÚNG, nhưng nó chỉ nói thanh kiếm
+nằm dọc theo hướng nào — không nói nó xoay bao nhiêu quanh chính hướng đó. Bề
+dẹt của lưỡi quay ra trước thì thanh greatsword nhìn thành cái que.
+
+Thêm `vu_khi_lan` (một con số, xoay quanh trục kiếm), quét 0/45/90/135° rồi
+nhìn ảnh: 90° đúng. Cũng phát hiện `_chuan_hoa_vu_khi()` ghim cứng
+`rotation_degrees = (180,0,0)`, nên `vu_khi_xoay` chỉ ăn vào khối hộp dự phòng
+— chỉnh mỏi tay trong editor mà model thật không nhúc nhích một độ.
+
+### Đòn "Bổ": chủ dự án chỉ đúng clip
+
+Tôi chọn `slash (2)` (tay đi dọc 0.80m, thực chất là cú xoay 179°). Chủ dự án
+chỉ sang `casting` — đo ra **1.27m dọc**, từ 1.37m trên đỉnh xuống 0.10m sát
+đất. Cú bổ thật.
+
+### Năm đoạn của một cú đánh
+
+Mốc lấy từ `moveset.csv`, KHÔNG từ Call Method Track. Gắn mốc vào file `.fbx`
+là chuyển cân bằng game sang cho một file animation giữ.
+
+Đoạn 4 mở cửa sổ THỦ — lăn cắt ngang được. Cửa sổ NỐI mở TRƯỚC: mở cùng lúc thì
+lăn luôn thắng combo vì nó an toàn hơn, và người chơi hết phải chọn.
+
+Một phép thử của tôi đỏ vì lý do hay: cú lăn bị chặn ở đoạn 1 nằm lại trong
+đệm rồi **nổ ra đúng lúc cửa sổ mở**. Đó là bộ đệm làm đúng việc; phép thử mới
+là cái sai, vì nó bấm sớm hơn hạn dùng 0.35 giây của đệm.
+
+### Combo "khựng": hai lỗi chồng nhau, cái thứ hai mới là chính
+
+Chủ dự án báo: "đòn thứ nhất chưa hết là bấm tiếp đc rồi, hiện tại khựng quá".
+Đo ra hai nguyên nhân độc lập, và cái thứ hai là cái tôi đã bỏ sót khi dựng
+cửa sổ huỷ đòn lần trước.
+
+**1. Cú bấm bị NUỐT.** Bộ đệm giữ 0.35 giây, nhưng code chỉ hỏi tới nó từ
+`t_dam_den` trở đi. Với kiếm hai tay `t_dam_den` = 0.66s — bấm ở nhịp tự nhiên
+(~0.2s) là lệnh hết hạn trước khi có ai hỏi. Bấm, không thấy gì, bấm lại.
+
+**2. Nối đòn vẫn đợi TRỌN khung hồi.** Bắt được lệnh rồi thì nó nằm chờ tới
+`t_dam_den + t_hoi` mới nổ. Hai nhát cách nhau 1.56 giây. Đó không phải nối
+combo, đó là xếp hàng.
+
+Sửa: cửa sổ NỐI mở ở 40% khung hồi và **cắt** phần còn lại. Đo lại bằng
+`tools/soi_combo.tscn` (đo lúc HỘP ĐÒN BẬT, vì đó mới là lúc người chơi cảm
+nhận một nhát):
+
+| | trước | sau | Elden Ring |
+|---|---|---|---|
+| kiếm một tay 剑 | ~0.60s | **0.42–0.46s** | ~0.45s |
+| kiếm hai tay 刃 | ~1.56s | **1.04–1.22s** | ~1.0–1.3s |
+
+Một con số (`ti_le_cua_so_noi`) nhân với `t_hoi` của từng đòn, nên vũ khí nặng
+tự nối chậm hơn vũ khí nhẹ mà không phải khai riêng dòng nào.
+
+### Bộ đệm sức chứa 1, và một lỗi tôi tự gây ra
+
+Chủ dự án viết lại spec đầy đủ: bộ đệm giữ **đúng một** lệnh, lệnh sau đè lệnh
+trước. Bản cũ của tôi là một Dictionary nhiều khoá — spam ba nút lúc đang vung
+thì ra ba hành động nối nhau sau khi đòn kết thúc.
+
+Lúc chuyển sang một ô, tôi cho `lay_dem()` gọi thẳng `xoa_dem()`. Nhưng
+`xoa_dem()` reset cả `_giu_danh` — bộ đếm GIỮ chuột. Mà lệnh `don_nang` bắn ra
+lúc CHẠM ngưỡng giữ, trong khi ngón tay vẫn còn đang giữ, và `TrangThaiDanh`
+hỏi đúng cái đang-giữ đó để biết có vào cú NẠP hay không.
+
+Kết quả: cú nạp chết ngay khi vừa bắt đầu. Năm phép thử đỏ cùng lúc, tất cả về
+dáng nạp — đủ để thấy ngay, nhưng nếu không có nhóm phép thử đó thì đây là loại
+lỗi sống sót rất lâu. Tách `_bo_lenh_cho()` (chỉ dọn ô đệm) khỏi `xoa_dem()`
+(dọn cả bộ đếm giữ phím).
+
+### Nâng nhịp vật lý lên 120Hz làm bộ thử chập chờn
+
+`_hai_khung()` đợi hai nhịp vật lý — 33ms ở 60Hz, đủ phủ một khung hình. Ở
+120Hz nó còn 16ms, ngắn hơn một khung hình, mà sự kiện phím đi qua
+`_unhandled_input` chạy theo khung hình chứ không theo nhịp vật lý.
+
+Hỏng kiểu đó **không đỏ đều**: một lần trong vài chục lượt, ở một phép thử khác
+nhau mỗi lần. Trông y hệt "bộ thử vốn chập chờn" — và đó là cách nó sống sót.
+Thêm một `process_frame` vào đầu là hết.
+
+### Cứu một clip khỏi ô "thừa"
+
+Câu hỏi "tại sao mấy animation dying lại thừa?" làm lộ một chỗ tôi phân loại
+ẩu. `TrangThaiChet.T_CHO` khi đó là 2.8 giây; đo độ cao hông ở đúng giây đó thì
+`Death1` (3.90s) vẫn ở 0.35m — **cái xác còn đang rơi thì màn hình đã cắt**.
+`Dying2` (2.60s) mới là bản vừa.
+
+Bài học không phải "đo kỹ hơn" mà là: **"dự phòng" và "thừa" là hai loại khác
+nhau**, và tôi gộp chúng vào một ô trong bảng. Thứ thừa vì game không có cơ chế
+đó thì tải thêm cũng vô dụng; thứ thừa vì "đã có một cái đủ dùng" thì phụ thuộc
+vào một phán đoán — và phán đoán thì sai được.
+
+(Ràng buộc 2.8 giây giờ đã bỏ: màn "BẠN ĐÃ CHẾT" đợi phím, không đợi đồng hồ.)
 
 ## Cần người, agent không làm thay được
 
@@ -250,9 +785,24 @@ Ghi lại để không ai tưởng là quên:
   không ai đọc — giữ lại phòng khi đổi ý. **(Đã đổi ý ở đợt làm combat kiểu
   Elden Ring: đánh tốn thể lực trở lại, cột `the_luc` được đọc lại rồi.)**
 - **Một nút chuột trái ra cả đòn nhẹ lẫn đòn nặng.** Nhả trước
-  `NguoiChoi.NGUONG_GIU_NANG` (0.22s) là nhẹ, giữ lâu hơn là nặng, giữ tiếp nữa
-  thành đòn nạp. Chuột phải chuyển thành **đỡ phản** (phím R vẫn dùng được).
-  Action `don_nang` đã gỡ khỏi input map; cái tên chỉ còn sống trong bộ đệm phím.
+  `NguoiChoi.NGUONG_GIU_NANG` (0.18s) là nhẹ, giữ lâu hơn là nặng, giữ tiếp nữa
+  thành đòn nạp. Action `don_nang` đã gỡ khỏi input map; cái tên chỉ còn sống
+  trong bộ đệm phím.
+- **Bộ nút đã dọn lại một lượt** (chủ dự án chốt). Bảng cũ → mới:
+
+  | Việc | Cũ | Nay |
+  |---|---|---|
+  | lăn | Space gõ nhanh | Space gõ nhanh |
+  | chạy | Space giữ | **Shift giữ** |
+  | nhảy | F | **Space giữ** |
+  | đỡ phản | chuột phải / R | **E** / chuột phải |
+  | tương tác | E | **F** |
+
+  Hai action đổi tên theo: `lan_chay` → **`lan_nhay`**, và action `nhay` bị gỡ
+  hẳn (nhảy giờ là kết quả của việc GIỮ Space, nạp vào `_dem["nhay"]` từ
+  `NguoiChoi._process()`). Thêm action mới `chay_nhanh` = Shift.
+  Bộ test gọi action theo TÊN nên đổi phím không làm đỏ test nào — đó đúng là
+  chỗ nguy hiểm, nên nhóm "Nút mới" trong `thu_vong_lap.gd` canh riêng việc này.
 - **Không dùng Terrain3D / ProtonScatter** (mục 7.3). Chủ dự án chọn tự viết —
   repo sạch, không phụ thuộc phiên bản addon. Địa hình sẽ viết ở mốc 6.
 - **Điểm chỉ số của chữ ngoài `nguyen_lieu.csv`** suy từ độ khó của chữ, không
@@ -293,7 +843,7 @@ Ghi lại để không ai tưởng là quên:
 - **Cái xác nhặt được hồn của chính nó.** `TuongTacDuoc` chỉ hỏi "có phải thứ
   gần nhất không", không hỏi "người chơi còn đứng được không". Mà vũng hồn mọc
   ĐÚNG chỗ ngã xuống, nên cái xác nằm trọn trong tầm với của nó suốt 2.8 giây
-  trước khi đứng dậy ở bia — bấm E lúc đó là nhặt lại sạch, mất trắng thành ra
+  trước khi đứng dậy ở bia — bấm phím tương tác lúc đó là nhặt lại sạch, mất trắng thành ra
   không mất gì, cả mục 4.5 sụp theo. Bộ test cũ không bắt được vì nó gọi thẳng
   `vung.tuong_tac()`, đi vòng qua đúng chỗ hỏng. Bài học: **test đường tắt thì
   không bắt được lỗi ở đường chính** — muốn canh phím thì phải bơm phím thật.
@@ -339,3 +889,27 @@ Ghi lại để không ai tưởng là quên:
 - **`queue_free()` chỉ đánh dấu**, node vẫn nằm trong cây tới hết khung hình. Dựng
   lại danh sách giao diện thì phải `remove_child()` trước, không thì container
   xếp cả hàng cũ lẫn hàng mới.
+
+- **Theme gán ở root Window KHÔNG ăn.** Đo trong Godot 4.7:
+  `get_tree().root.theme = t` nhận resource thật, `t.has_stylebox("normal",
+  "Button")` trả `true`, mà một Button bất kỳ vẫn resolve ra `StyleBoxFlat` mặc
+  định của engine. Phải gán thẳng vào một Control tổ tiên — `GiaoDien.ap_theme()`.
+
+  Đáng sợ ở chỗ hệ quả: font mặc định của Godot không có chữ Hán, nên màn nào
+  không ăn theme thì tên món đồ hiện ô vuông — **trông y hệt cơ chế `???` của
+  chính game này**. Một lỗi font giả dạng thành một cơ chế đang chạy đúng.
+
+- **Bộ test không nhìn được giao diện.** Vệt cọ đỏ của bản mẫu bị đặt làm kiểu
+  của MỌI `Button`, nên màn hành trang — vốn dựng mỗi món đồ thành một Button —
+  biến thành một bức tường vệt sơn với chữ bị bóp không đọc nổi. 216 test vẫn
+  xanh: không test nào hỏi "cái này trông thế nào". Bắt được bằng cách chạy
+  `tools/chup_man_hinh.tscn` và NHÌN vào ảnh.
+
+  Bài học: **thứ gì chỉ sai ở phần NHÌN thì chỉ có nhìn mới bắt được.** Bốn bộ
+  test canh được luật, không canh được bố cục. Sửa giao diện thì chụp ảnh.
+
+- **Đặt vị trí Control bằng anchor preset rồi gán `position` là mất.** Preset
+  ghi đè cả offset, nên `position` gán một lần lúc dựng bị nó nuốt. Minimap vì
+  thế nằm lọt hẳn ngoài mép phải màn hình, và không lỗi nào nổ ra — chỉ là góc
+  phải trên trống trơn. Cách né: tự tính vị trí theo `get_viewport_rect()` mỗi
+  khung, và như thế đổi cỡ cửa sổ cũng theo kịp.

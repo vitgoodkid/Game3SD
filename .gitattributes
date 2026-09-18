@@ -1,4 +1,15 @@
 # Giữ LF ở mọi nơi — CI chạy trên Linux, máy làm việc chạy Windows.
+#
+# Mọi đuôi NHỊ PHÂN phải khai rõ ở dưới. `text=auto` có tự đoán, nhưng nó
+# đoán bằng cách tìm byte NUL trong 8000 byte đầu — đoán sai một lần là file
+# bị đổi CRLF và hỏng hẳn, mà hỏng kiểu đó chỉ lộ ra lúc ai đó clone về.
 * text=auto eol=lf
 *.png binary
 *.glb binary
+*.ttf binary
+*.TTF binary
+*.fbx binary
+*.jpg binary
+*.jpeg binary
+*.wav binary
+*.ogg binary

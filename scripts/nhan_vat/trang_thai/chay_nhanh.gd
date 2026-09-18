@@ -23,7 +23,10 @@ func chay(delta: float) -> void:
 	# Tiêu theo delta chứ không theo mốc. Không đụng tới mốc trễ hồi: state này
 	# đã khai cho_hoi_the_luc() = false, nên chừng nào còn chạy là còn không
 	# hồi, và mốc trễ chỉ bắt đầu đếm từ lúc thôi chạy.
-	nc.the_luc = maxf(0.0, nc.the_luc - SoulsLike.THE_LUC_CHAY_MOI_GIAY * delta)
+	# Cất vũ khí thì tốn ít hơn — xem NguoiChoi.HS_THE_LUC_KHI_CAT. Đây là nửa
+	# sau của phần thưởng cho việc cất kiếm; nửa đầu là tốc độ.
+	nc.the_luc = maxf(0.0, nc.the_luc
+		- SoulsLike.THE_LUC_CHAY_MOI_GIAY * nc.he_so_ton_the_luc() * delta)
 	nc.doi_the_luc.emit(nc.the_luc, nc.the_luc_max)
 
 	nc.dat_toc_ngang(nc.huong_nhap, nc.toc_do_chay * float(tai["toc_do"]))

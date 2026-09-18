@@ -65,6 +65,25 @@ static func sinh_theo_loai(loai: String, ma_vung: String = "", hat: int = 0) -> 
 
 	return _dung_mon(tt, ma_vung, r)
 
+## Sinh một món quanh MỘT chữ trung tâm đã biết trước.
+##
+## Dùng khi chỗ gọi cần chắc chắn mình nhận được cái gì — phòng thử phát vũ khí
+## khởi đầu, bia đá thưởng một món cố định. Hai hàm sinh ở trên bốc ngẫu nhiên,
+## và "ngẫu nhiên" là sai ở những chỗ đó.
+##
+## Chữ truyền vào đến TỪ CSV (ví dụ `phong_thu.gd` khai một hằng số đọc được),
+## không phải từ file này — luật 1 vẫn nguyên.
+static func sinh_mon_tu_chu(trung_tam: String, ma_vung: String = "",
+		hat: int = 0) -> MonDo:
+	if VocabDB.vi_tri_cua(trung_tam) != "trung_tam":
+		return null
+	var r := RandomNumberGenerator.new()
+	if hat != 0:
+		r.seed = hat
+	else:
+		r.randomize()
+	return _dung_mon(trung_tam, ma_vung, r)
+
 ## Dựng món đồ quanh một chữ trung tâm đã chọn: bốc thêm mấy chữ bổ nghĩa của
 ## vùng rồi xếp trung tâm xuống cuối. Hai hàm sinh ở trên chỉ khác nhau ở cách
 ## CHỌN chữ trung tâm; phần còn lại dùng chung ở đây.

@@ -1,48 +1,64 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene format=3 uid="uid://15jpdr2yj7w3"]
 
-[ext_resource type="Script" path="res://scripts/the_gioi/phong_thu.gd" id="1_phong"]
-[ext_resource type="Environment" path="res://scenes/the_gioi/moi_truong_mac_dinh.tres" id="2_mt"]
+[ext_resource type="Script" uid="uid://bh2gem2mm580c" path="res://scripts/the_gioi/phong_thu.gd" id="1_phong"]
+[ext_resource type="Environment" uid="uid://nfdcesme3su0" path="res://scenes/the_gioi/moi_truong_mac_dinh.tres" id="2_mt"]
 [ext_resource type="PackedScene" path="res://scenes/nhan_vat/nguoi_choi.tscn" id="3_nc"]
-[ext_resource type="Script" path="res://scripts/giao_dien/hud.gd" id="4_hud"]
+[ext_resource type="Script" uid="uid://b7m3xouhmrgch" path="res://scripts/giao_dien/hud.gd" id="4_hud"]
 [ext_resource type="PackedScene" path="res://scenes/the_gioi/bia_da.tscn" id="5_bia"]
-[ext_resource type="Script" path="res://scripts/giao_dien/man_hanh_trang.gd" id="6_ht"]
-[ext_resource type="Script" path="res://scripts/giao_dien/man_bia_da.gd" id="7_bd"]
-[ext_resource type="Script" path="res://scripts/the_gioi/vong_hoi_sinh.gd" id="8_vhs"]
-[ext_resource type="Script" path="res://scripts/giao_dien/man_thoai.gd" id="90_mt"]
+[ext_resource type="Script" uid="uid://bh1jeudafntgd" path="res://scripts/giao_dien/man_hanh_trang.gd" id="6_ht"]
+[ext_resource type="Script" uid="uid://dvjk0uu466gyf" path="res://scripts/giao_dien/man_bia_da.gd" id="7_bd"]
+[ext_resource type="Script" uid="uid://beolo02jgy52q" path="res://scripts/the_gioi/vong_hoi_sinh.gd" id="8_vhs"]
+[ext_resource type="Script" uid="uid://fjwiah2hd13n" path="res://scripts/giao_dien/man_thoai.gd" id="90_mt"]
+[ext_resource type="Script" uid="uid://cd8bmdhm3jewh" path="res://scripts/giao_dien/man_cai_dat.gd" id="91_cd"]
+[ext_resource type="Script" path="res://scripts/giao_dien/man_chet.gd" id="99_mc"]
 
-[node name="PhongThu" type="Node3D"]
+[node name="PhongThu" type="Node3D" unique_id=26874242]
 script = ExtResource("1_phong")
 
-[node name="MoiTruong" type="WorldEnvironment" parent="."]
+[node name="MoiTruong" type="WorldEnvironment" parent="." unique_id=2138010605]
 environment = ExtResource("2_mt")
 
-[node name="MatTroi" type="DirectionalLight3D" parent="."]
+[node name="MatTroi" type="DirectionalLight3D" parent="." unique_id=1098784666]
 transform = Transform3D(0.866025, -0.35, 0.357, 0, 0.714, 0.7, -0.5, -0.606, 0.618, 0, 22, 0)
 light_energy = 1.1
 light_angular_distance = 0.6
 shadow_enabled = true
-directional_shadow_mode = 2
 directional_shadow_max_distance = 120.0
 
-[node name="NguoiChoi" parent="." instance=ExtResource("3_nc")]
+[node name="NguoiChoi" parent="." unique_id=2140077530 instance=ExtResource("3_nc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 4)
 
-[node name="BiaDa" parent="." instance=ExtResource("5_bia")]
+[node name="BiaDa" parent="." unique_id=191274824 instance=ExtResource("5_bia")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8)
 ma = "bia_phong_thu"
 ten = "Bia đá phòng thử"
 
-[node name="VongHoiSinh" type="Node" parent="."]
+[node name="VongHoiSinh" type="Node" parent="." unique_id=918864601]
 script = ExtResource("8_vhs")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1206255142]
 script = ExtResource("4_hud")
+cau_ban_kinh = 82.775
+cau_le = -6.85
+cau_cach = 15.16
+cau_vien = 0.1
+cau_vien_lech = Vector2(1.04, -6.17)
+nen_cao_theo_cau = 1.72
+minimap_ban_kinh = 159.885
+minimap_tam_quet = 55.8
+minimap_le = 16.74
 
-[node name="ManHanhTrang" type="CanvasLayer" parent="."]
+[node name="ManHanhTrang" type="CanvasLayer" parent="." unique_id=2143484310]
 script = ExtResource("6_ht")
 
-[node name="ManBiaDa" type="CanvasLayer" parent="."]
+[node name="ManBiaDa" type="CanvasLayer" parent="." unique_id=217697884]
 script = ExtResource("7_bd")
 
-[node name="ManThoai" type="CanvasLayer" parent="."]
+[node name="ManThoai" type="CanvasLayer" parent="." unique_id=1297044990]
 script = ExtResource("90_mt")
+
+[node name="ManCaiDat" type="CanvasLayer" parent="." unique_id=341225618]
+script = ExtResource("91_cd")
+
+[node name="ManChet" type="CanvasLayer" parent="."]
+script = ExtResource("99_mc")

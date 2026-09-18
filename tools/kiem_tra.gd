@@ -81,9 +81,12 @@ func _du_lieu() -> void:
 	_dung(VocabDB.tu_vung.size() >= 1011,
 		"tu_vung.csv có %d chữ (>= 1011)" % VocabDB.tu_vung.size())
 	_dung(VocabDB.ngu_phap.size() == 41, "ngu_phap.csv giữ đủ 41 câu")
-	# 38 nguyên liệu của bản 2D + 盾 (khiên, thêm lúc làm combat kiểu Elden Ring
-	# — ER tách khiên khỏi vũ khí và chỉ khiên mới parry được).
-	_dung(VocabDB.nguyen_lieu.size() == 39, "nguyen_lieu.csv giữ đủ 39 nguyên liệu")
+	# 38 nguyên liệu của bản 2D + 盾 (khiên, thêm lúc làm combat kiểu Elden Ring)
+	# + 刃 (kiếm hai tay). Canh KHÔNG MẤT, không canh bằng đúng: thêm nguyên
+	# liệu là việc bình thường, mà mất một cái thì hỏng cả công thức chế đồ.
+	_dung(VocabDB.nguyen_lieu.size() >= 40,
+		"nguyen_lieu.csv còn đủ nguyên liệu (%d, tối thiểu 40)"
+		% VocabDB.nguyen_lieu.size())
 	var khien := 0
 	for n in VocabDB.nguyen_lieu:
 		if String(n.get("loai", "")) == "khien":

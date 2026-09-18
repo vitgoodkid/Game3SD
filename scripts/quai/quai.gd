@@ -209,8 +209,12 @@ func _bao_so(st: int, hs: float, hanh: String) -> void:
 	tk.so_bay(st, hs, ghi)
 
 ## Đối phương đỡ phản trúng đòn của mình → đứng ngây.
-func bi_do_phan() -> void:
-	may.xin_doi("quai_vo_the", {"lau": SoulsLike.NGAY_SAU_DO_PHAN})
+##
+## `lau` để mặc định là NGAY_SAU_DO_PHAN, nên chỗ gọi nào không quan tâm tới
+## bậc parry vẫn gọi bi_do_phan() trống như cũ. Parry HOÀN HẢO thì bên gọi
+## truyền NGAY_SAU_PERFECT vào.
+func bi_do_phan(lau: float = SoulsLike.NGAY_SAU_DO_PHAN) -> void:
+	may.xin_doi("quai_vo_the", {"lau": lau})
 
 # --- Chết -----------------------------------------------------------
 

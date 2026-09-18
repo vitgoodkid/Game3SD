@@ -6,10 +6,10 @@ uid="uid://c5owte336rnms"
 
 [deps]
 
-files=["res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.han.translation", "res://data/nguyen_lieu.nghia.translation", "res://data/nguyen_lieu.khe.translation", "res://data/nguyen_lieu.cong.translation", "res://data/nguyen_lieu.loai.translation", "res://data/nguyen_lieu.bo.translation", "res://data/nguyen_lieu.hiem.translation", "res://data/nguyen_lieu.vi.translation", "res://data/nguyen_lieu.ngu.translation"]
+files=["res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.han.translation", "res://data/nguyen_lieu.nghia.translation", "res://data/nguyen_lieu.khe.translation", "res://data/nguyen_lieu.cong.translation", "res://data/nguyen_lieu.loai.translation", "res://data/nguyen_lieu.bo.translation", "res://data/nguyen_lieu.hiem.translation", "res://data/nguyen_lieu.vi.translation", "res://data/nguyen_lieu.ngu.translation", "res://data/nguyen_lieu.mo.translation", "res://data/nguyen_lieu.hai.translation"]
 
 source_file="res://data/nguyen_lieu.csv"
-dest_files=["res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.han.translation", "res://data/nguyen_lieu.nghia.translation", "res://data/nguyen_lieu.khe.translation", "res://data/nguyen_lieu.cong.translation", "res://data/nguyen_lieu.loai.translation", "res://data/nguyen_lieu.bo.translation", "res://data/nguyen_lieu.hiem.translation", "res://data/nguyen_lieu.vi.translation", "res://data/nguyen_lieu.ngu.translation"]
+dest_files=["res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.pinyin.translation", "res://data/nguyen_lieu.han.translation", "res://data/nguyen_lieu.nghia.translation", "res://data/nguyen_lieu.khe.translation", "res://data/nguyen_lieu.cong.translation", "res://data/nguyen_lieu.loai.translation", "res://data/nguyen_lieu.bo.translation", "res://data/nguyen_lieu.hiem.translation", "res://data/nguyen_lieu.vi.translation", "res://data/nguyen_lieu.ngu.translation", "res://data/nguyen_lieu.mo.translation", "res://data/nguyen_lieu.hai.translation"]
 
 [params]
 

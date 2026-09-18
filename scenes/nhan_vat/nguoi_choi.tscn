@@ -1,7 +1,7 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/nhan_vat/nguoi_choi.gd" id="1_nc"]
-[ext_resource type="Script" path="res://scripts/nhan_vat/than_khoi.gd" id="2_than"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/than_mo_hinh.gd" id="2_than"]
 [ext_resource type="Script" path="res://scripts/nhan_vat/vu_khi_hop_don.gd" id="3_hop"]
 [ext_resource type="Script" path="res://scripts/nhan_vat/camera_ba_che_do.gd" id="4_cam"]
 [ext_resource type="Script" path="res://scripts/nhan_vat/khoa_muc_tieu.gd" id="5_khoa"]
@@ -19,6 +19,8 @@
 [ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/uong.gd" id="17_uong"]
 [ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/chet.gd" id="18_chet"]
 [ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/ket_lieu.gd" id="19_kl"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/rut_vu_khi.gd" id="20_rut"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/cat_vu_khi.gd" id="21_cat"]
 
 [sub_resource type="CapsuleShape3D" id="Capsule_nc"]
 radius = 0.36
@@ -38,8 +40,6 @@ shape = SubResource("Capsule_nc")
 
 [node name="Than" type="Node3D" parent="."]
 script = ExtResource("2_than")
-
-[node name="ThanNguoi" type="Node3D" parent="Than"]
 
 [node name="GanTayPhai" type="Node3D" parent="Than"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 1.08, 0)
@@ -114,3 +114,9 @@ script = ExtResource("18_chet")
 
 [node name="ket_lieu" type="Node" parent="May"]
 script = ExtResource("19_kl")
+
+[node name="rut_vu_khi" type="Node" parent="May"]
+script = ExtResource("20_rut")
+
+[node name="cat_vu_khi" type="Node" parent="May"]
+script = ExtResource("21_cat")

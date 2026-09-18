@@ -20,6 +20,10 @@ signal da_dong
 ## đóng một cái thì cái kia vẫn đó mà game đã chạy lại rồi.
 static var dang_mo_man: ManChung = null
 
+## Cỡ chữ tiêu đề màn hình. To hẳn so với chữ thường: đây là thứ duy nhất trên
+## màn che toàn màn nói cho người chơi biết họ đang ở đâu.
+const CO_TIEU_DE := 54
+
 const MAU_NEN := Color(0.06, 0.06, 0.07, 0.94)
 const MAU_VIEN := Color(0.32, 0.30, 0.27)
 const MAU_CHU := Color(0.92, 0.90, 0.85)
@@ -48,20 +52,28 @@ func _ready() -> void:
 	add_child(_nen)
 
 	var ngoai := MarginContainer.new()
+	# Theme gán ở ĐÂY chứ không ở root — gán ở root thì Godot 4.7 không truyền
+	# xuống, xem GiaoDien._dat_theme(). Gán ở node cha cao nhất của màn thì cả
+	# cây con ăn theo, kể cả font chữ Hán.
+	GiaoDien.ap_theme(ngoai)
 	ngoai.set_anchors_preset(Control.PRESET_FULL_RECT)
-	ngoai.add_theme_constant_override("margin_left", 48)
-	ngoai.add_theme_constant_override("margin_right", 48)
-	ngoai.add_theme_constant_override("margin_top", 32)
-	ngoai.add_theme_constant_override("margin_bottom", 32)
+	ngoai.add_theme_constant_override("margin_left", 64)
+	ngoai.add_theme_constant_override("margin_right", 64)
+	ngoai.add_theme_constant_override("margin_top", 40)
+	ngoai.add_theme_constant_override("margin_bottom", 36)
 	add_child(ngoai)
 
 	var doc := VBoxContainer.new()
 	doc.add_theme_constant_override("separation", 12)
 	ngoai.add_child(doc)
 
+	# Tiêu đề GIỮA và to. Nằm ở mép trái như bản trước thì trên màn rộng nó bị
+	# đẩy ra tận góc, cách nội dung (vốn ở giữa) cả ngàn pixel — mắt đọc xong
+	# tiêu đề rồi phải quét ngang cả màn hình mới tới thứ mình cần bấm.
 	_tieu_de = Label.new()
-	_tieu_de.add_theme_font_size_override("font_size", 30)
+	_tieu_de.add_theme_font_size_override("font_size", CO_TIEU_DE)
 	_tieu_de.add_theme_color_override("font_color", MAU_CHU)
+	_tieu_de.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	doc.add_child(_tieu_de)
 
 	var vach := HSeparator.new()
@@ -73,7 +85,8 @@ func _ready() -> void:
 
 	var duoi := Label.new()
 	duoi.text = "Esc — đóng"
-	duoi.add_theme_font_size_override("font_size", 15)
+	duoi.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	duoi.add_theme_font_size_override("font_size", 20)
 	duoi.add_theme_color_override("font_color", MAU_CHU_MO)
 	doc.add_child(duoi)
 
@@ -150,7 +163,7 @@ func _unhandled_input(su_kien: InputEvent) -> void:
 
 # --- Tiện tay cho màn con -------------------------------------------
 
-func chu(noi_dung: String, co := 18, mau := MAU_CHU) -> Label:
+func chu(noi_dung: String, co := 22, mau := MAU_CHU) -> Label:
 	var l := Label.new()
 	l.text = noi_dung
 	l.add_theme_font_size_override("font_size", co)
@@ -161,7 +174,7 @@ func nut(nhan: String, khi_bam: Callable, bat := true) -> Button:
 	var b := Button.new()
 	b.text = nhan
 	b.disabled = not bat
-	b.add_theme_font_size_override("font_size", 17)
+	b.add_theme_font_size_override("font_size", 21)
 	b.pressed.connect(khi_bam)
 	return b
 

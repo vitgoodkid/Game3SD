@@ -42,8 +42,8 @@ func dung_hinh() -> void:
 
 func dong_moi() -> String:
 	if not TheGioi.bia_da_bat(ma):
-		return "E — bật bia đá"
-	return "E — nghỉ"
+		return "%s — bật bia đá" % phim()
+	return "%s — nghỉ" % phim()
 
 func tuong_tac() -> void:
 	AmThanh.phat("bia_da")

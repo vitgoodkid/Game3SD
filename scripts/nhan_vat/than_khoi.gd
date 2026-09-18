@@ -128,6 +128,22 @@ func _vat_lieu(mau: Color) -> StandardMaterial3D:
 	v.roughness = 0.85
 	return v
 
+# --- Cửa hỏi cho bộ kiểm tra ----------------------------------------
+#
+# Hai thứ dưới đây là CÔNG KHAI có chủ ý. Bộ kiểm tra cần đo dáng tay và xem
+# khiên có hiện không, mà thân có HAI bản (khối hộp và model thật) với cấu
+# trúc trong ruột khác hẳn nhau. Không có cửa chung thì test phải ép kiểu một
+# bản cụ thể — và đổi thân là test đỏ, dù game chẳng hỏng gì.
+
+## Góc vung của tay phải, tính bằng độ, âm là ra sau. Bộ kiểm tra canh cú nạp
+## đòn bằng con số này: suốt cú nạp tay chỉ được đi MỘT CHIỀU ra sau.
+func goc_tay_phai() -> float:
+	return _tay_phai.rotation_degrees.x if _tay_phai != null else 0.0
+
+## Khiên có đang được vẽ không.
+func khien_hien() -> bool:
+	return _khien != null and _khien.visible
+
 # --- Vũ khí đang cầm ------------------------------------------------
 
 ## Vũ khí đổi hình theo chữ trung tâm: rìu to và ngắn, kiếm dài và mảnh, cung
@@ -265,7 +281,10 @@ func _dien_danh(kieu: String, tien_do: float) -> void:
 
 	# Vung từ sau đầu ra trước. Vung tay ngược lên trước là chỗ người chơi đọc
 	# được "nó sắp chém" — khung quan trọng nhất.
-	var nang := kieu.begins_with("nang")
+	# "nang" ở BẤT KỲ đâu trong tên, không chỉ ở đầu: "nhay_nang" cũng phải vung
+	# ra dáng nặng. Đòn nhảy nặng phá thế gấp 4 đòn thường — đọc nhầm nó thành
+	# đòn nhẹ là đọc nhầm đúng cái đòn nguy hiểm nhất.
+	var nang := "nang" in kieu
 	_tay_phai.rotation_degrees.x = lerpf(-176.0 if nang else -150.0,
 		80.0 if nang else 55.0, t)
 	_tay_trai.rotation_degrees.x = lerpf(0.0, -25.0, t)

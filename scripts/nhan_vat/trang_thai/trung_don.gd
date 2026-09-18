@@ -8,6 +8,9 @@ var _lui := Vector3.ZERO
 
 func vao(du_lieu: Dictionary = {}) -> void:
 	nc.dang_do = false
+	# Vứt đệm phím: mấy cú bấm trong lúc đang bị đánh mà giữ lại thì chúng nổ
+	# ra ngay khi vừa đứng vững, và nhân vật tự lăn hoặc tự chém vào không khí.
+	nc.xoa_dem()
 	var tu = du_lieu.get("tu_dau", nc.global_position)
 	_lui = nc.global_position - (tu as Vector3)
 	_lui.y = 0.0

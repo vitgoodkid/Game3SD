@@ -21,7 +21,7 @@ func chay(delta: float) -> void:
 	if nc.lay_dem("lan") and nc.hoi_lan <= 0.0:
 		di("lan")
 		return
-	if nc.lay_dem("do_phan") and nc.co_khien():
+	if nc.lay_dem("do_phan"):
 		di("do_phan")
 		return
 	# ĐÒN PHẢN SAU KHI ĐỠ (guard counter). Vừa chặn được một đòn thì bấm đòn

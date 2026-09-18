@@ -17,8 +17,9 @@ signal da_tuong_tac
 ## chứ không của riêng node nào — và vì chỉ có đúng một người chơi.
 static var dang_trong_tam: Array = []
 
-## Dòng mời hiện trên đầu khi đứng đủ gần.
-@export var loi_moi := "E"
+## Dòng mời hiện trên đầu khi đứng đủ gần. Để TRỐNG thì tự lấy tên phím đang
+## gán cho action `tuong_tac` — đừng gõ tên phím vào đây, xem phim().
+@export var loi_moi := ""
 ## Bán kính tầm với, dùng khi scene không đặt sẵn CollisionShape3D.
 @export var tam_voi := 2.6
 ## Treo dòng mời cao bao nhiêu.
@@ -68,9 +69,17 @@ func dung_hinh() -> void:
 func tuong_tac() -> void:
 	pass
 
+## Tên phím tương tác, đọc từ InputMap. MỌI dòng mời phải dựng qua hàm này.
+##
+## Gõ thẳng "E" vào chuỗi là thứ đã hỏng một lần: phím dọn từ E sang F mà bốn
+## dòng mời vẫn mời bấm E, nên người chơi đứng trên món đồ bấm E và không có gì
+## xảy ra. Không test nào bắt được — chuỗi sai vẫn là một chuỗi hợp lệ.
+func phim() -> String:
+	return GiaoDien.ten_phim("tuong_tac")
+
 ## Dòng mời hiện trên đầu. Override nếu nó đổi theo trạng thái.
 func dong_moi() -> String:
-	return loi_moi
+	return loi_moi if loi_moi != "" else phim()
 
 # --- Dò tầm với -------------------------------------------------------
 

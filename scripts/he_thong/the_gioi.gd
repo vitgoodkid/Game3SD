@@ -15,6 +15,9 @@ signal nghi_bia_da(ma_bia: String)
 signal hoi_sinh
 signal chet
 signal vao_vung(ma_vung: String)
+## Hạ xong một boss. `LuuGame` nghe để tự lưu — hạ boss là mốc mà mất tiến trình
+## thì người chơi đau nhất, và cũng là mốc dễ quên lưu tay nhất.
+signal ha_boss_xong(ma_boss: String)
 
 ## Bia đá đã bật. Bật rồi thì dịch chuyển tới được.
 var bia_da_da_bat := {}
@@ -115,6 +118,7 @@ func da_ha(id: String) -> bool:
 
 func ha_boss(ma: String) -> void:
 	boss_da_ha[ma] = true
+	ha_boss_xong.emit(ma)
 	# Hạ boss là khôi phục tên cho cả vùng — màu và chi tiết trở lại (mục 7.5).
 	var b := VocabDB.boss_cua(ma)
 	if not b.is_empty():
