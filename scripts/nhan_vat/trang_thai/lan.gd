@@ -28,7 +28,11 @@ func vao(_du_lieu: Dictionary = {}) -> void:
 	var tai := Tui.muc_tai()
 	_iframe = SoulsLike.iframe_thuc(nc.ti_le_tai(), Tui.cs("韧"))
 	_dai = SoulsLike.thoi_gian_lan
-	_toc = 9.5 * float(tai["xa"])
+	# `he_so_toc_do_lan` — mục "CHỈNH SỐNG" của NguoiChoi — chỉ đổi TỐC ĐỘ
+	# TRƯỢT, tách khỏi THỜI LƯỢNG (`_dai`, ở trên). Hai cái là hai cảm giác
+	# khác nhau: lăn xa/gần do thời lượng × tốc độ, còn lăn "gấp" hay "nặng nề"
+	# ở TỪNG KHUNG HÌNH là do tốc độ một mình.
+	_toc = 9.5 * float(tai["xa"]) * nc.he_so_toc_do_lan
 
 	_huong = nc.huong_nhap
 	if _huong == Vector3.ZERO:

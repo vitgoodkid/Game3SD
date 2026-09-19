@@ -18,8 +18,20 @@ const CANH_BOSS := preload("res://scenes/quai/boss.tscn")
 const DAT_BOSS := {"ma": "canh_hai", "tai": Vector3(0, 0, -26)}
 
 ## Quái đặt sẵn: mã trong quai.csv + chỗ đứng.
+##
+## Hai con ĐẦU là bù nhìn tập — cả hai đứng yên tuyệt đối (toc_do_di=0 lẫn
+## toc_do_duoi=0 trong quai.csv), khác nhau đúng MỘT chỗ để so sánh cạnh nhau:
+##
+##   bu_nhin    tam_danh=2.2  → vào tầm là ĐÁNH TRẢ (bo_cham). Dùng để cảm
+##              được nhịp qua lại thật, và thử đỡ/parry/vỡ đỡ.
+##   hinh_nom   tam_phat_hien=0, tam_danh=0 → không bao giờ để ý người chơi,
+##              KHÔNG BAO GIỜ đánh trả. `mau` để rất cao (999999) nên không lo
+##              đấm chết giữa buổi tune. Dùng để đo sát thương/tốc độ đánh mà
+##              không có gì chen vào — bao nhiêu đòn ra bấy nhiêu, không lệch
+##              vì né/đỡ/phản đòn.
 const DAT_QUAI := [
 	{"ma": "bu_nhin", "tai": Vector3(0, 0, -9)},
+	{"ma": "hinh_nom", "tai": Vector3(10, 0, 10)},
 	{"ma": "soi_bien", "tai": Vector3(-8, 0, -13)},
 	{"ma": "linh_ria", "tai": Vector3(9, 0, -12)},
 	{"ma": "bo_cat", "tai": Vector3(-14, 0, 6)},
@@ -65,6 +77,8 @@ const HAT_KHIEN := 1000
 func _ready() -> void:
 	_dung_san()
 	_dung_cot()
+	_dung_tru_leo()
+	_dung_tuong_thap()
 	_dat_quai()
 	_dat_boss()
 	_dat_do()
@@ -113,6 +127,59 @@ func _dung_cot() -> void:
 			Vector3(-11, 0, 9), Vector3(2, 0, -16)]:
 		_khoi(than, tai + Vector3(0, 2.5, 0), Vector3(1.6, 5, 1.6),
 			Color(0.38, 0.36, 0.33))
+
+## Trụ mốc cho việc soi dáng "leo trèo" — KHÔNG PHẢI cơ chế leo trèo thật.
+##
+## Game chưa có leo trèo. `assets/model/dong_tac/chua_dung/leo_len.fbx` và
+## `leo_xuong.fbx` đã tải về và ĐO XONG (xem DOC.md cùng thư mục: vòng lặp tại
+## chỗ, 2.00s, hông đứng yên 0.69m) nhưng KHÔNG state nào tên `leo` cả — dựng
+## trạm thang thật cần một `Area3D` đánh dấu trục leo, một state mới khoá di
+## chuyển vào trục đó, và camera phải ngừng xoay tự do trong lúc leo (xem mục
+## "CLIP LÀM CHỦ NHỊP" trong DOC_TRUOC.md của thư mục dong_tac). Đó là một
+## tính năng riêng, chưa ai yêu cầu làm — trụ này CHỈ để có vật làm mốc tỉ lệ
+## khi soi hai clip đó bằng `tools/soi_dong_tac.tscn` / `tools/chup_tu_the.tscn`
+## đứng cạnh nhân vật, không có gì bấm được ở đây.
+func _dung_tru_leo() -> void:
+	var than := StaticBody3D.new()
+	than.name = "TruLeo"
+	than.collision_layer = 1
+	add_child(than)
+
+	const CAO := 3.2
+	const BAN_KINH := 0.35
+	var m := MeshInstance3D.new()
+	var c := CylinderMesh.new()
+	c.height = CAO
+	c.top_radius = BAN_KINH
+	c.bottom_radius = BAN_KINH
+	m.mesh = c
+	m.position = Vector3(10, CAO * 0.5, 16)
+	m.material_override = _vat_lieu(Color(0.42, 0.30, 0.18))   # gỗ, khác màu cột đá
+	than.add_child(m)
+
+	var va := CollisionShape3D.new()
+	var s := CylinderShape3D.new()
+	s.height = CAO
+	s.radius = BAN_KINH
+	va.shape = s
+	va.position = m.position
+	than.add_child(va)
+
+## Tường thấp để soi dáng NHẢY — cơ chế nhảy đã có thật (state `nhay`), nên
+## đây khác trụ leo ở trên: bấm được, chạy tới rồi nhảy qua là thấy ngay.
+##
+## Cao 0.9m — thấp hơn hẳn đỉnh vòng nhảy (LUC_NHAY²/(2·TRONG_LUC) ≈ 1.33m ở
+## NguoiChoi), nên nhảy thẳng qua được không cần chạy lấy đà. Mỏng theo trục
+## Z (0.6m) để một cú nhảy bình thường đủ xa quét qua hết bề dày, và RỘNG theo
+## X (6m) để không phải căn hướng chính xác mới nhảy trúng.
+func _dung_tuong_thap() -> void:
+	var than := StaticBody3D.new()
+	than.name = "TuongThap"
+	than.collision_layer = 1
+	add_child(than)
+	const CAO := 0.9
+	_khoi(than, Vector3(-16, CAO * 0.5, -20), Vector3(6, CAO, 0.6),
+		Color(0.5, 0.48, 0.44))
 
 func _khoi(cha: StaticBody3D, tai: Vector3, co: Vector3, mau: Color) -> void:
 	var m := MeshInstance3D.new()

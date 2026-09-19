@@ -84,6 +84,29 @@ const DEM_NHAP := 0.35
 @export var toc_do_di := TOC_DO_DI
 @export var toc_do_chay := TOC_DO_CHAY
 
+## ————— CHỈNH SỐNG Ở PHÒNG THỬ —————
+##
+## F5 chạy game → dock Scene tab **Remote** → chọn node `NguoiChoi` → kéo số
+## trong Inspector, y hệt cách chỉnh HUD sống. `toc_do_di` / `toc_do_chay` ở
+## trên đã chỉnh được kiểu đó từ lâu; hai nút dưới đây thêm tốc độ ĐÁNH và
+## tốc độ LĂN vào cùng chỗ. Mặc định 1.0 = không đổi gì — không ảnh hưởng game
+## thật hay bộ test nào, chỉ có tác dụng khi chủ động kéo số.
+##
+## `he_so_toc_do_danh` quét NGUYÊN cú đánh: cả bốn mốc t_vung/t_dam_tu/
+## t_dam_den/t_hoi (`TrangThaiDanh._moc()`) LẪN tốc độ phát clip
+## (`ThanMoHinh._toc_do()`) đều nhân đúng một số này, nên hộp đòn và hình luôn
+## khớp nhau ở MỌI mức tốc độ — không phải chỉnh tay hai chỗ cho khớp lại.
+## Đây là nút "cảm giác combat chung nhanh/chậm cỡ nào" để dò nhanh trong lúc
+## chơi; tinh chỉnh RIÊNG từng đòn vẫn đi qua `tools/do_nhip_don.tscn` +
+## `data/moveset.csv` như cũ — nút này không thay thế việc đó, chỉ nhân thêm
+## một hệ số lên trên.
+@export_range(0.2, 3.0, 0.05) var he_so_toc_do_danh := 1.0
+## Tốc độ TRƯỢT của cú lăn (nhân vào công thức mét/giây trong `lan.gd`), tách
+## khỏi THỜI LƯỢNG — thời lượng vẫn do `SoulsLike.thoi_gian_lan` quyết (cũng
+## đã @export, chỉnh ngay cạnh đây qua node `SoulsLike` trong Remote). Lăn xa
+## hay gần và lăn nhanh hay chậm là hai cảm giác khác nhau, nên tách hai nút.
+@export_range(0.4, 2.5, 0.05) var he_so_toc_do_lan := 1.0
+
 @onready var may: MayTrangThai = $May
 @onready var gia_camera: Node3D = $GiaCamera
 @onready var than: Node3D = $Than

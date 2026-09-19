@@ -633,6 +633,8 @@ func _toc_do(trang_thai: String, kieu: String, dt: String) -> float:
 	# Đi / chạy khớp theo VẬN TỐC THẬT, không theo CSV. Xem TOC_CLIP_MAX.
 	if trang_thai == "di" or trang_thai == "chay_nhanh":
 		return _toc_theo_van_toc(dt)
+	if trang_thai == "lan":
+		return _toc_lan(dt)
 	if trang_thai != "danh":
 		return 1.0
 	# Đo trên clip SẮP phát, không trên clip đang phát: khung hình đổi clip thì
@@ -656,12 +658,47 @@ func _toc_do(trang_thai: String, kieu: String, dt: String) -> float:
 	# Chỉ vũ khí ĐI MƯỢN clip của vũ khí khác mới còn bị co giãn: nó có nhịp
 	# riêng mà không có dáng riêng, nên đành kéo dáng của người khác cho vừa
 	# nhịp của mình. Xem `_clip_don()`.
+	# NHÂN THÊM `he_so_toc_do_danh` (mục "CHỈNH SỐNG" của NguoiChoi) vào MỌI
+	# nhánh bên dưới — kể cả nhánh "để yên" 1.0 ở trên. `TrangThaiDanh._moc()`
+	# chia CÙNG hệ số này vào bốn mốc t_vung/t_dam_tu/t_dam_den/t_hoi, nên hộp
+	# đòn (đọc theo mốc đã chia) và hình (phát theo tốc độ đã nhân) luôn khớp
+	# nhau bất kể hệ số là bao nhiêu — nhân một mình chỗ này mà quên chia bên
+	# `danh.gd`, hoặc ngược lại, là tái lập đúng lỗi hộp đòn lệch hình đã sửa.
+	var hs := _hs_danh()
 	if _co(String(m.get("animation", ""))) == dt:
-		return 1.0
+		return hs
 	var lau := float(m.get("t_dam_den", 0.3)) + float(m.get("t_hoi", 0.5))
 	if lau < 0.05:
+		return hs
+	return clampf(a.length / lau, 0.25, 4.0) * hs
+
+## Hệ số tốc độ đánh do `NguoiChoi` giữ (mục "CHỈNH SỐNG Ở PHÒNG THỬ").
+##
+## Đọc qua `get()` chứ không ép kiểu: thân chỉ cần MỘT thuộc tính tên đúng
+## vậy tồn tại trên node cha, không cần biết cha là lớp gì — cùng tinh thần
+## với `dien()` được gọi qua hàm chứ không ép kiểu ở NguoiChoi._dien_hinh().
+func _hs_danh() -> float:
+	var nc := get_parent()
+	if nc == null:
 		return 1.0
-	return clampf(a.length / lau, 0.25, 4.0)
+	var v = nc.get("he_so_toc_do_danh")
+	return clampf(float(v), 0.2, 3.0) if v != null else 1.0
+
+## Tốc độ phát clip lăn, khớp theo THỜI LƯỢNG thật của cú lăn
+## (`SoulsLike.thoi_gian_lan`, cũng ở mục "CHỈNH SỐNG") thay vì phát nguyên
+## tốc mặc định.
+##
+## Trước đây "lan" rơi vào nhánh "khác 'danh'" ở trên và luôn trả 1.0 — đúng
+## MỘT CÁCH TÌNH CỜ vì `lan.fbx` dài 1.17s và `thoi_gian_lan` cũng đo ra
+## 1.17s từ chính clip đó. Đổi `thoi_gian_lan` qua tab Remote để dò cảm giác
+## lăn mà không có hàm này thì THỜI LƯỢNG đổi trong khi HÌNH lăn vẫn chạy y
+## tốc cũ — chân tay đứng yên khi cuộn nhanh, hoặc cuộn xong rồi hình mới
+## chạy hết khi cuộn chậm.
+func _toc_lan(dt: String) -> float:
+	var a := _may_dt.get_animation(dt)
+	if a == null or a.length < 0.05:
+		return 1.0
+	return clampf(a.length / maxf(SoulsLike.thoi_gian_lan, 0.05), 0.25, 4.0)
 
 ## Hệ số phát cho clip đi/chạy, tính từ vận tốc thật của thân vật lý.
 ##

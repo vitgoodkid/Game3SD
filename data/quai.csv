@@ -1,5 +1,6 @@
 ma,ten,ten_chu,vung,mau,giap,ngu_hanh,the_dung,cao,ban_kinh,toc_do_di,toc_do_duoi,tam_phat_hien,tam_danh,moveset,hon,rot_bo_thu
 bu_nhin,Bù nhìn tập,木人,thi_tran,120,0,木,10,1.8,0.45,0.0,0.0,6,2.2,bo_cham,5,木
+hinh_nom,Hình nộm tập,,thi_tran,999999,0,,10,1.8,0.45,0.0,0.0,0.0,0.0,,0,
 soi_bien,Sói biển,海狼,ria_bien,180,2,水,12,1.1,0.40,3.2,5.4,14,2.0,cau_xe|lao_toi,42,水|口
 linh_ria,Lính rìa biển,边兵,ria_bien,240,5,金,22,1.8,0.45,2.6,4.4,16,2.4,chem_ngang|dam_thang,68,金|人
 bo_cat,Bọ cát,沙虫,sa_mac,300,4,土,18,1.4,0.55,2.4,4.8,13,2.6,hup_cat|dam_dau,90,土|石

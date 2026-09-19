@@ -37,6 +37,33 @@ var _noi := ""
 
 const T_NAP_TOI_DA := 1.1
 
+## Hệ số tốc độ đánh đang áp, kẹp lại phòng khi có gì gán ngoài khoảng cho
+## phép của @export_range trên NguoiChoi (script gọi thẳng, bộ kiểm tra…).
+func _hs() -> float:
+	return clampf(nc.he_so_toc_do_danh, 0.2, 3.0)
+
+## Bốn mốc thời gian của đòn đang đánh, đã NÉN theo `_hs()`.
+##
+## Đọc THÔ rồi mới nén — chuỗi mặc định (thiếu t_dam_tu thì lấy t_vung, thiếu
+## t_dam_den thì lấy t_dam_tu + 0.12) phải chạy trên số thô trước. Nén từng
+## biến một trong lúc chuỗi mặc định đang chạy thì nhánh rơi vào mặc định bị
+## nén HAI LẦN trong khi mốc có sẵn trong CSV chỉ nén một lần — chưa từng xảy
+## ra thật (bốn cột này luôn đủ trong moveset.csv) nhưng đây là chỗ dễ âm thầm
+## sai nếu sau này có dòng CSV thiếu cột.
+##
+## `ThanMoHinh._toc_do()` nhân CÙNG hệ số `_hs()` này vào tốc độ phát clip
+## (đọc qua `nc.he_so_toc_do_danh`), nên hộp đòn và hình luôn khớp nhau ở MỌI
+## mức tốc độ. Đây là chỗ DUY NHẤT đọc bốn mốc t_vung/t_dam_tu/t_dam_den/
+## t_hoi — sửa gì thì sửa ở đây, đừng chép ra chỗ khác rồi quên chia.
+func _moc() -> Dictionary:
+	var t_vung := float(_m.get("t_vung", 0.2))
+	var t_tu := float(_m.get("t_dam_tu", t_vung))
+	var t_den := float(_m.get("t_dam_den", t_tu + 0.12))
+	var t_hoi := float(_m.get("t_hoi", 0.5))
+	var hs := _hs()
+	return {"t_vung": t_vung / hs, "t_tu": t_tu / hs, "t_den": t_den / hs,
+		"t_hoi": t_hoi / hs}
+
 func vao(du_lieu: Dictionary = {}) -> void:
 	_don = String(du_lieu.get("don", "nhe_1"))
 	_chu_mv = Tui.moveset_dang_dung()
@@ -103,10 +130,11 @@ func chay(delta: float) -> void:
 	else:
 		nc.dung_lai(delta, 22.0)
 
-	var t_vung := float(_m.get("t_vung", 0.2))
-	var t_tu := float(_m.get("t_dam_tu", t_vung))
-	var t_den := float(_m.get("t_dam_den", t_tu + 0.12))
-	var t_hoi := float(_m.get("t_hoi", 0.5))
+	var moc := _moc()
+	var t_vung: float = moc["t_vung"]
+	var t_tu: float = moc["t_tu"]
+	var t_den: float = moc["t_den"]
+	var t_hoi: float = moc["t_hoi"]
 	var t_het := t_den + t_hoi
 
 	# SIÊU GIÁP bật từ lúc bắt đầu vung tới hết khung gây sát thương, rồi TẮT
@@ -194,7 +222,11 @@ func _chay_nap(delta: float, t_vung: float) -> void:
 	_nham()
 	# Tay đã vung lên xong rồi, vào THẲNG khung gây sát thương — đừng bắt vung
 	# lại từ đầu, đó đúng là chỗ làm đòn nặng dài gấp đôi cần thiết.
-	may.t = float(_m.get("t_vung", t_vung))
+	#
+	# Đọc lại `_moc()` chứ không dùng tham số `t_vung` truyền vào: `_m` có thể
+	# vừa đổi sang dòng CSV khác (nang → nang_nap) ở trên, và mốc phải khớp
+	# đúng dòng MỚI.
+	may.t = _moc()["t_vung"]
 
 ## Rút ra khỏi cú đánh bằng lăn hoặc khiên. Trả về true nếu đã đổi state.
 func _huy_sang_thu() -> bool:
@@ -252,13 +284,14 @@ func ten_dien() -> String:
 ## Đoạn ba đo TỪ `t_vung` nếu đòn ra từ cú nạp: tay đã giơ sẵn trên đỉnh rồi,
 ## đo lại từ 0 thì cung vung bắt đầu ở lưng chừng và tay nhảy một phát 112°.
 func tien_do() -> float:
-	var t_vung := float(_m.get("t_vung", 0.2))
+	var moc := _moc()
+	var t_vung: float = moc["t_vung"]
 	if _nap:
 		if _giu_dinh:
 			return 1.0
 		return clampf(t / maxf(t_vung, 0.01), 0.0, 1.0)
-	var t_den := float(_m.get("t_dam_den", 0.3))
-	var het := t_den + float(_m.get("t_hoi", 0.5))
+	var t_den: float = moc["t_den"]
+	var het := t_den + float(moc["t_hoi"])
 	var dau := t_vung if _tu_nap else 0.0
 	return clampf((t - dau) / maxf(het - dau, 0.01), 0.0, 1.0)
 
@@ -269,11 +302,12 @@ func muc_nap() -> float:
 
 ## Năm đoạn của một cú đánh — xem `SoulsLike` mục "Cửa sổ huỷ đòn".
 ##
-## Tính từ MỐC THỜI GIAN TRONG CSV, không từ animation. Đây là chỗ dự án này
+## Tính từ MỐC THỜI GIAN TRONG CSV (qua `_moc()`, đã nén theo
+## `NguoiChoi.he_so_toc_do_danh`), không từ animation. Đây là chỗ dự án này
 ## cố ý khác với khuôn "Call Method Track" thường thấy: gắn mốc vào file
 ## animation là chuyển cân bằng game sang cho file `.fbx` giữ, và đổi một clip
 ## là lệch cả bảng số mà không ai thấy. CSV giữ sự thật, animation co giãn theo
-## nó (xem `ThanMoHinh._toc_do()`).
+## nó (xem `ThanMoHinh._toc_do()`, nhân đúng hệ số này vào tốc độ phát clip).
 const GD_KHOI := 1   ## Startup — khoá cứng
 const GD_CHAM := 2   ## Active — hộp đòn bật, vẫn khoá cứng, và cú THU CHIÊU
 const GD_NOI := 3    ## Combo Window — nối được, chưa né được
@@ -289,9 +323,10 @@ const GD_XONG := 5   ## End — về đứng, đi lại tự do
 func giai_doan() -> int:
 	if _nap:
 		return GD_KHOI
-	var t_tu := float(_m.get("t_dam_tu", 0.2))
-	var t_den := float(_m.get("t_dam_den", t_tu + 0.12))
-	var t_hoi := float(_m.get("t_hoi", 0.5))
+	var moc := _moc()
+	var t_tu: float = moc["t_tu"]
+	var t_den: float = moc["t_den"]
+	var t_hoi: float = moc["t_hoi"]
 	if t < t_tu:
 		return GD_KHOI
 	if t >= t_den + t_hoi:

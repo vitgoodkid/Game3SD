@@ -384,6 +384,51 @@ tools/           kiểm tra + sinh dữ liệu
   cảnh trống. Nó cũng KHÔNG nằm trong nhóm `man_cai_dat`: bộ kiểm tra và
   `chup_man_hinh` tìm "màn tạm dừng" bằng nhóm đó.
 
+## Phòng thử (`phong_thu.gd`)
+
+- **CHỈNH SỐNG combat, y hệt khuôn HUD.** F5 chạy game → dock Scene tab
+  **Remote** → chọn node `NguoiChoi` → kéo số. `toc_do_di` / `toc_do_chay` đã
+  export sẵn từ lâu; `he_so_toc_do_danh` (0.2–3.0) và `he_so_toc_do_lan`
+  (0.4–2.5) là hai nút mới. Mặc định cả hai đều 1.0 = không đổi gì, nên không
+  ảnh hưởng game thật hay bộ test nào.
+  `he_so_toc_do_danh` nhân/chia CÙNG một số vào cả bốn mốc t_vung/t_dam_tu/
+  t_dam_den/t_hoi (`TrangThaiDanh._moc()`) LẪN tốc độ phát clip
+  (`ThanMoHinh._toc_do()`), nên hộp đòn và hình luôn khớp nhau ở MỌI mức tốc
+  độ — nhân một chỗ mà quên chia chỗ kia là tái lập đúng lỗi hộp đòn lệch
+  hình đã sửa một lần (cú gồng phát hai animation cho một nhát chém). Đây là
+  nút "cảm giác combat chung nhanh/chậm cỡ nào" để dò nhanh trong lúc chơi;
+  tinh chỉnh RIÊNG từng đòn vẫn đi qua `tools/do_nhip_don.tscn` +
+  `data/moveset.csv` như cũ.
+  `he_so_toc_do_lan` chỉ đổi tốc độ TRƯỢT (mét/giây) của cú lăn, tách khỏi
+  THỜI LƯỢNG (`SoulsLike.thoi_gian_lan`, cũng @export, chỉnh cạnh đó qua node
+  `SoulsLike`). Nhân tiện sửa luôn một chỗ trước đây không ai để ý: clip
+  `lan.fbx` từng LUÔN phát nguyên tốc 1.0× bất kể `thoi_gian_lan` là bao
+  nhiêu — đúng một cách tình cờ vì hai số cùng đo ra 1.17s từ chính clip.
+  Giờ `ThanMoHinh._toc_lan()` co giãn clip theo `thoi_gian_lan` mỗi khung, nên
+  đổi thời lượng qua Remote thấy ngay trên hình.
+- **Hai bù nhìn tập, khác nhau ĐÚNG MỘT CỘT trong `quai.csv`.** Cả hai đứng
+  yên tuyệt đối (toc_do_di = toc_do_duoi = 0.0):
+    - `bu_nhin` — `tam_danh=2.2` → vào tầm là ĐÁNH TRẢ (đòn `bo_cham`). Dùng
+      để cảm nhịp qua lại thật: né, đỡ, parry, vỡ đỡ.
+    - `hinh_nom` — `tam_phat_hien=0`, `tam_danh=0` → không bao giờ để ý người
+      chơi, không bao giờ đánh trả. `mau=999999` nên không lo đấm chết giữa
+      buổi tune. Dùng để đo sát thương/tốc độ đánh thuần, không có gì chen
+      vào (né/đỡ/phản đòn của NÓ, không phải của mình).
+  `ten_chu` bỏ trống ở cả hai dòng thì `ten_hien()` hiện thẳng tên, không qua
+  cơ chế □ — hợp lý cho một món đồ nghề debug, không phải nội dung game thật.
+- **Trụ leo và tường thấp — MỘT prop thật, MỘT chỉ để soi.**
+  `_dung_tuong_thap()` là tường jump được thật: cao 0.9m, dưới hẳn đỉnh vòng
+  nhảy của `NguoiChoi` (~1.33m), nên chạy tới bấm nhảy là qua, không cần lấy
+  đà — cơ chế nhảy đã có sẵn (state `nhay`).
+  `_dung_tru_leo()` **KHÔNG bấm được gì** — game chưa có cơ chế leo trèo. Chỉ
+  có hai clip `leo_len.fbx`/`leo_xuong.fbx` đã tải về và đo xong (xem
+  `assets/model/dong_tac/chua_dung/DOC.md`: vòng lặp leo thang tại chỗ, 2.00s)
+  nhưng KHÔNG state nào tên `leo`. Dựng cơ chế thật cần một `Area3D` đánh dấu
+  trục leo + state mới khoá di chuyển vào trục đó + camera ngừng xoay tự do
+  lúc leo (xem `DOC_TRUOC.md` cùng thư mục) — một tính năng riêng, chưa ai
+  yêu cầu làm. Trụ chỉ để có vật LÀM MỐC TỈ LỆ khi soi hai clip đó bằng
+  `tools/soi_dong_tac.tscn` / `tools/chup_tu_the.tscn`.
+
 ## Giao diện
 
 - **Tuỳ chọn và phím đi qua TẦNG CHỜ, không áp ngay.** `CaiDat` có hai tầng:

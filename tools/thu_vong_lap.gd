@@ -62,7 +62,7 @@ func _ready() -> void:
 	await _boss_hai_giai_doan()
 	# CHẠY CUỐI CÙNG, và phải ở cuối. Nhóm này nghỉ ở bia đá và nạp lại save,
 	# mà cả hai việc đó đều đặt lại bảng quái của cả phòng thử — nhóm nào chạy
-	# sau nó sẽ đếm ra bốn con quái ở chỗ vừa hạ còn ba.
+	# sau nó sẽ đếm ra NĂM con quái ở chỗ vừa hạ còn bốn.
 	await _luu_va_nap()
 
 	print("")
@@ -206,7 +206,9 @@ func _dat_canh() -> void:
 	_dung(vk_ != null and vk_.ten_hien().contains(TenDoVat.CHU_MO),
 		"đồ phát sẵn vẫn hiện □, không tự dạy chữ kèm theo (%s)"
 		% (vk_.ten_hien() if vk_ != null else "?"))
-	_bang(_dem_nhom("quai"), 4, "bốn con quái đứng sẵn")
+	# Năm con: hai bù nhìn tập (đứng yên) + ba con tuần tra thật. Xem
+	# `PhongThu.DAT_QUAI` — thêm bớt quái ở đó thì sửa con số này theo.
+	_bang(_dem_nhom("quai"), 5, "năm con quái đứng sẵn")
 	_dung(_dem_nhom("vat_roi") >= 3, "có đồ nằm sẵn dưới đất (%d món)"
 		% _dem_nhom("vat_roi"))
 	_dung(not get_tree().get_nodes_in_group("man_bia_da").is_empty(), "có màn bia đá")
@@ -2140,7 +2142,7 @@ func _nghi_bia_da() -> void:
 	var q := get_tree().get_nodes_in_group("quai")[0] as Quai
 	q.an_don(99999, 0.0, Vector3.ZERO)
 	await _cho(2.0)
-	_bang(_dem_nhom("quai"), 3, "hạ một con thì còn ba")
+	_bang(_dem_nhom("quai"), 4, "hạ một con thì còn bốn")
 
 	Tui.mau = 1.0
 	bia.tuong_tac()
@@ -2156,7 +2158,7 @@ func _nghi_bia_da() -> void:
 	man.dong()
 	_dung(not get_tree().paused, "đóng màn là game chạy lại")
 	await get_tree().process_frame
-	_bang(_dem_nhom("quai"), 4, "nghỉ ở bia thì quái sống lại HẾT")
+	_bang(_dem_nhom("quai"), 5, "nghỉ ở bia thì quái sống lại HẾT")
 
 func _chet_va_hoi_sinh() -> void:
 	_nhom("Chết, rơi hồn, đứng dậy")
@@ -2215,7 +2217,7 @@ func _chet_va_hoi_sinh() -> void:
 	_bang(_nc.mau, _nc.mau_toi_da, "sống lại là đầy máu")
 	_dung(_nc.global_position.distance_to(_bia().diem_hoi_sinh()) < 0.6,
 		"đứng dậy ngay cạnh bia đá")
-	_bang(_dem_nhom("quai"), 4, "chết cũng làm quái sống lại hết")
+	_bang(_dem_nhom("quai"), 5, "chết cũng làm quái sống lại hết")
 	_bang(_dem_nhom("vung_hon"), 1, "vũng hồn vẫn nằm đó chờ về nhặt")
 
 func _nhat_lai_hon() -> void:
