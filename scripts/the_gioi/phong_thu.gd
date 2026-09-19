@@ -4,14 +4,26 @@ extends Node3D
 ##
 ## Đây KHÔNG phải map thật. Đây là chỗ để trả lời đúng một câu hỏi: đánh nhau
 ## đã ra chất souls chưa (mục 12, mốc 2 — "điểm quyết định"). Nên nó cố tình
-## trống trải, bằng phẳng, có đúng vài cột để thử camera va tường và vài con
-## quái đứng cách nhau để thử khoá mục tiêu.
+## trống trải, bằng phẳng, có đúng hai khối để soi động tác: THÁP LEO và
+## TƯỜNG THẤP. Quái thì MẶC ĐỊNH KHÔNG CÓ — xem `co_quai` bên dưới.
 ##
 ## Ba con số cần tune ở đây nằm trong souls_like.gd (mục 5.2):
 ##   iframe_lan, tre_hoi_the_luc, và t_hoi của đòn nặng trong data/moveset.csv.
 
 const CANH_QUAI := preload("res://scenes/quai/quai.tscn")
 const CANH_BOSS := preload("res://scenes/quai/boss.tscn")
+
+## Có đặt quái không. MẶC ĐỊNH KHÔNG — chủ dự án chốt.
+##
+## Phòng thử trước hết là chỗ soi ĐỘNG TÁC: leo tường, nhảy, thế cầm kiếm,
+## nhịp đòn. Năm con quái đi lại trong đó thì chúng che mất hình, kéo mục tiêu
+## về phía chúng, và đánh trả đúng lúc đang căn một khung hình. Bấm F6 vào là
+## sân trống với hai khối để trèo và để nhảy, không có gì chen vào.
+##
+## Bật lên khi cần: tick ô này trong Inspector của node `PhongThu`, hoặc gán
+## `co_quai = true` trước khi `add_child()` — đó đúng là cách `thu_vong_lap.gd`
+## làm, vì bộ kiểm tra cần cả năm con lẫn boss.
+@export var co_quai := false
 
 ## Boss đặt ở góc xa — đủ xa để không lao vào giữa lúc đang thử đòn với quái
 ## thường, đủ gần để đi bộ tới trong mươi giây.
@@ -79,8 +91,9 @@ func _ready() -> void:
 	_dung_cot()
 	_dung_tru_leo()
 	_dung_tuong_thap()
-	_dat_quai()
-	_dat_boss()
+	if co_quai:
+		_dat_quai()
+		_dat_boss()
 	_dat_do()
 	_trang_bi_san()
 	# Nghỉ ở bia và hồi sinh sau khi chết đều làm quái sống lại hết — đó là
@@ -225,6 +238,10 @@ func _dat_boss() -> void:
 ## Xoá sạch quái đang có rồi đặt lại từ đầu. Phải xoá trước: TheGioi vừa quên
 ## hết bảng "đã hạ", nên con đang còn sống cũng sẽ được sinh thêm một bản nữa.
 func _dat_lai_quai() -> void:
+	# Phòng trống thì nghỉ ở bia KHÔNG được sinh quái ra. Không có dòng này
+	# thì sân sạch lúc vào, mà ngồi bia một cái là năm con mọc lên.
+	if not co_quai:
+		return
 	# CHỪA BOSS RA. Boss nằm trong cả nhóm "quai" lẫn nhóm "boss", nên vòng lặp
 	# này quét trúng nó — mà boss KHÔNG sống lại khi nghỉ ở bia. Souls-like: hạ
 	# boss là hạ xong; dựng nó dậy thì cửa boss thành chỗ cày hồn.

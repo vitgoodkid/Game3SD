@@ -503,6 +503,20 @@ tools/           kiểm tra + sinh dữ liệu
   nhiêu — đúng một cách tình cờ vì hai số cùng đo ra 1.17s từ chính clip.
   Giờ `ThanMoHinh._toc_lan()` co giãn clip theo `thoi_gian_lan` mỗi khung, nên
   đổi thời lượng qua Remote thấy ngay trên hình.
+- **PHÒNG THỬ MẶC ĐỊNH TRỐNG QUÁI** (`PhongThu.co_quai = false`). Chủ dự án
+  chốt: đây trước hết là chỗ soi ĐỘNG TÁC — leo tường, nhảy, thế cầm kiếm,
+  nhịp đòn — mà năm con quái đi lại thì chúng che mất hình, kéo khoá mục tiêu
+  về phía chúng, và đánh trả đúng lúc đang căn một khung hình. Bấm F6 vào là
+  sân trống với `ThapLeo` và `TuongThap`.
+  Bật lại: tick `co_quai` trong Inspector của node `PhongThu`, hoặc gán
+  `co_quai = true` TRƯỚC `add_child()` — `thu_vong_lap.gd` làm đúng vậy, vì bộ
+  kiểm tra cần cả năm con lẫn boss.
+  `_dat_lai_quai()` cũng phải hỏi cờ này: không thì sân sạch lúc vào, mà ngồi
+  bia một cái là năm con mọc lên.
+  Kéo theo một chỗ khác: bước "chạy thử 600 khung hình" của CI từng trỏ vào
+  phòng thử với lý do ghi rõ là "phải nạp chỗ CÓ QUÁI đi lại". Lý do ấy giờ
+  đúng với `vung_dat.tscn` chứ không đúng với phòng thử nữa, nên bước đó đã
+  dọn sang vùng thật — và vùng thật còn phủ thêm cả streaming ô địa hình.
 - **Hai bù nhìn tập, khác nhau ĐÚNG MỘT CỘT trong `quai.csv`.** Cả hai đứng
   yên tuyệt đối (toc_do_di = toc_do_duoi = 0.0):
     - `bu_nhin` — `tam_danh=2.2` → vào tầm là ĐÁNH TRẢ (đòn `bo_cham`). Dùng

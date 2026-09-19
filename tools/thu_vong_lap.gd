@@ -33,6 +33,11 @@ func _ready() -> void:
 	# và bật lại đúng trong nhóm đi kiểm chính nó.
 	KhungDung.bat = false
 	_phong = CANH_PHONG.instantiate()
+	# Phòng thử MẶC ĐỊNH TRỐNG quái (chủ dự án chốt — nó là chỗ soi động tác).
+	# Bộ kiểm tra thì cần cả năm con lẫn boss, nên tự bật lên. Gán TRƯỚC
+	# `add_child()`: `_ready()` của phòng đọc cờ này, mà `_ready()` chạy ngay
+	# lúc vào cây.
+	_phong.co_quai = true
 	add_child(_phong)
 	await get_tree().process_frame
 	await get_tree().physics_frame

@@ -115,12 +115,18 @@ jobs:
         # bắt lỗi lúc chạy mà test tĩnh không thấy: node null, tín hiệu nối
         # hụt, chia cho 0, vòng tròn autoload.
         #
-        # Trỏ THẲNG vào phòng thử chứ không dựa vào `main_scene`: từ khi có màn
-        # hình đầu game thì `main_scene` là cái menu, mà chạy 600 khung hình
-        # một cái menu đứng yên thì không bắt được gì. Bước này phải nạp chỗ có
-        # quái đi lại.
+        # Trỏ vào VÙNG THẬT chứ không dựa vào `main_scene`: từ khi có màn hình
+        # đầu game thì `main_scene` là cái menu, mà chạy 600 khung hình một cái
+        # menu đứng yên thì không bắt được gì.
+        #
+        # Trước đây bước này trỏ vào `phong_thu.tscn`, lý do ghi rõ là "phải
+        # nạp chỗ CÓ QUÁI đi lại". Từ khi phòng thử mặc định TRỐNG quái
+        # (`PhongThu.co_quai = false` — nó là chỗ soi động tác) thì lý do ấy
+        # không còn đúng với nó nữa, mà lại đúng với `vung_dat.tscn`: vùng
+        # thật có quái, có boss, VÀ có streaming ô địa hình — tức là nó còn
+        # phủ được cả đường code mà phòng thử chưa bao giờ chạm tới.
         run: |
-          timeout 300 ./godot --headless --path . scenes/the_gioi/phong_thu.tscn \
+          timeout 300 ./godot --headless --path . scenes/the_gioi/vung_dat.tscn \
             --quit-after 600 2>&1 | tee chay.log
           if grep -qE "SCRIPT ERROR|Parse Error" chay.log; then
             echo "::error::Có lỗi lúc chạy"
