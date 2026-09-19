@@ -170,14 +170,24 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_tim_nguoi_choi()
 
+## Tìm người chơi và nối tín hiệu.
+##
+## Gọi từ HAI chỗ: cuối `_ready()` (sau một khung chờ) và từ `_process()` khi
+## chưa tìm ra ai. Hai đường đó đua nhau được — `_process` chạy trước phần
+## tiếp sau `await` của `_ready` là chuyện thường — nên phải tự chặn nối chồng.
+## Không chặn thì Godot đổ "Signal is already connected" ra log mỗi lần nạp
+## cảnh mới, và một dòng đỏ quen mắt là một dòng đỏ không ai đọc nữa.
 func _tim_nguoi_choi() -> void:
-	nc = get_tree().get_first_node_in_group("nguoi_choi") as NguoiChoi
-	if nc == null:
+	var tim := get_tree().get_first_node_in_group("nguoi_choi") as NguoiChoi
+	if tim == null or tim == nc:
 		return
+	nc = tim
 	if _minimap != null:
 		_minimap.nc = nc
-	nc.bao_ngu_hanh.connect(bao)
-	nc.bi_danh.connect(bi_danh_tu)
+	if not nc.bao_ngu_hanh.is_connected(bao):
+		nc.bao_ngu_hanh.connect(bao)
+	if not nc.bi_danh.is_connected(bi_danh_tu):
+		nc.bi_danh.connect(bi_danh_tu)
 	var cam := nc.get_node_or_null("GiaCamera") as CameraBaCheDo
 	if cam != null:
 		cam.doi_che_do.connect(func(_c): bao(cam.ten_che_do()))

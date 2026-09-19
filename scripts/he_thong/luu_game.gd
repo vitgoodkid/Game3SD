@@ -67,7 +67,15 @@ func luu(o: String) -> bool:
 ## Tự lưu. Gọi khi bật/nghỉ bia đá, hạ boss, nhận nhiệm vụ mới.
 ##
 ## Không bao giờ đụng vào ba ô tay — xem ghi chú đầu file.
+##
+## KHÔNG có người chơi trong cảnh thì KHÔNG lưu. Nghe thừa, nhưng đây đúng là
+## cái bẫy của màn đầu game: bấm "Thoát" ở đó mà cũng tự lưu thì file save ghi
+## `canh` = màn đầu game và `nguoi_choi` rỗng — rồi lần sau bấm "Chơi tiếp" là
+## nạp lại đúng cái màn menu ấy, và ván chơi thật biến mất. Ghi đè im lặng một
+## file save là thứ không sửa lại được.
 func tu_luu() -> bool:
+	if _nguoi_choi() == null:
+		return false
 	return luu(O_TU_LUU)
 
 ## Gom toàn bộ trạng thái thành một Dictionary thuần JSON.
@@ -181,6 +189,27 @@ func nap(o: String) -> bool:
 func choi_tiep() -> bool:
 	var o := o_moi_nhat()
 	return false if o == "" else nap(o)
+
+## Bắt đầu một ván MỚI: quên sạch mọi thứ rồi vào vùng đầu chuỗi.
+##
+## Gom ở đây vì bốn autoload giữ bốn mảnh trạng thái, và **autoload sống qua cả
+## việc đổi scene**. Chơi một ván, về màn đầu game, bấm "Chơi mới" — thiếu một
+## trong bốn lời gọi dưới đây là ván mới mang theo mảnh đó của ván cũ: túi đồ
+## còn nguyên, hoặc chữ đã học còn nguyên, hoặc bảy vùng vẫn mở sẵn. Không lỗi
+## nào nổ ra, và người chơi chỉ thấy game "bị lạ".
+##
+## KHÔNG đụng file save nào. Ván mới chỉ ghi đĩa khi người chơi nghỉ ở bia đá
+## đầu tiên — bấm nhầm "Chơi mới" rồi thoát ra thì ván cũ vẫn còn nguyên.
+func choi_moi() -> bool:
+	var dau := DuHanh.vung_dau()
+	if dau == "":
+		push_error("Khong co vung nao trong vung.csv — khong bat dau duoc")
+		return false
+	Tui.ban_moi()
+	TheGioi.ban_moi(dau)
+	DuHanh.ban_moi()
+	_choi_lau = 0.0
+	return DuHanh.bat_dau_o(dau)
 
 func _doi_canh_roi_dat(duong_canh: String, nguoi: Dictionary) -> void:
 	var canh := load(duong_canh) as PackedScene

@@ -17,40 +17,15 @@ Sổ tiến độ theo 7 mốc ở mục 12 của `PROMPT_3D.md`.
 
 ## ĐANG LÀM DỞ — đọc trước khi viết gì mới
 
-Không còn file nào treo lơ lửng. Mọi thứ trong repo đều nối vào phòng thử và có
-test canh.
+Không còn file nào treo lơ lửng. Mọi thứ trong repo đều nối vào một cảnh chạy
+được và có test canh.
 
 ## Việc tiếp theo, theo thứ tự
 
 Bảy mốc của mục 12 đã hết bảng. Cái còn lại là những lỗ hổng lộ ra KHI GHÉP
 mọi thứ vào nhau — không mốc nào sở hữu chúng, nên không mốc nào làm.
 
-### 1. Có save, nhưng KHÔNG có màn hình nạp lúc khởi động
-
-**Đã sửa phần nặng nhất.** `LuuGame` (autoload, ba ô tay + một ô tự lưu) thay
-hẳn cho `Tui.luu()`/`Tui.nap()` cũ — hai hàm đó vẫn còn trong `tui.gd` nhưng
-không ai gọi nữa, chỉ `LuuGame` đọc/ghi túi đồ, trí nhớ, thế giới. Tự lưu chạy
-khi **nghỉ/bật bia đá**, **hạ boss**, và **bấm Thoát ở menu tạm dừng**.
-
-Cái còn thiếu thật: **không gì gọi `LuuGame.nap()` / `choi_tiep()` lúc khởi
-động.** Mở game lên luôn là một ván MỚI, dù `user://saves/` có sẵn file. Vá
-đúng bằng việc dựng **màn hình ĐẦU game** (mới / tiếp tục / thoát) — xem mục 2,
-chưa có màn đó nên chưa có chỗ để bấm "Tiếp tục" cả.
-
-### 2. Vào thẳng phòng thử, không vào thế giới
-
-`run/main_scene` vẫn là `phong_thu.tscn` — một căn phòng phẳng dựng tay. Bảy
-vùng thật chỉ tới được bằng cách bấm F ở bia rồi chọn thẻ Du hành. Với một bản
-chơi được thì ngược: vào là ở `thi_tran`, phòng thử để riêng cho việc tune.
-
-Vướng: cả `thu_vong_lap.tscn` (342 test) đang nạp `phong_thu.tscn`. Đổi main
-scene thì không được đụng vào phòng thử, chỉ đổi chỗ bắt đầu.
-
-Chưa có màn hình ĐẦU game (mới / tiếp tục / thoát). Menu **tạm dừng** thì có
-rồi (`man_cai_dat.gd`, bấm Esc) — dựng màn đầu game thì chép lại khuôn đó, đừng
-viết mới: nó đã có sẵn nút kiểu bản mẫu, trang Tuỳ chọn và trang Điều khiển.
-
-### 3. `HINH_VU_KHI` — đã hết là đường chính, còn lại là dọn rác
+### 1. `HINH_VU_KHI` — đã hết là đường chính, còn lại là dọn rác
 
 **Phần lớn đã sửa.** Vũ khí có model thật đọc hình từ cột `mo_hinh` của
 `nguyen_lieu.csv` rồi (đợt "Model thật, 43 clip động tác"). `than_khoi.gd` vẫn
@@ -60,7 +35,7 @@ kiểu nghiêm trọng như trước. Việc còn lại (không gấp): vũ khí
 mà chưa có model thì vẫn hiện nhầm hình kiếm ở khối hộp dự phòng — chấp nhận
 được vì đằng nào cũng là hình tạm.
 
-### 4. Hai nút "gõ nhanh / giữ" còn đờ (nếu chủ dự án muốn)
+### 2. Hai nút "gõ nhanh / giữ" còn đờ (nếu chủ dự án muốn)
 
 Cùng một bệnh ở hai chỗ, vì cùng một khuôn:
 
@@ -76,7 +51,7 @@ Cùng một bệnh ở hai chỗ, vì cùng một khuôn:
   hỏng không — **đo được rồi mới quyết**. Chữa rẻ nhất là hạ con số; chữa hẳn
   thì phải tách nhảy sang nút riêng, và lúc đó Space về lại nhiệm vụ đơn.
 
-### 5. Tune bốn con số của mục 5.2
+### 3. Tune bốn con số của mục 5.2
 
 **Phải làm bằng tay, trên máy có màn hình** — không agent nào thay được. Xem
 mục "Cần người" bên dưới.
@@ -137,6 +112,37 @@ Chạy `godot --path .` là vào thẳng phòng thử. Làm được trọn vòn
 - nghỉ bia / hạ boss / thoát game đều **tự lưu** (`LuuGame`) — xem README.md
   mục "Lưu game".
 
+### Màn hình đầu game và đường vào ván
+Mở game lên là vào **màn hình đầu game** (`scenes/giao_dien/man_dau_game.tscn`,
+cũng là `run/main_scene`), không còn rơi thẳng vào phòng thử.
+
+| Nút | Làm gì |
+|---|---|
+| Chơi tiếp | nạp ô mới nhất, kể cả ô tự lưu. TỐI khi chưa có save nào |
+| Chơi mới | `LuuGame.choi_moi()` — quên sạch rồi vào **vùng đầu chuỗi** (`thi_tran`) |
+| Tải ván | từng ô kèm thời gian, giờ chơi, tên vùng. Tên vùng đọc từ `vung.csv` |
+| Tuỳ chọn · Điều khiển | **dùng lại nguyên** hai trang của menu tạm dừng |
+| Thoát | thoát, **không** tự lưu |
+
+Ba quyết định đáng nhớ:
+
+- **`man_dau_game.gd` kế thừa `man_cai_dat.gd`** chứ không chép. Hai trang con
+  kia là 130 dòng có tầng chờ, nút Áp dụng sáng/tối và bảng gán phím; chép sang
+  là từ đó mỗi lần thêm một tuỳ chọn phải nhớ sửa hai chỗ, mà quên sửa thì
+  **không test nào bắt được** vì cả hai bản đều chạy. Lớp cha mở ba cửa cho
+  việc đó: `ten_nhom()`, `ten_trang_chinh()`, `ManChung.dong_chan()`.
+- **Màn này không đóng được** (`dong()` rỗng). Đóng ra thì phía sau là một cảnh
+  trống trơn và người chơi nhìn vào màn hình đen. Chặn ở `dong()` chứ không chỉ
+  chặn phím Esc, để mọi đường gọi tới đều chịu chung một luật.
+- **`tu_luu()` từ chối khi không có người chơi trong cảnh.** Đây là cái bẫy
+  thật của màn đầu game: bấm "Thoát" ở đó mà cũng tự lưu thì file save ghi
+  `canh` = cái menu và `nguoi_choi` rỗng — lần sau bấm "Chơi tiếp" là nạp lại
+  đúng cái menu ấy, ván chơi thật biến mất. Ghi đè im lặng một file save là thứ
+  không sửa lại được.
+
+**Ván mới bắt đầu tay không**, và đó là câu còn để ngỏ — xem mục "Việc tiếp
+theo" phía trên.
+
 ### Giao diện
 - **Bộ asset** chép vào `assets/ui/` (12 MB PNG) và `assets/font/` (1.5 MB).
   File `.psd` gốc 377 MB **không** đưa vào repo.
@@ -194,19 +200,22 @@ Chạy `godot --path .` là vào thẳng phòng thử. Làm được trọn vòn
   chữ Hán ở các màn Label xưa nay vẫn là ô vuông.
 
 ### Kiểm tra
-Năm bước, GitHub Actions chạy cả năm mỗi lần đẩy code (`606` phép thử tự động
+Sáu bước, GitHub Actions chạy cả sáu mỗi lần đẩy code (**645** phép thử tự động
 cộng một lần chạy game thật) — lệnh đầy đủ ở `CLAUDE.md`, tóm tắt ở đây:
 
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 197 test trong một khung hình |
 | `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 342 test theo thời gian |
+| `godot --headless --path . tools/thu_dau_game.tscn` | màn đầu game + ĐỔI CẢNH: Chơi mới / Chơi tiếp / Tải ván — 39 test. Bộ duy nhất GHI ĐĨA (cất save của người thật đi rồi trả lại) |
 | `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 67 test |
-| `godot --headless --path . --quit-after 600` | chạy game thật 10 giây, bắt lỗi lúc chạy mà ba bộ trên không với tới (vòng tròn autoload chẳng hạn) |
+| `godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600` | chạy cảnh chơi thật 10 giây, bắt lỗi lúc chạy mà bốn bộ trên không với tới (vòng tròn autoload chẳng hạn). Trỏ THẲNG vào phòng thử vì `main_scene` giờ là cái menu |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 
-Bộ thứ hai mới thêm ở mốc 4: mốc này là một chuỗi việc diễn ra **theo thời gian
-qua nhiều node**, tầng luật không với tới được.
+Mỗi bộ sinh ra vì bộ trước không với tới: tầng luật chạy trong một khung hình
+và không nạp cảnh nào; `thu_vong_lap` nạp được một cảnh nhưng bị buộc vào đúng
+cảnh đó; `thu_dau_game` là bộ duy nhất ĐỔI CẢNH được, thứ mà trạng thái nằm
+trong autoload nên nó sống qua cú đổi ấy.
 
 ## Combat kiểu Elden Ring
 
@@ -841,6 +850,38 @@ Ghi lại để không ai tưởng là quên:
   tỉ lệ hợp lý, không phải khai thêm gì.
 
 ## Bẫy đã dính, ghi lại cho đỡ dính lần nữa
+
+- **Bộ kiểm tra mà ngồi ở `current_scene` thì nó tự huỷ chính mình.** Hàm đổi
+  cảnh (`DuHanh._doi_that`, `LuuGame._doi_that`) gỡ và huỷ đúng `current_scene`.
+  `thu_dau_game.gd` bấm "Chơi mới" — tức là đổi cảnh — nên nó phải NẰM NGOÀI:
+  dựng màn đầu game rồi `get_tree().current_scene = màn đó`, còn node kiểm tra
+  ở lại root. Bản đầu không làm thế và nó **treo vô hạn**, vì mọi `await` sau
+  đó không bao giờ tiếp tục. Cái treo ấy trông y hệt "test chạy xong rồi đứng".
+
+- **`add_child()` trong `_ready()` bị từ chối thẳng** ("Parent node is busy
+  setting up children"). Bộ kiểm tra dựng cảnh trong `_ready` nên phải
+  `await get_tree().process_frame` một cái trước đã. Không await thì cảnh không
+  vào được cây, `current_scene` vẫn là bộ kiểm tra, và nó rơi đúng vào bẫy ở
+  trên — hai lỗi khác nhau dẫn tới cùng một cái treo.
+
+- **`ManChung.chu()` căn TRÁI, và ở màn căn giữa thì đó là sai.**
+  `BoxContainer.alignment` chỉ căn theo chiều DỌC, nên một dòng chữ trong
+  VBox căn giữa vẫn dính sát mép trái màn hình — cách đám nút ở giữa cả ngàn
+  pixel trên màn rộng. Không test nào bắt được: dòng chữ vẫn ở đó, vẫn đúng
+  nội dung, chỉ nằm sai chỗ. **Ảnh chụp mới thấy** — lại đúng bài học cũ.
+
+- **Tự lưu lúc không có người chơi ghi đè save thật bằng một ván rỗng.**
+  `LuuGame.thu_thap()` ghi `canh` = cảnh hiện tại và `nguoi_choi` = {} nếu
+  không tìm thấy ai. Bấm "Thoát" ở màn đầu game mà cũng tự lưu thì ô tự lưu trỏ
+  vào chính cái menu, và "Chơi tiếp" lần sau nạp lại đúng cái menu ấy — ván
+  chơi thật biến mất, không có đường lùi. Giờ `tu_luu()` tự từ chối, và màn đầu
+  game còn chặn thêm một lớp nữa ở `_thoat_game()`.
+
+- **HUD nối tín hiệu hai lần.** `_tim_nguoi_choi()` gọi từ cả `_ready()` (sau
+  một khung `await`) lẫn `_process()`, và hai đường đó đua nhau được — `_process`
+  chạy trước phần sau `await` của `_ready` là chuyện thường. Mỗi lần nạp cảnh
+  mới là Godot đổ "Signal is already connected" ra log. Không gãy gì, nhưng một
+  dòng đỏ quen mắt là một dòng đỏ không ai đọc nữa.
 
 - **Autoload → lớp `class_name` → autoload là vòng tròn chết, và headless
   không thấy.** `du_hanh.gd` (autoload) ép kiểu `as VungDat`; `vung_dat.gd`

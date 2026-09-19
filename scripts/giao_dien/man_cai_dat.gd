@@ -62,7 +62,18 @@ func _ready() -> void:
 	super()
 	# Tìm bằng nhóm chứ không bằng đường dẫn node — màn này nằm ở cả
 	# phong_thu.tscn lẫn vung_dat.tscn, hai cây khác nhau.
-	add_to_group("man_cai_dat")
+	add_to_group(ten_nhom())
+
+## Nhóm để tìm màn này. Là HÀM chứ không phải hằng vì màn đầu game kế thừa file
+## này để dùng lại hai trang con, mà nó KHÔNG được nằm chung nhóm: bộ kiểm tra
+## và `chup_man_hinh` tìm "màn tạm dừng" bằng nhóm, vớ nhầm màn đầu game là
+## chúng đi thử nút "Tiếp tục" của một màn không có gì để tiếp tục.
+func ten_nhom() -> String:
+	return "man_cai_dat"
+
+## Tiêu đề của trang gốc. Màn đầu game ghi tên game ở đây.
+func ten_trang_chinh() -> String:
+	return "Tạm dừng"
 
 func phim_mo_man() -> String:
 	return "thoat"
@@ -139,7 +150,7 @@ func _ve_trang() -> void:
 			dat_tieu_de("Điều khiển")
 			_trang_dieu_khien()
 		_:
-			dat_tieu_de("Tạm dừng")
+			dat_tieu_de(ten_trang_chinh())
 			_trang_menu()
 
 # --- Trang chính ----------------------------------------------------

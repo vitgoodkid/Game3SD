@@ -58,23 +58,31 @@ godot --headless --path . tools/kiem_tra.tscn
 # Chạy mất ~45 giây vì phải đợi thật.
 godot --headless --path . tools/thu_vong_lap.tscn
 
+# kiểm màn đầu game — 39 test: Chơi mới / Chơi tiếp / Tải ván. Đây là bộ DUY
+# NHẤT đụng tới việc ĐỔI CẢNH, thứ ba bộ kia không với tới vì mỗi bộ bị buộc
+# vào một cảnh. Nó GHI ĐĨA nhưng cất save của người thật đi rồi trả lại.
+godot --headless --path . tools/thu_dau_game.tscn
+
 # kiểm thế giới + nội dung — 67 test, sinh một vùng thật từ CSV rồi đi lại:
 # địa hình, rải cây đá, streaming ô, bảy bảng màu, vùng bị xoá, chuỗi du hành,
 # NPC và cốt truyện, âm thanh, 18 loài, boss ẩn 无
 godot --headless --path . tools/thu_the_gioi.tscn
 
-# chạy thử game 10 giây, bắt lỗi lúc chạy
-godot --headless --path . --quit-after 600
+# chạy thử game 10 giây, bắt lỗi lúc chạy. Trỏ THẲNG vào cảnh chơi: từ khi có
+# màn hình đầu game thì `main_scene` là cái menu, chạy nó 600 khung hình không
+# bắt được gì.
+godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600
 
 # kiểm CSV, KHÔNG cần Godot — chạy được ở bất cứ đâu có Python
 python tools/kiem_csv.py
 
 # CHỤP ẢNH giao diện. Không chạy được với --headless (headless không vẽ gì).
-# Sáu ảnh ra user://: hud, hud lúc vơi, menu, tuỳ chọn, điều khiển, hành trang.
+# Chín ảnh ra user://: hud, hud lúc vơi, menu tạm dừng, tuỳ chọn, điều khiển,
+# hành trang, hud cửa sổ nhỏ, MÀN ĐẦU GAME, màn đầu game trang Tải ván.
 godot --path . tools/chup_man_hinh.tscn
 ```
 
-GitHub Actions chạy cả năm mỗi lần đẩy code (`.github/workflows/kiem_tra.yml`).
+GitHub Actions chạy cả sáu mỗi lần đẩy code (`.github/workflows/kiem_tra.yml`).
 **Không có Godot thì vẫn sửa được CSV và tầng luật** — đẩy lên rồi đọc kết quả
 Actions.
 
@@ -133,6 +141,7 @@ scripts/
                    bia đá, đồ rơi, vũng hồn, vòng hồi sinh
                    tuong_tac_duoc.gd  lớp gốc mọi thứ bấm F được
   giao_dien/     HUD + màn che toàn màn (hành trang, bia đá, tạm dừng)
+                   man_dau_game.gd  MÀN ĐẦU GAME — kế thừa man_cai_dat.gd
                    minimap.gd     bản đồ tròn, quét NHÓM chứ không đọc địa hình
 assets/ui/       bộ asset giao diện (PNG), chép từ ngoài vào
 assets/font/     font chữ Latin — KHÔNG có chữ Hán, xem mục Font
@@ -299,6 +308,25 @@ tools/           kiểm tra + sinh dữ liệu
   hạ boss, thoát menu) không bao giờ đụng ba ô tay — ô tay tồn tại chính vì
   người chơi muốn một mốc máy không sờ vào. File save KHÔNG chứa nội dung game;
   nội dung ở `data/*.csv` và thuộc về bản game, không thuộc về người chơi.
+  **`tu_luu()` từ chối khi trong cảnh không có người chơi** — không có nó thì
+  bấm Thoát ở màn đầu game ghi đè ô tự lưu bằng một ván rỗng trỏ vào chính cái
+  menu, và "Chơi tiếp" lần sau nạp lại đúng cái menu ấy.
+- **VÁN MỚI đi qua đúng một cửa: `LuuGame.choi_moi()`.** Nó gọi `ban_moi()` của
+  cả bốn autoload giữ trạng thái (`Tui` · `TheGioi` · `DuHanh`, và `TriNho` đi
+  theo `Tui`) rồi vào vùng đầu chuỗi. Lý do phải có: **autoload sống qua việc
+  đổi cảnh**, nên chơi một ván rồi bấm "Chơi mới" mà thiếu một lời gọi là ván
+  mới mang theo đúng mảnh đó của ván cũ — túi đồ, hoặc vốn chữ, hoặc bảy vùng
+  vẫn mở sẵn. Không lỗi nào nổ ra. Thêm trường mới vào save thì thêm luôn chỗ
+  xoá nó trong `ban_moi()` tương ứng.
+- **`run/main_scene` là MÀN ĐẦU GAME**, không phải cảnh chơi. Bước "chạy thử
+  game 600 khung hình" của CI vì thế trỏ THẲNG vào `phong_thu.tscn` — chạy 600
+  khung hình một cái menu đứng yên thì không bắt được lỗi nào.
+- **`man_dau_game.gd` KẾ THỪA `man_cai_dat.gd`**, không chép. Nó lấy nguyên hai
+  trang Tuỳ chọn và Điều khiển; ba cửa để nó khác đi là `ten_nhom()`,
+  `ten_trang_chinh()` (ở `man_cai_dat.gd`) và `dong_chan()` (ở `man_chung.gd`).
+  Màn đầu game **không đóng được** — `dong()` rỗng, vì đóng ra thì phía sau là
+  cảnh trống. Nó cũng KHÔNG nằm trong nhóm `man_cai_dat`: bộ kiểm tra và
+  `chup_man_hinh` tìm "màn tạm dừng" bằng nhóm đó.
 
 ## Giao diện
 

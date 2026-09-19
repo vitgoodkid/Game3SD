@@ -78,12 +78,24 @@ jobs:
         # hai cảnh khác nhau.
         run: timeout 300 ./godot --headless --path . tools/thu_the_gioi.tscn
 
+      - name: Chạy thử màn đầu game
+        # Chơi mới / Chơi tiếp / Tải ván đều là ĐỔI CẢNH, mà trạng thái thì
+        # nằm trong autoload nên nó sống qua cú đổi ấy. Ba bộ trên đều bị buộc
+        # vào một cảnh nên không bộ nào với tới được.
+        run: timeout 300 ./godot --headless --path . tools/thu_dau_game.tscn
+
       - name: Chạy thử game 600 khung hình
-        # Bộ kiểm tra ở trên chỉ động tới tầng luật. Bước này nạp phòng thử
-        # thật, cho nhân vật và quái chạy 10 giây, bắt lỗi lúc chạy mà test
-        # tĩnh không thấy: node null, tín hiệu nối hụt, chia cho 0.
+        # Bước này nạp một cảnh CHƠI THẬT, cho nhân vật và quái chạy 10 giây,
+        # bắt lỗi lúc chạy mà test tĩnh không thấy: node null, tín hiệu nối
+        # hụt, chia cho 0, vòng tròn autoload.
+        #
+        # Trỏ THẲNG vào phòng thử chứ không dựa vào `main_scene`: từ khi có màn
+        # hình đầu game thì `main_scene` là cái menu, mà chạy 600 khung hình
+        # một cái menu đứng yên thì không bắt được gì. Bước này phải nạp chỗ có
+        # quái đi lại.
         run: |
-          timeout 300 ./godot --headless --path . --quit-after 600 2>&1 | tee chay.log
+          timeout 300 ./godot --headless --path . scenes/the_gioi/phong_thu.tscn \
+            --quit-after 600 2>&1 | tee chay.log
           if grep -qE "SCRIPT ERROR|Parse Error" chay.log; then
             echo "::error::Có lỗi lúc chạy"
             grep -E "SCRIPT ERROR|Parse Error" -A6 chay.log

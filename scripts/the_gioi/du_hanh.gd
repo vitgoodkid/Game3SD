@@ -78,6 +78,26 @@ func di_toi(ma: String) -> bool:
 	_doi_canh(ma)
 	return true
 
+## Vào thẳng một vùng, kể cả khi `TheGioi.vung_hien_tai` đang ghi là đã ở đó.
+##
+## `di_toi()` từ chối đúng trường hợp ấy, và từ chối là đúng ở bia đá — bấm du
+## hành tới chỗ mình đang đứng là vô nghĩa. Nhưng lúc bắt đầu ván mới thì "đang
+## ở" mới chỉ là giá trị mặc định của một biến, chưa có cảnh nào dựng lên cả.
+func bat_dau_o(ma: String) -> bool:
+	if VocabDB.vung_cua(ma).is_empty():
+		return false
+	da_toi[ma] = true
+	TheGioi.vung_hien_tai = ma
+	da_du_hanh.emit(ma)
+	_doi_canh(ma)
+	return true
+
+## Về đúng trạng thái của giây đầu tiên một ván mới: quên mọi vùng đã tới, chỉ
+## còn vùng đầu chuỗi mở sẵn.
+func ban_moi() -> void:
+	da_toi.clear()
+	mo_vung_dau()
+
 func _doi_canh(ma: String) -> void:
 	var canh := load(CANH_VUNG) as PackedScene
 	if canh == null:

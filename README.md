@@ -16,6 +16,17 @@ Cần [Godot 4.7](https://godotengine.org/download) trở lên.
 godot --path .
 ```
 
+Mở lên là vào **màn hình đầu game**: Chơi tiếp · Chơi mới · Tải ván · Tuỳ chọn ·
+Điều khiển · Thoát. "Chơi mới" vào thẳng thị trấn đầu chuỗi và **quên sạch ván
+cũ**; "Chơi tiếp" nạp ô mới nhất, kể cả ô tự lưu.
+
+Phòng thử (căn phòng phẳng để tune combat) không còn là chỗ bắt đầu, nhưng vẫn
+mở thẳng được:
+
+```bash
+godot --path . scenes/the_gioi/phong_thu.tscn
+```
+
 | Phím | Việc |
 |---|---|
 | WASD | đi |
@@ -105,19 +116,34 @@ File save giữ chỗ đứng / máu / thể lực / MP, thế giới (bia đã 
 vũng hồn, vùng đã tới), túi đồ và trí nhớ chữ. **Không** giữ nội dung game —
 cái đó nằm trong `data/*.csv` và là của bản game, không của người chơi.
 
+`LuuGame.choi_moi()` là cửa duy nhất của ván mới: nó gọi `ban_moi()` của cả bốn
+autoload giữ trạng thái rồi vào vùng đầu chuỗi. Cần thế vì **autoload sống qua
+việc đổi cảnh** — thiếu một lời gọi là ván "mới" mang theo túi đồ hoặc vốn chữ
+của ván cũ, và không lỗi nào nổ ra.
+
+Tự lưu **từ chối khi trong cảnh không có người chơi**. Không có luật đó thì bấm
+Thoát ở màn đầu game ghi đè ô tự lưu bằng một ván rỗng trỏ vào chính cái menu,
+và "Chơi tiếp" lần sau nạp lại đúng cái menu ấy.
+
 ## Kiểm tra
 
 ```bash
 godot --headless --path . tools/kiem_tra.tscn      # 197 test tầng luật
 godot --headless --path . tools/thu_vong_lap.tscn  # 342 test vòng lặp + combat + giao diện
+godot --headless --path . tools/thu_dau_game.tscn  # 39 test màn đầu game + đổi cảnh
 godot --headless --path . tools/thu_the_gioi.tscn  # 67 test thế giới + nội dung
-godot --headless --path . --quit-after 600         # chạy thử, bắt lỗi lúc chạy
+godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600
 python tools/kiem_csv.py                           # kiểm CSV, không cần Godot
 ```
 
-**606 phép thử**, phải xanh hết trước khi commit. `--quit-after` là bước không
+**645 phép thử**, phải xanh hết trước khi commit. `--quit-after` là bước không
 bỏ được: nhiều lỗi của Godot chỉ nổ ra lúc chạy thật (vòng tròn autoload chẳng
-hạn), và chúng không làm phép thử nào đỏ.
+hạn), và chúng không làm phép thử nào đỏ. Nó trỏ thẳng vào phòng thử chứ không
+dựa vào `main_scene` — `main_scene` giờ là cái menu, chạy 600 khung hình một
+cái menu đứng yên thì không bắt được gì.
+
+`thu_dau_game` là bộ duy nhất ghi đĩa (`user://saves/`). Nó cất save của bạn đi
+trước và trả lại nguyên vẹn lúc xong.
 
 Kéo code mới về thì chạy `godot --headless --path . --import` TRƯỚC, không thì
 Godot chưa biết `class_name` mới và nó **treo** chứ không báo lỗi.
@@ -222,7 +248,7 @@ hình.
 
 | Công cụ | Trả lời câu hỏi gì |
 |---|---|
-| `kiem_tra` `thu_vong_lap` `thu_the_gioi` | 606 phép thử — xem mục Kiểm tra |
+| `kiem_tra` `thu_vong_lap` `thu_dau_game` `thu_the_gioi` | 645 phép thử — xem mục Kiểm tra |
 | `soi_dong_tac` | clip dài bao lâu, tự trôi bao xa, lặp được không |
 | `soi_quy_dao` | bàn tay đi đường nào — phân biệt cú bổ với cú chém ngang |
 | `soi_combo` | hai nhát liên tiếp cách nhau mấy giây (đo lúc hộp đòn bật) |

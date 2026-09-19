@@ -84,7 +84,7 @@ func _ready() -> void:
 	doc.add_child(khung)
 
 	var duoi := Label.new()
-	duoi.text = "Esc — đóng"
+	duoi.text = dong_chan()
 	duoi.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	duoi.add_theme_font_size_override("font_size", 20)
 	duoi.add_theme_color_override("font_color", MAU_CHU_MO)
@@ -104,6 +104,11 @@ func lam_moi() -> void:
 ## đứng cạnh bia, nó không có phím riêng.
 func phim_mo_man() -> String:
 	return ""
+
+## Dòng nhắc ở chân màn. Màn nào KHÔNG đóng được (màn đầu game) thì trả "" —
+## mời người chơi bấm Esc trong khi Esc không làm gì là nói dối họ.
+func dong_chan() -> String:
+	return "Esc — đóng"
 
 func dat_tieu_de(s: String) -> void:
 	if _tieu_de != null:

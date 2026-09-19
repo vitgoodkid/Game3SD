@@ -170,6 +170,23 @@ func thanh_du_lieu() -> Dictionary:
 		"so_lan_chet": so_lan_chet,
 	}
 
+## Về đúng trạng thái của giây đầu tiên một ván mới.
+##
+## `vung_bat_dau` truyền từ ngoài vào chứ không đọc `DuHanh` ở đây: file này là
+## AUTOLOAD đăng ký TRƯỚC `DuHanh`, và nhắc tên một autoload chưa đăng ký xong
+## là đúng cái vòng tròn đã làm gãy cả game một lần (xem ghi chú dài trong
+## `du_hanh.gd`). Để rỗng thì giữ nguyên vùng mặc định.
+func ban_moi(vung_bat_dau: String = "") -> void:
+	bia_da_da_bat.clear()
+	bia_hien_tai = ""
+	if vung_bat_dau != "":
+		vung_hien_tai = vung_bat_dau
+	vung_hon.clear()
+	quai_da_ha.clear()
+	boss_da_ha.clear()
+	vung_da_khoi_phuc.clear()
+	so_lan_chet = 0
+
 func tu_du_lieu(d: Dictionary) -> void:
 	bia_da_da_bat = d.get("bia_da_da_bat", {}).duplicate()
 	bia_hien_tai = String(d.get("bia_hien_tai", ""))

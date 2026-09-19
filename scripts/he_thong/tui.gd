@@ -38,9 +38,15 @@ const MAU_GOC := 300.0
 const MP_MOI_TAM := 6.0
 const MP_GOC := 60.0
 
+## Chỉ số lúc bắt đầu một ván. Tách thành hằng số chứ không viết thẳng vào
+## `chi_so` là để `ban_moi()` có chỗ mà quay về — gõ lại bảng số ở hai nơi là
+## chỗ hai bảng trôi khỏi nhau, và cái trôi đi thì không ai thấy.
+const CHI_SO_DAU := {"体": 10, "韧": 10, "力": 10, "巧": 10, "智": 8, "心": 8}
+const BINH_DAU := 4
+
 # --- Trạng thái -----------------------------------------------------
 
-var chi_so := {"体": 10, "韧": 10, "力": 10, "巧": 10, "智": 8, "心": 8}
+var chi_so := CHI_SO_DAU.duplicate()
 ## Hồn — tiền tệ. Chính là chữ 魂. Chết là rơi hết chỗ chưa tiêu (mục 4.5).
 var hon := 0
 ## Bộ thủ nhặt được, chưa ghép thành chữ: {"木": 3, "口": 1, ...}
@@ -53,8 +59,8 @@ var mac := {}
 var tay_phai_dang := 0
 var tay_trai_dang := 0
 ## Bình thuốc: chung quota kiểu Elden Ring.
-var binh_toi_da := 4
-var binh_con := 4
+var binh_toi_da := BINH_DAU
+var binh_con := BINH_DAU
 
 var mau := 300.0
 var mp := 60.0
@@ -63,6 +69,32 @@ func _ready() -> void:
 	_dung_khe()
 	TriNho.khoi_dau(CHU_BAN_DAU)
 	hoi_day()
+
+## Về đúng trạng thái của giây đầu tiên một ván mới.
+##
+## Cần vì autoload SỐNG QUA cả việc đổi scene: chơi một ván, về màn đầu game,
+## bấm "Chơi mới" — mà không có hàm này thì ván "mới" mang theo nguyên túi đồ,
+## nguyên chữ đã học và nguyên số hồn của ván cũ. Không lỗi nào nổ ra; người
+## chơi chỉ thấy mình bắt đầu game với một cây kiếm khắc đầy chữ.
+##
+## Xoá theo ĐÚNG danh sách trong `thanh_du_lieu()`. Thêm trường mới vào save mà
+## quên thêm ở đây là để lại đúng một mẩu ván cũ, và mẩu đó sống dai.
+func ban_moi() -> void:
+	chi_so = CHI_SO_DAU.duplicate()
+	hon = 0
+	bo_thu.clear()
+	kho.clear()
+	_dung_khe()
+	tay_phai_dang = 0
+	tay_trai_dang = 0
+	binh_toi_da = BINH_DAU
+	# TriNho nằm trong gói save của Tui nên cũng phải về mốc đầu ở đây — người
+	# chơi ván mới không được đọc sẵn chữ của ván trước.
+	TriNho.khoi_dau(CHU_BAN_DAU)
+	hoi_day()
+	doi_hon.emit(hon)
+	doi_trang_bi.emit()
+	doi_chi_so.emit()
 
 func _dung_khe() -> void:
 	for khe in SO_KHE.keys():

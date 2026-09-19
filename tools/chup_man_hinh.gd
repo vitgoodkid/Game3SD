@@ -85,7 +85,44 @@ func _ready() -> void:
 		await get_tree().process_frame
 	await _chup("hud_nho.png")
 
+	await _chup_man_dau_game()
 	get_tree().quit()
+
+## Màn hình ĐẦU GAME — ảnh cuối, vì nó phải thay hẳn cảnh đang chụp.
+##
+## Chụp ở đây chứ không chụp riêng: đây là màn hình đầu tiên người chơi thấy,
+## mà nó lại là màn duy nhất không nằm trong cảnh chơi nào — không ai mở nó ra
+## nhìn trong lúc làm việc khác, nên nó là chỗ dễ hỏng mà lâu bị phát hiện nhất.
+func _chup_man_dau_game() -> void:
+	get_window().size = Vector2i(1600, 900)
+	var menu: Node = (load("res://scenes/giao_dien/man_dau_game.tscn")
+		as PackedScene).instantiate()
+	# Bỏ cảnh chơi đi trước: màn đầu game vẽ nền mờ, còn để phòng thử phía sau
+	# thì ảnh ra một cái menu lửng lơ trên nền game — không phải thứ người chơi
+	# thật sự thấy.
+	for c in get_children():
+		remove_child(c)
+		c.queue_free()
+	add_child(menu)
+	for i in 12:
+		await get_tree().process_frame
+	await _chup("dau_game.png")
+
+	# Trang Tải ván cần có ít nhất một ô mới vẽ ra được cái gì. Ghi một ô GIẢ
+	# rồi xoá ngay — công cụ này không được để lại dấu vết trong save của người
+	# đang chơi.
+	var man := get_tree().get_first_node_in_group("man_dau_game")
+	if man == null:
+		return
+	var co_san := LuuGame.co("3")
+	if not co_san:
+		LuuGame.luu("3")
+	man.call("_di_trang", 3)
+	for i in 8:
+		await get_tree().process_frame
+	await _chup("dau_game_tai_van.png")
+	if not co_san:
+		LuuGame.xoa("3")
 
 func _chup(ten: String) -> void:
 	await RenderingServer.frame_post_draw
