@@ -106,6 +106,10 @@ const DEM_NHAP := 0.35
 ## đã @export, chỉnh ngay cạnh đây qua node `SoulsLike` trong Remote). Lăn xa
 ## hay gần và lăn nhanh hay chậm là hai cảm giác khác nhau, nên tách hai nút.
 @export_range(0.4, 2.5, 0.05) var he_so_toc_do_lan := 1.0
+## Leo tường nhanh bao nhiêu mét/giây. Clip leo tự co giãn theo số này
+## (`ThanMoHinh._toc_leo()`), nên kéo nó lên thì tay chân khua nhanh lên theo,
+## không bị cảnh trèo vèo vèo mà tay khua thong thả.
+@export_range(0.5, 6.0, 0.1) var toc_do_leo := 2.4
 
 @onready var may: MayTrangThai = $May
 @onready var gia_camera: Node3D = $GiaCamera
@@ -245,6 +249,10 @@ func _physics_process(delta: float) -> void:
 	_doc_huong_nhap()
 	may.chay(delta)
 	move_and_slide()
+	# SAU `move_and_slide()`, không phải trước: `is_on_wall()` chỉ có nghĩa khi
+	# thân đã trượt xong khung này. Đếm trước là đếm theo kết quả của khung
+	# trước, và cú bám tường trễ đi một nhịp.
+	_dem_ep_tuong(delta)
 	_dien_hinh(delta)
 
 ## Cầu nối duy nhất giữa logic và phần nhìn. Giữ nó đúng MỘT hàm để thay khối
@@ -493,6 +501,113 @@ func tuong_tac_duoc() -> bool:
 ## Hướng nhân vật đang quay mặt.
 func huong_mat() -> Vector3:
 	return than.global_transform.basis.z.normalized()
+
+# --- Leo tường ------------------------------------------------------
+#
+# Chỗ này chỉ TRẢ LỜI CÂU HỎI về bức tường trước mặt — có tường không, leo
+# được không, ép vào nó bao lâu rồi. Việc quyết định bám hay không là của
+# `TrangThaiLeo` và hai state gọi nó; file này giữ đúng ranh giới cũ (số liệu
+# và việc dùng chung), không có dòng `if dang_leo` nào.
+
+## Nhóm nào thì CẤM leo. Danh sách CẤM chứ không phải danh sách cho phép —
+## chủ dự án chốt "mọi tường đều leo được, trừ thứ đánh dấu cấm".
+##
+## Chiều này ngược với `TRANG_THAI_TUONG_TAC` ở trên, và ngược có chủ ý: ở đó
+## quên khai một trạng thái thì mất một tương tác (nhẹ), còn ở đây quên đánh
+## dấu một bức tường thì chỉ là leo được chỗ không định cho leo (cũng nhẹ), mà
+## bắt đánh dấu từng bức tường leo được thì gần như không bao giờ đủ.
+##
+## Chỗ BẮT BUỘC phải đánh dấu: tường biên của map. Không có nó thì người chơi
+## trèo thẳng ra ngoài thế giới.
+const NHOM_CAM_LEO := "khong_leo"
+
+## Dốc tới mức nào thì tính là TƯỜNG chứ không phải dốc đi bộ được.
+## |normal.y| nhỏ nghĩa là mặt phẳng dựng đứng.
+const NGUONG_DOC_TUONG := 0.35
+## Tường phải cao hơn bấy nhiêu mét tính từ chân mới bám được.
+##
+## Thấp hơn thì bước qua hoặc nhảy qua, đừng bám — cái tường thấp 0.9m trong
+## phòng thử dựng ra ĐỂ nhảy qua, mà bám được thì nó thành thang và mất luôn
+## chỗ thử động tác nhảy.
+const CAO_LEO_TOI_THIEU := 1.5
+## Dò tường ở độ cao này (ngang ngực) và ở `CAO_LEO_TOI_THIEU`.
+const CAO_DO_TUONG := 0.9
+## Dò xa bao nhiêu mét tính từ trục người.
+const XA_DO_TUONG := 0.75
+## Bám cách mặt tường bấy nhiêu mét.
+const CACH_TUONG := 0.42
+
+## Giữ phím đi VỀ PHÍA tường bao lâu thì bám. Chủ dự án chốt 0.5s.
+##
+## Có ngưỡng chứ không bám ngay là cố ý: đi men theo tường, đi sát vách trong
+## hành lang, hay bị quái ép vào góc đều là chạm tường mà KHÔNG muốn leo. Nửa
+## giây đủ dài để mấy cú chạm ấy trôi qua, đủ ngắn để người chơi cố tình ép
+## vào tường thì không thấy phải chờ.
+const T_EP_TUONG := 0.5
+
+## Đã ép vào tường liên tục bao lâu (giây). `_physics_process` nuôi, hai state
+## `di` / `chay_nhanh` đọc.
+var _ep_tuong := 0.0
+
+## Đếm thời gian ép tường. Gọi NGAY SAU `move_and_slide()` — `is_on_wall()`
+## chỉ đúng sau khi trượt xong, gọi trước là đọc kết quả của khung trước.
+func _dem_ep_tuong(delta: float) -> void:
+	if not is_on_wall() or huong_nhap == Vector3.ZERO:
+		_ep_tuong = 0.0
+		return
+	# Phải đi VỀ PHÍA tường, không phải men theo nó. Pháp tuyến tường chỉ ra
+	# ngoài, nên đi vào tường là tích vô hướng ÂM.
+	if huong_nhap.normalized().dot(get_wall_normal()) > -0.5:
+		_ep_tuong = 0.0
+		return
+	_ep_tuong += delta
+
+## Đã ép đủ lâu để bám vào tường chưa.
+func ep_tuong_du_lau() -> bool:
+	return _ep_tuong >= T_EP_TUONG
+
+func quen_ep_tuong() -> void:
+	_ep_tuong = 0.0
+
+## Bắn một tia về phía trước ở độ cao `cao`, trả về kết quả va chạm của
+## `PhysicsDirectSpaceState3D` ({} nếu trượt).
+##
+## Bắn theo HƯỚNG MẶT chứ không theo `huong_nhap`: lúc đã bám tường thì phím
+## di chuyển đổi nghĩa thành lên/xuống, chỉ còn hướng mặt là thứ ổn định để
+## biết tường nằm đâu.
+func _tia_truoc(cao: float, huong: Vector3, xa := XA_DO_TUONG) -> Dictionary:
+	var goc := global_position + Vector3.UP * cao
+	var ts := PhysicsRayQueryParameters3D.create(goc, goc + huong * xa)
+	ts.exclude = [get_rid()]
+	# Chỉ địa hình và tường (lớp 1). Bám vào thân con quái là chuyện khác hẳn.
+	ts.collision_mask = 1
+	return get_world_3d().direct_space_state.intersect_ray(ts)
+
+## Tường trước mặt có leo được không. Trả về {} nếu không.
+##
+## Ba điều kiện, và cả ba đều phải đúng:
+##   1. Có gì đó chắn ở ngang ngực.
+##   2. Nó DỰNG ĐỨNG — dốc đi bộ lên được thì cứ đi, đừng bám.
+##   3. Nó CÒN CAO hơn `CAO_LEO_TOI_THIEU` — tường lửng thì bước qua.
+##   4. Nó không nằm trong nhóm `khong_leo`.
+func tuong_leo_duoc(huong := Vector3.ZERO) -> Dictionary:
+	var h := huong if huong != Vector3.ZERO else huong_mat()
+	h.y = 0.0
+	if h.length_squared() < 0.001:
+		return {}
+	h = h.normalized()
+	var va := _tia_truoc(CAO_DO_TUONG, h)
+	if va.is_empty():
+		return {}
+	if absf(float((va["normal"] as Vector3).y)) > NGUONG_DOC_TUONG:
+		return {}
+	var vat: Object = va.get("collider")
+	if vat is Node and (vat as Node).is_in_group(NHOM_CAM_LEO):
+		return {}
+	# Còn tường ở trên đầu không? Không thì đây là bờ thấp, bước qua là xong.
+	if _tia_truoc(CAO_LEO_TOI_THIEU, h).is_empty():
+		return {}
+	return va
 
 # --- Thể lực --------------------------------------------------------
 

@@ -202,14 +202,14 @@ theo" phía trên.
   chữ Hán ở các màn Label xưa nay vẫn là ô vuông.
 
 ### Kiểm tra
-Sáu bước, GitHub Actions chạy cả sáu mỗi lần đẩy code (**648** phép thử tự động
+Sáu bước, GitHub Actions chạy cả sáu mỗi lần đẩy code (**663** phép thử tự động
 cộng một lần chạy game thật) — lệnh đầy đủ ở `CLAUDE.md`, tóm tắt ở đây:
 
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/do_nhip_don.tscn` | KHÔNG phải test — máy ĐO nhịp đòn từ clip, in ra mấy con số của `moveset.csv`. Chạy sau mỗi lần đổi file `.fbx` |
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 197 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 345 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 360 test theo thời gian |
 | `godot --headless --path . tools/thu_dau_game.tscn` | màn đầu game + ĐỔI CẢNH: Chơi mới / Chơi tiếp / Tải ván — 39 test. Bộ duy nhất GHI ĐĨA (cất save của người thật đi rồi trả lại) |
 | `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 67 test |
 | `godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600` | chạy cảnh chơi thật 10 giây, bắt lỗi lúc chạy mà bốn bộ trên không với tới (vòng tròn autoload chẳng hạn). Trỏ THẲNG vào phòng thử vì `main_scene` giờ là cái menu |

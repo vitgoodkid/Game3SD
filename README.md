@@ -129,14 +129,14 @@ và "Chơi tiếp" lần sau nạp lại đúng cái menu ấy.
 
 ```bash
 godot --headless --path . tools/kiem_tra.tscn      # 197 test tầng luật
-godot --headless --path . tools/thu_vong_lap.tscn  # 345 test vòng lặp + combat + giao diện
+godot --headless --path . tools/thu_vong_lap.tscn  # 360 test vòng lặp + combat + giao diện
 godot --headless --path . tools/thu_dau_game.tscn  # 39 test màn đầu game + đổi cảnh
 godot --headless --path . tools/thu_the_gioi.tscn  # 67 test thế giới + nội dung
 godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600
 python tools/kiem_csv.py                           # kiểm CSV, không cần Godot
 ```
 
-**648 phép thử**, phải xanh hết trước khi commit. `--quit-after` là bước không
+**663 phép thử**, phải xanh hết trước khi commit. `--quit-after` là bước không
 bỏ được: nhiều lỗi của Godot chỉ nổ ra lúc chạy thật (vòng tròn autoload chẳng
 hạn), và chúng không làm phép thử nào đỏ. Nó trỏ thẳng vào phòng thử chứ không
 dựa vào `main_scene` — `main_scene` giờ là cái menu, chạy 600 khung hình một
@@ -248,7 +248,7 @@ hình.
 
 | Công cụ | Trả lời câu hỏi gì |
 |---|---|
-| `kiem_tra` `thu_vong_lap` `thu_dau_game` `thu_the_gioi` | 648 phép thử — xem mục Kiểm tra |
+| `kiem_tra` `thu_vong_lap` `thu_dau_game` `thu_the_gioi` | 663 phép thử — xem mục Kiểm tra |
 | `soi_dong_tac` | clip dài bao lâu, tự trôi bao xa, lặp được không |
 | `soi_quy_dao` | bàn tay đi đường nào — phân biệt cú bổ với cú chém ngang |
 | `soi_combo` | hai nhát liên tiếp cách nhau mấy giây (đo lúc hộp đòn bật) |

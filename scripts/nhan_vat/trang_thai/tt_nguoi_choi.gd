@@ -88,6 +88,30 @@ func thu_hanh_dong() -> bool:
 		return true
 	return false
 
+## Ép phím vào tường đủ lâu thì BÁM LẤY NÓ. Trả true nghĩa là đã đổi state.
+##
+## Gọi từ `di` và `chay_nhanh` — hai state duy nhất có `huong_nhap` khác không
+## mà chân còn chạm đất. Đứng yên (`dung`) thì không có hướng nào để ép, nên
+## không cần hỏi.
+##
+## Đặt ở lớp gốc thay vì chép hai lần: đây đúng là loại việc mà ghi chú đầu
+## file này nói tới — "mười hai state mà state nào cũng chép lại thì là mười
+## hai chỗ để quên sửa".
+##
+## Đồng hồ nằm ở `NguoiChoi._dem_ep_tuong()`, chạy sau `move_and_slide()`;
+## chỗ này chỉ đọc kết quả rồi dò xem bức tường ấy có leo được không.
+func _bam_tuong() -> bool:
+	if not nc.ep_tuong_du_lau():
+		return false
+	var va := nc.tuong_leo_duoc(nc.huong_nhap)
+	if va.is_empty():
+		# Không leo được thì QUÊN ĐI, đừng để đồng hồ đứng ở mức đã đủ: giữ
+		# nguyên thì mỗi khung hình lại dò lại một lần cho tới khi rời tường.
+		nc.quen_ep_tuong()
+		return false
+	di("leo", {"phap": va["normal"]})
+	return true
+
 ## Tên đòn đầu chuỗi. Đang chạy thì ra đòn chạy, đang ở trên không thì ra ĐÒN
 ## NHẢY — cả hai đều là moveset riêng, không phải đòn thường, và người chơi
 ## souls trông đợi điều đó.

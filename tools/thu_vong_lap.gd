@@ -53,6 +53,7 @@ func _ready() -> void:
 	await _sieu_giap_va_phan_do()
 	await _phan_nhin()
 	await _let_khi_nap()
+	await _leo_tuong()
 	await _phim_hanh_trang()
 	await _quai_roi_do()
 	await _nghi_bia_da()
@@ -1028,6 +1029,146 @@ func _dat_khien(co: bool) -> void:
 
 ## Đưa người chơi về trạng thái sạch giữa hai phép thử — đầy máu, đầy thể lực,
 ## không còn khựng, không còn dư i-frame hay hồi lăn của cú trước.
+## Leo tường (state `leo`).
+##
+## Phòng thử có sẵn bốn thứ để hỏi đủ bốn câu, và chúng CỐ Ý cao khác nhau —
+## xem `PhongThu._dung_tru_leo()` / `_dung_tuong_thap()` / `_dung_san()`:
+##
+##   tháp leo 5.2m   leo được, và có mặt trên để thử cú TRÈO QUA MÉP
+##   bệ 1.2m         dưới ngưỡng `CAO_LEO_TOI_THIEU` ⇒ không bám
+##   tường nhảy 0.9m dựng ra ĐỂ nhảy qua ⇒ không được biến thành thang
+##   tường biên 4m   nhóm `khong_leo` ⇒ không trèo ra khỏi map được
+func _leo_tuong() -> void:
+	_nhom("Leo tường")
+	_lam_moi_nguoi_choi()
+
+	# --- Dò tĩnh: đứng sát rồi hỏi, không cần đợi đồng hồ nào ---
+	_dung(not _do_tuong(Vector3(10, 0.2, 18.5)).is_empty(),
+		"tháp leo 5.2m: bám được")
+	_dung(_do_tuong(Vector3(13.2, 0.2, 17.6)).is_empty(),
+		"bệ 1.2m: THẤP hơn ngưỡng nên không bám")
+	_dung(_do_tuong(Vector3(-16, 0.2, -19.3)).is_empty(),
+		"tường nhảy 0.9m: không bám — nó dựng ra để NHẢY qua")
+	_dung(_do_tuong(Vector3(0, 0.2, -34.2)).is_empty(),
+		"tường biên: nhóm khong_leo nên không trèo ra khỏi map được")
+	_dung(_do_tuong(Vector3(0, 0.2, 0)).is_empty(),
+		"giữa sân trống: không có gì để bám")
+
+	# --- Ép phím vào tường đủ lâu thì bám ---
+	#
+	# W đi theo −Z (camera mặc định), mà mặt bắc của tháp ở z = 18, nên đứng ở
+	# z = 19.2 bấm W là đâm thẳng vào nó.
+	_dat_truoc_thap()
+	await _nut("di_truoc", true)
+	var cho := 0
+	while _nc.may.ten_hien_tai != "leo" and cho < 200:
+		cho += 1
+		await get_tree().physics_frame
+	_bang(_nc.may.ten_hien_tai, "leo", "ép phím vào tường đủ lâu thì BÁM")
+	# Ngưỡng phải THẬT SỰ có tác dụng: chạm phát bám ngay là sai cơ chế.
+	_dung(cho >= int(NguoiChoi.T_EP_TUONG * 60.0),
+		"và phải ép đủ %.1fs mới bám, không bám ngay lúc chạm"
+		% NguoiChoi.T_EP_TUONG)
+
+	# --- Leo lên thật, tốn thể lực thật ---
+	var y_dau := _nc.global_position.y
+	var tl_dau := _nc.the_luc
+	await _cho(0.5)
+	_dung(_nc.global_position.y > y_dau + 0.5,
+		"giữ phím thì trèo LÊN (%.2fm → %.2fm)"
+		% [y_dau, _nc.global_position.y])
+	_dung(_nc.the_luc < tl_dau, "và bám tường thì TỐN thể lực (%.0f → %.0f)"
+		% [tl_dau, _nc.the_luc])
+
+	# --- Tới đỉnh thì tự trèo lên mặt trên ---
+	var len_duoc := false
+	for i in 400:
+		await get_tree().physics_frame
+		if _nc.may.ten_hien_tai != "leo":
+			len_duoc = _nc.global_position.y > 4.5
+			break
+	_dung(len_duoc, "leo hết tháp thì TỰ TRÈO lên đứng trên nóc (y=%.2f)"
+		% _nc.global_position.y)
+	await _nut("di_truoc", false)
+
+	# --- Cạn thể lực thì tuột ---
+	_lam_moi_nguoi_choi()
+	_dat_truoc_thap()
+	_nc.global_position.z = 18.4
+	_nc.may.doi("leo", {"phap": Vector3(0, 0, 1)})
+	await _hai_khung()
+	_nc.the_luc = 2.0
+	var tuot := 0
+	while _nc.may.ten_hien_tai == "leo" and tuot < 200:
+		tuot += 1
+		await get_tree().physics_frame
+	_dung(_nc.may.ten_hien_tai != "leo",
+		"cạn thể lực thì TUỘT khỏi tường (%s)" % _nc.may.ten_hien_tai)
+
+	# --- Ăn đòn khi đang bám thì rơi ---
+	#
+	# Không có luật này thì bám tường thành chỗ trốn an toàn giữa trận đánh.
+	_lam_moi_nguoi_choi()
+	_dat_truoc_thap()
+	_nc.global_position.z = 18.4
+	_nc.may.doi("leo", {"phap": Vector3(0, 0, 1)})
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "leo", "đang bám tường")
+	_nc.an_don(30, 60.0, _nc.global_position + Vector3(0, 0, 5))
+	await _hai_khung()
+	_dung(_nc.may.ten_hien_tai != "leo",
+		"ăn đòn khi đang bám thì RƠI khỏi tường (%s)" % _nc.may.ten_hien_tai)
+
+	# --- RƠI quét qua tường thì KHÔNG tự bám ---
+	#
+	# Chỉ cú nhảy còn đang bay LÊN mới bám. Xét cả lúc rơi xuống thì chạy khỏi
+	# mép vách là dính tường lủng lẳng ngoài ý muốn.
+	_lam_moi_nguoi_choi()
+	_nc.global_position = Vector3(10, 4.0, 19.0)
+	await _hai_khung()
+	_nc.may.doi("nhay", {"roi": true})
+	_nc.velocity = Vector3(0, -1.0, -3.0)
+	var dinh := false
+	var cham := false
+	for i in 120:
+		await get_tree().physics_frame
+		if _nc.is_on_wall():
+			cham = true
+		if _nc.may.ten_hien_tai == "leo":
+			dinh = true
+			break
+		if _nc.is_on_floor():
+			break
+	_dung(cham, "cú rơi có quét qua mặt tường thật")
+	_dung(not dinh, "nhưng đang RƠI thì không tự bám — rơi thẳng xuống đất")
+
+	_lam_moi_nguoi_choi()
+	_nc.global_position = Vector3(0, 0.2, 4)
+	await _hai_khung()
+
+## Đặt nhân vật ngay trước mặt bắc của tháp leo, quay mặt vào nó.
+##
+## GHIM LẠI HƯỚNG CAMERA, và đó không phải chi tiết thừa: `huong_nhap` quy phím
+## WASD về hệ thế giới THEO CAMERA (`NguoiChoi._doc_huong_nhap()`), nên bấm W
+## chỉ đi về −Z khi camera chưa xoay. Mấy nhóm test chạy trước đã xoay nó đi,
+## và khi đó W đẩy nhân vật đi hướng khác — nhân vật không bao giờ chạm tháp,
+## phép thử đỏ mà chẳng liên quan gì tới cơ chế leo. Đã dính đúng vậy.
+##
+## Bỏ khoá mục tiêu luôn: khoá rồi thì `xoay_ve()` ép quay mặt về con quái,
+## và nhân vật đi ngang vào tường thay vì đâm thẳng.
+func _dat_truoc_thap() -> void:
+	_nc.muc_tieu = null
+	_nc.gia_camera.rotation = Vector3.ZERO
+	_nc.global_position = Vector3(10, 0.2, 19.2)
+	_nc.than.rotation.y = PI
+	_nc.quen_ep_tuong()
+
+## Đứng vào `tai` rồi hỏi "tường trước mặt (hướng −Z) có leo được không".
+func _do_tuong(tai: Vector3) -> Dictionary:
+	_nc.global_position = tai
+	_nc.force_update_transform()
+	return _nc.tuong_leo_duoc(Vector3(0, 0, -1))
+
 func _lam_moi_nguoi_choi() -> void:
 	_nc.mau = _nc.mau_toi_da
 	_nc.the_luc = _nc.the_luc_max

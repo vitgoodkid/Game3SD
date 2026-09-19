@@ -110,9 +110,19 @@ func _dung_san() -> void:
 	than.add_child(va)
 
 	# Bốn bức tường để không lăn ra khỏi mép, và để thử camera va tường.
+	#
+	# Thân RIÊNG chứ không gắn chung vào sàn, và nằm trong nhóm `khong_leo`:
+	# từ khi có cơ chế leo thì mọi tường dựng đứng đều bám được, mà tường biên
+	# bám được nghĩa là trèo thẳng ra ngoài map. Đây là chỗ bắt buộc phải đánh
+	# dấu — xem `NguoiChoi.NHOM_CAM_LEO`.
+	var bien := StaticBody3D.new()
+	bien.name = "TuongBien"
+	bien.collision_layer = 1
+	bien.add_to_group(NguoiChoi.NHOM_CAM_LEO)
+	add_child(bien)
 	for i in 4:
 		var goc := float(i) * PI * 0.5
-		_khoi(than, Vector3(sin(goc) * 35.0, 2.0, cos(goc) * 35.0),
+		_khoi(bien, Vector3(sin(goc) * 35.0, 2.0, cos(goc) * 35.0),
 			Vector3(70, 4, 1) if i % 2 == 0 else Vector3(1, 4, 70),
 			Color(0.24, 0.25, 0.26))
 
@@ -128,50 +138,45 @@ func _dung_cot() -> void:
 		_khoi(than, tai + Vector3(0, 2.5, 0), Vector3(1.6, 5, 1.6),
 			Color(0.38, 0.36, 0.33))
 
-## Trụ mốc cho việc soi dáng "leo trèo" — KHÔNG PHẢI cơ chế leo trèo thật.
+## THÁP LEO — chỗ thử cơ chế leo tường (state `leo`).
 ##
-## Game chưa có leo trèo. `assets/model/dong_tac/chua_dung/leo_len.fbx` và
-## `leo_xuong.fbx` đã tải về và ĐO XONG (xem DOC.md cùng thư mục: vòng lặp tại
-## chỗ, 2.00s, hông đứng yên 0.69m) nhưng KHÔNG state nào tên `leo` cả — dựng
-## trạm thang thật cần một `Area3D` đánh dấu trục leo, một state mới khoá di
-## chuyển vào trục đó, và camera phải ngừng xoay tự do trong lúc leo (xem mục
-## "CLIP LÀM CHỦ NHỊP" trong DOC_TRUOC.md của thư mục dong_tac). Đó là một
-## tính năng riêng, chưa ai yêu cầu làm — trụ này CHỈ để có vật làm mốc tỉ lệ
-## khi soi hai clip đó bằng `tools/soi_dong_tac.tscn` / `tools/chup_tu_the.tscn`
-## đứng cạnh nhân vật, không có gì bấm được ở đây.
+## Trước đây chỗ này là một cây trụ gỗ mảnh (bán kính 0.35m) dựng làm mốc tỉ
+## lệ khi soi clip, vì hồi đó chưa có cơ chế leo. Giờ có rồi thì nó phải là
+## thứ leo được THẬT, mà trụ mảnh thì không: mặt cong nên pháp tuyến đổi liên
+## tục, và đỉnh chỉ rộng 0.7m — trèo lên xong không đứng nổi.
+##
+## Ba tầng để đo được cú leo chứ không chỉ thấy nó chạy:
+##   thân 5.2m    cao hơn hẳn một hơi leo, đủ để thấy thể lực tụt
+##   mặt trên     4×4m, phẳng, đứng được — chỗ thử cú TRÈO QUA MÉP
+##   bệ 1.2m      bậc thấp cạnh chân tháp, để so: bậc này KHÔNG bám được
+##                (dưới `NguoiChoi.CAO_LEO_TOI_THIEU`), bước lên là xong
 func _dung_tru_leo() -> void:
 	var than := StaticBody3D.new()
-	than.name = "TruLeo"
+	than.name = "ThapLeo"
 	than.collision_layer = 1
 	add_child(than)
 
-	const CAO := 3.2
-	const BAN_KINH := 0.35
-	var m := MeshInstance3D.new()
-	var c := CylinderMesh.new()
-	c.height = CAO
-	c.top_radius = BAN_KINH
-	c.bottom_radius = BAN_KINH
-	m.mesh = c
-	m.position = Vector3(10, CAO * 0.5, 16)
-	m.material_override = _vat_lieu(Color(0.42, 0.30, 0.18))   # gỗ, khác màu cột đá
-	than.add_child(m)
+	const CAO := 5.2
+	const RONG := 4.0
+	var tai := Vector3(10, 0, 16)
+	_khoi(than, tai + Vector3(0, CAO * 0.5, 0), Vector3(RONG, CAO, RONG),
+		Color(0.40, 0.34, 0.27))
+	# Bệ thấp sát chân tháp. Cố ý để 1.2m — DƯỚI ngưỡng bám (1.5m) nhưng trên
+	# tường nhảy 0.9m, nên nó trả lời được câu "ngưỡng có đúng chỗ không" mà
+	# không phải mở code ra đọc.
+	_khoi(than, tai + Vector3(RONG * 0.5 + 1.2, 0.6, 0),
+		Vector3(2.4, 1.2, 2.4), Color(0.46, 0.42, 0.36))
 
-	var va := CollisionShape3D.new()
-	var s := CylinderShape3D.new()
-	s.height = CAO
-	s.radius = BAN_KINH
-	va.shape = s
-	va.position = m.position
-	than.add_child(va)
-
-## Tường thấp để soi dáng NHẢY — cơ chế nhảy đã có thật (state `nhay`), nên
-## đây khác trụ leo ở trên: bấm được, chạy tới rồi nhảy qua là thấy ngay.
+## Tường thấp để soi dáng NHẢY.
 ##
 ## Cao 0.9m — thấp hơn hẳn đỉnh vòng nhảy (LUC_NHAY²/(2·TRONG_LUC) ≈ 1.33m ở
 ## NguoiChoi), nên nhảy thẳng qua được không cần chạy lấy đà. Mỏng theo trục
 ## Z (0.6m) để một cú nhảy bình thường đủ xa quét qua hết bề dày, và RỘNG theo
 ## X (6m) để không phải căn hướng chính xác mới nhảy trúng.
+##
+## 0.9m cũng nằm DƯỚI `NguoiChoi.CAO_LEO_TOI_THIEU` (1.5m), nên ép phím vào nó
+## KHÔNG bám tường. Đó là chủ ý: bức tường này dựng ra để NHẢY qua, mà bám
+## được thì nó thành thang và mất luôn chỗ thử động tác nhảy.
 func _dung_tuong_thap() -> void:
 	var than := StaticBody3D.new()
 	than.name = "TuongThap"

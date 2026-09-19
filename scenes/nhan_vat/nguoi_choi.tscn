@@ -21,6 +21,7 @@
 [ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/ket_lieu.gd" id="19_kl"]
 [ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/rut_vu_khi.gd" id="20_rut"]
 [ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/cat_vu_khi.gd" id="21_cat"]
+[ext_resource type="Script" path="res://scripts/nhan_vat/trang_thai/leo.gd" id="22_leo"]
 
 [sub_resource type="CapsuleShape3D" id="Capsule_nc"]
 radius = 0.36
@@ -120,3 +121,6 @@ script = ExtResource("20_rut")
 
 [node name="cat_vu_khi" type="Node" parent="May"]
 script = ExtResource("21_cat")
+
+[node name="leo" type="Node" parent="May"]
+script = ExtResource("22_leo")

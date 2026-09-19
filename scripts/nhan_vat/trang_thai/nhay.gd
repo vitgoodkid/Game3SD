@@ -13,7 +13,15 @@ extends TTNguoiChoi
 ## vì rơi khỏi mép vách cũng đánh được đòn nhảy mà lúc đó state không phải là
 ## `nhay`. Xem NguoiChoi.con_don_tren_khong().
 
-func vao(_du_lieu: Dictionary = {}) -> void:
+## Vào state này mà KHÔNG nảy lên — dùng cho lúc rời tường (tuột, bị gỡ, đạp
+## tường bật ra). Cần một cửa như vậy vì `nhay` là state "đang ở trên không"
+## duy nhất, mà không phải lần nào lên đó cũng vì vừa nhún chân.
+func vao(du_lieu: Dictionary = {}) -> void:
+	if bool(du_lieu.get("roi", false)):
+		# Giữ nguyên vận tốc bên gọi đã đặt, và KHÔNG tiêu thể lực: người chơi
+		# không hề bấm nhảy.
+		nc.dang_do = false
+		return
 	nc.velocity.y = NguoiChoi.LUC_NHAY
 	nc.ton_the_luc(SoulsLike.THE_LUC_NHAY)
 	nc.dang_do = false
@@ -37,6 +45,17 @@ func chay(delta: float) -> void:
 		nc.dung_don_tren_khong()
 		di("danh", {"don": "nhay"})
 		return
+	# NHẢY ĐÂM VÀO TƯỜNG thì bám lấy nó (cửa vào thứ hai của `leo`).
+	#
+	# Chỉ khi còn đang bay LÊN. Chủ dự án chốt như vậy, và lý do rất thực tế:
+	# xét cả lúc đang rơi thì chạy khỏi mép vách là dính tường lủng lẳng ngoài
+	# ý muốn — người chơi định nhảy qua khe, hoá ra treo mình lên vách.
+	if nc.velocity.y > 0.0 and nc.is_on_wall():
+		var va := nc.tuong_leo_duoc(-nc.get_wall_normal())
+		if not va.is_empty():
+			di("leo", {"phap": va["normal"]})
+			return
+
 	# Chờ qua khung hình đầu rồi mới xét chạm đất, không thì vừa nhảy đã hạ.
 	if t > 0.12 and nc.is_on_floor():
 		di("dung")

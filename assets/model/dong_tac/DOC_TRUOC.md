@@ -294,24 +294,36 @@ phát nhanh gấp 2.25 lần — không phải cắt tay gì cả.
 
 ---
 
-## Leo thang: có clip rồi, chưa có thang
+## Leo tường: ĐÃ LÀM XONG
 
-`Climbing_Up.fbx` đo được là **vòng lặp leo thang tại chỗ** (2.00s, hông đứng
-yên ở 0.69m, hở 0.011). Không phải cú đu người qua mép đá — nếu là mép đá thì
-hông phải dâng lên trong clip.
+`leo_len.fbx` / `leo_xuong.fbx` đo được là **vòng lặp tại chỗ** (2.00s, hông
+đứng yên ở 0.69m, hở 0.011). Không phải cú đu người qua mép đá — nếu là mép đá
+thì hông phải dâng lên trong clip.
 
-Thả file vào đây thì **không có gì xảy ra**, vì `DONG_TAC` không có trạng thái
-nào tên `leo`, và máy trạng thái cũng không có. Muốn dùng thì phải làm cơ chế,
-và cơ chế đó tối thiểu gồm:
+Hoá ra vòng lặp tại chỗ là ĐÚNG THỨ CẦN, không phải thiếu sót: cơ chế leo đẩy
+người bằng code (`NguoiChoi.toc_do_leo`), clip chỉ quay vòng tay chân. Nhờ vậy
+tốc độ leo chỉnh sống được mà không phải đụng tới file `.fbx` nào — ngược hẳn
+với đòn đánh, nơi clip làm chủ nhịp.
 
-1. **Chỗ leo trong bản đồ** — một `Area3D` đánh dấu thang, biết trục dọc và hai
-   đầu. Bản đồ hiện sinh tự động từ CSV, nên đây là cột mới trong `vung.csv`.
-2. **Trạng thái `leo`** — khoá di chuyển vào đúng trục thang, W/S đổi thành lên
-   xuống, và `cho_doi()` phải chặn `lan` / `danh` / `nhay`: lăn giữa lưng chừng
-   thang là rơi xuyên sàn.
-3. **Vào và ra** — Elden Ring có clip riêng cho lúc bám vào và lúc trèo lên tới
-   đỉnh. Thiếu hai clip đó thì nhân vật dính vào thang bằng một cú giật.
-4. **Camera** — leo thang là lúc duy nhất camera không được xoay tự do, nếu
-   không người chơi mất phương hướng giữa chừng.
+Nối vào đâu:
 
-Tức là một mốc riêng, không phải một file. Clip đã có sẵn ở đây khi nào làm tới.
+- `ThanMoHinh.DONG_TAC` có `"leo": "leo_len"`, còn `leo_xuong` chọn theo
+  `TrangThaiLeo.ten_dien()` ở `_dong_tac_cho()` — cùng khuôn với `chet_*`.
+- Cả hai nằm trong `DONG_TAC_LAP`: không lặp thì leo quá 2 giây là đứng chết ở
+  khung cuối trong khi người vẫn đang trôi lên.
+- Tốc độ phát bám theo **vận tốc dọc thật** (`_toc_leo()`), nên treo im một chỗ
+  là vận tốc 0 ⇒ clip đứng hình ⇒ có sẵn dáng "treo" mà không cần clip thứ ba.
+
+Bốn thứ bản ghi chú cũ đòi phải có, và cái nào đã làm khác đi:
+
+1. ~~Area3D đánh dấu thang~~ → **không cần**. Chủ dự án chốt "mọi tường đều leo
+   được, trừ thứ đánh dấu cấm" (`NguoiChoi.NHOM_CAM_LEO`), nên không phải khai
+   từng chỗ leo, chỉ phải nhớ cấm tường biên map.
+2. **Trạng thái `leo`** → có, `scripts/nhan_vat/trang_thai/leo.gd`.
+   `cho_doi()` chặn `lan` / `danh` đúng như ghi chú cũ đòi.
+3. **Vào và ra** → vẫn THIẾU clip bám vào và clip đu qua mép, đúng như dự đoán.
+   Cú trèo qua mép hiện là code dịch thân trong `T_TREO` = 0.35s. Có clip thật
+   thì thay vào đó, chỗ nối đã sẵn.
+4. ~~Camera ngừng xoay~~ → **không làm**. Đây là leo TƯỜNG trong không gian mở,
+   không phải thang trong ống hẹp; khoá camera lúc này là lấy mất khả năng nhìn
+   quanh xem trèo lên có an toàn không.

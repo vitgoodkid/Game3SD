@@ -50,7 +50,7 @@ Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.
 # kiểm tầng luật — 197 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + combat + giao diện — 345 test, nạp phòng thử thật:
+# kiểm vòng lặp souls + combat + giao diện — 360 test, nạp phòng thử thật:
 # đánh, thể lực, cam kết đòn, i-frame, siêu giáp, đòn phản đỡ, vỡ đỡ, đỡ phản
 # hai bậc, bộ nút (Space lăn/nhảy, Shift chạy), đòn nhảy,
 # state machine quái, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại,
@@ -214,6 +214,30 @@ tools/           kiểm tra + sinh dữ liệu
   có luật đó thì rơi từ vách cao chém được cả chuỗi, mà đòn nhảy nặng phá thế
   gấp 4 đòn thường. Cờ nằm ở `NguoiChoi` chứ không ở state `nhay`, vì rơi khỏi
   mép vách cũng đánh được đòn nhảy mà lúc đó state là `dung`/`di`.
+- **LEO TƯỜNG (state `leo`).** Hai clip `leo_len` / `leo_xuong` là **vòng lặp
+  TẠI CHỖ** (2.00s, hông đứng yên 0.69m), nên ở đây **code đẩy người, clip chỉ
+  quay vòng tay chân** — ngược hẳn luật "animation làm chủ" của đòn đánh, và
+  ngược có lý do: clip tại chỗ không chứa quãng đường nào để đo ra tốc độ.
+  Tốc độ là `NguoiChoi.toc_do_leo` (chỉnh sống được), còn clip co giãn theo
+  vận tốc dọc thật (`ThanMoHinh._toc_leo()`) — treo im thì vận tốc 0, clip
+  đứng hình, và đó là dáng "treo" có sẵn không cần clip thứ ba.
+  - **HAI cửa vào**, cả hai nằm ngoài `leo.gd`: ép phím vào tường liên tục
+    `NguoiChoi.T_EP_TUONG` (0.5s) từ `di`/`chay_nhanh`, hoặc nhảy đâm vào
+    tường từ `nhay`. Cú nhảy chỉ bám khi **còn đang bay LÊN** — xét cả lúc
+    rơi thì chạy khỏi mép vách là dính tường lủng lẳng ngoài ý muốn.
+  - **Mọi tường đều leo được, TRỪ nhóm `NguoiChoi.NHOM_CAM_LEO`** — danh sách
+    CẤM, ngược chiều với `TRANG_THAI_TUONG_TAC`. Chủ dự án chốt. Chỗ BẮT BUỘC
+    phải đánh dấu là **tường biên của map**: không đánh dấu thì người chơi
+    trèo thẳng ra ngoài thế giới. Phòng thử đã đánh dấu (`TuongBien`).
+  - Tường phải **cao hơn `CAO_LEO_TOI_THIEU` (1.5m)** mới bám. Nhờ vậy cái
+    tường thấp 0.9m dựng ra để thử động tác NHẢY không bị biến thành thang.
+  - **Tới đỉnh thì TỰ TRÈO lên mặt trên** (`_chay_treo`, 0.35s). Không có clip
+    đu người qua mép — đoạn này là code dịch thân, đi hai chặng lên-rồi-vào
+    chứ không nội suy thẳng một đường, vì đường thẳng thì nửa người lút vào
+    trong khối đá suốt cú trèo.
+  - Giá phải trả: **tốn thể lực theo giây** (cạn thì tuột), và **ăn đòn thì
+    rơi** — không có vế sau thì bám tường thành chỗ trốn an toàn giữa trận.
+    `cho_doi()` chặn `lan` / `danh`: lăn giữa lưng chừng tường là rơi xuyên sàn.
 - **Bấm F đi qua `NguoiChoi.TRANG_THAI_TUONG_TAC`** — danh sách CHO PHÉP, nên
   trạng thái mới mặc định là không tương tác được. Chiều an toàn: vũng hồn mọc
   ngay dưới cái xác, và nếu xác bấm F được thì chết chẳng mất gì.
@@ -399,6 +423,9 @@ tools/           kiểm tra + sinh dữ liệu
   nút "cảm giác combat chung nhanh/chậm cỡ nào" để dò nhanh trong lúc chơi;
   tinh chỉnh RIÊNG từng đòn vẫn đi qua `tools/do_nhip_don.tscn` +
   `data/moveset.csv` như cũ.
+  `toc_do_leo` (0.5–6.0 m/s) là tốc độ LEO TƯỜNG. Clip leo tự co giãn theo
+  nó (`ThanMoHinh._toc_leo()`), nên kéo lên thì tay chân khua nhanh lên theo —
+  không có cảnh trèo vèo vèo mà tay khua thong thả.
   `he_so_toc_do_lan` chỉ đổi tốc độ TRƯỢT (mét/giây) của cú lăn, tách khỏi
   THỜI LƯỢNG (`SoulsLike.thoi_gian_lan`, cũng @export, chỉnh cạnh đó qua node
   `SoulsLike`). Nhân tiện sửa luôn một chỗ trước đây không ai để ý: clip
@@ -416,18 +443,20 @@ tools/           kiểm tra + sinh dữ liệu
       vào (né/đỡ/phản đòn của NÓ, không phải của mình).
   `ten_chu` bỏ trống ở cả hai dòng thì `ten_hien()` hiện thẳng tên, không qua
   cơ chế □ — hợp lý cho một món đồ nghề debug, không phải nội dung game thật.
-- **Trụ leo và tường thấp — MỘT prop thật, MỘT chỉ để soi.**
-  `_dung_tuong_thap()` là tường jump được thật: cao 0.9m, dưới hẳn đỉnh vòng
-  nhảy của `NguoiChoi` (~1.33m), nên chạy tới bấm nhảy là qua, không cần lấy
-  đà — cơ chế nhảy đã có sẵn (state `nhay`).
-  `_dung_tru_leo()` **KHÔNG bấm được gì** — game chưa có cơ chế leo trèo. Chỉ
-  có hai clip `leo_len.fbx`/`leo_xuong.fbx` đã tải về và đo xong (xem
-  `assets/model/dong_tac/chua_dung/DOC.md`: vòng lặp leo thang tại chỗ, 2.00s)
-  nhưng KHÔNG state nào tên `leo`. Dựng cơ chế thật cần một `Area3D` đánh dấu
-  trục leo + state mới khoá di chuyển vào trục đó + camera ngừng xoay tự do
-  lúc leo (xem `DOC_TRUOC.md` cùng thư mục) — một tính năng riêng, chưa ai
-  yêu cầu làm. Trụ chỉ để có vật LÀM MỐC TỈ LỆ khi soi hai clip đó bằng
-  `tools/soi_dong_tac.tscn` / `tools/chup_tu_the.tscn`.
+- **Bốn thứ để thử chiều CAO, và chúng cố ý cao khác nhau.** Đặt cạnh nhau thì
+  trả lời được "ngưỡng có đúng chỗ không" mà không phải mở code ra đọc:
+
+  | Thứ | Cao | Để làm gì |
+  |---|---|---|
+  | `ThapLeo` | 5.2m, mặt trên 4×4m | leo được, và có nóc để thử cú TRÈO QUA MÉP |
+  | bệ cạnh tháp | 1.2m | DƯỚI `CAO_LEO_TOI_THIEU` ⇒ không bám, bước lên là xong |
+  | `TuongThap` | 0.9m | dựng ra để NHẢY qua (dưới đỉnh vòng nhảy ~1.33m) |
+  | `TuongBien` | 4m | nhóm `khong_leo` ⇒ không trèo ra ngoài map được |
+
+  `ThapLeo` trước đây là một cây trụ gỗ mảnh (bán kính 0.35m) làm mốc tỉ lệ khi
+  soi clip, vì hồi đó chưa có cơ chế leo. Trụ mảnh KHÔNG leo được cho ra hồn:
+  mặt cong nên pháp tuyến đổi liên tục, và đỉnh chỉ rộng 0.7m — trèo lên xong
+  không đứng nổi. Đổi sang khối vuông là vì vậy.
 
 ## Giao diện
 

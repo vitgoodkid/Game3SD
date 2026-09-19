@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://deddxpx04d5u0"
-path="res://.godot/imported/leo_xuong.fbx-89d5707e559ee2e95b4bb32cb5833b81.scn"
+uid="uid://bceoojufsfop"
+path="res://.godot/imported/leo_xuong.fbx-e04ca4e70eb6e7fe8a3ceb8a917f6b40.scn"
 
 [deps]
 
-source_file="res://assets/model/dong_tac/chua_dung/leo_xuong.fbx"
-dest_files=["res://.godot/imported/leo_xuong.fbx-89d5707e559ee2e95b4bb32cb5833b81.scn"]
+source_file="res://assets/model/dong_tac/leo_xuong.fbx"
+dest_files=["res://.godot/imported/leo_xuong.fbx-e04ca4e70eb6e7fe8a3ceb8a917f6b40.scn"]
 
 [params]
 

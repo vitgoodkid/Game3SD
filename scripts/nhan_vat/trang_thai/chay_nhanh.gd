@@ -19,6 +19,8 @@ func chay(delta: float) -> void:
 	if String(tai["muc"]) == "qua_tai":
 		di("di")
 		return
+	if _bam_tuong():
+		return
 
 	# Tiêu theo delta chứ không theo mốc. Không đụng tới mốc trễ hồi: state này
 	# đã khai cho_hoi_the_luc() = false, nên chừng nào còn chạy là còn không

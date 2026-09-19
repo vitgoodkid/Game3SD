@@ -12,6 +12,8 @@ func chay(delta: float) -> void:
 	if nc.dang_giu_chay() and nc.du_the_luc():
 		di("chay_nhanh")
 		return
+	if _bam_tuong():
+		return
 
 	var hs := float(Tui.muc_tai()["toc_do"])
 	nc.dat_toc_ngang(nc.huong_nhap, nc.toc_do_di * hs)

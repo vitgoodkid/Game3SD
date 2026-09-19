@@ -79,6 +79,9 @@ const DONG_TAC := {
 	"trung_don": "trung_don", "vo_the": "vo_the",
 	"chet": "chet", "uong": "uong", "ket_lieu": "ket_lieu",
 	"rut_vu_khi": "rut_vu_khi", "cat_vu_khi": "cat_vu_khi",
+	# Mặc định của `leo` là dáng LEO LÊN. Leo xuống có clip riêng, chọn theo
+	# `TrangThaiLeo.ten_dien()` ở `_dong_tac_cho()` — khuôn giống `chet_*`.
+	"leo": "leo_len",
 }
 ## Động tác nào phải LẶP.
 ##
@@ -86,7 +89,12 @@ const DONG_TAC := {
 ## một vòng rồi ĐỨNG CHẾT ở khung cuối. Không lỗi nào nổ ra — nhân vật chỉ đơ
 ## ra giữa lúc đang đi, và trông y như game bị treo.
 const DONG_TAC_LAP := ["dung", "di", "di_lui", "di_trai", "di_phai",
-	"chay", "chay_lui", "chay_trai", "chay_phai", "do_don"]
+	"chay", "chay_lui", "chay_trai", "chay_phai", "do_don",
+	# Hai clip leo là VÒNG LẶP TẠI CHỖ (2.00s, hông đứng yên ở 0.69m — đo bằng
+	# `tools/do_nhip_don.tscn`). Đúng khuôn thang: code đẩy người lên, clip chỉ
+	# quay vòng tay chân. Không lặp thì leo quá 2 giây là đứng chết ở khung
+	# cuối trong khi người vẫn đang trôi lên.
+	"leo_len", "leo_xuong"]
 
 ## Đòn đánh tra theo TÊN ĐÒN chứ không theo trạng thái — bảy loại đòn dùng
 ## chung một state `danh`, mà chúng phải nhìn khác nhau.
@@ -635,6 +643,8 @@ func _toc_do(trang_thai: String, kieu: String, dt: String) -> float:
 		return _toc_theo_van_toc(dt)
 	if trang_thai == "lan":
 		return _toc_lan(dt)
+	if trang_thai == "leo":
+		return _toc_leo()
 	if trang_thai != "danh":
 		return 1.0
 	# Đo trên clip SẮP phát, không trên clip đang phát: khung hình đổi clip thì
@@ -699,6 +709,33 @@ func _toc_lan(dt: String) -> float:
 	if a == null or a.length < 0.05:
 		return 1.0
 	return clampf(a.length / maxf(SoulsLike.thoi_gian_lan, 0.05), 0.25, 4.0)
+
+## Clip leo tự nó "trèo" bao nhiêu mét mỗi giây trên màn hình.
+##
+## KHÔNG đo được, và đó là chỗ khác hẳn mọi clip khác trong file này. Clip leo
+## là vòng lặp TẠI CHỖ: hông đứng yên ở 0.69m suốt 2.00s, nên không có quãng
+## đường nào để đo ra tốc độ như `_khu_troi()` làm với clip đi/chạy. Con số
+## dưới đây là ƯỚC LƯỢNG: một vòng 2.00s của dáng leo thang bắt được khoảng
+## một thân người, tức ~1.7m, ra ~0.85 m/s.
+##
+## Sai số ở đây chỉ làm tay chân trượt nhanh/chậm hơn thanh ngang một chút,
+## không đụng tới luật nào. Thấy trượt thì chỉnh thẳng số này.
+const TOC_CLIP_LEO := 0.85
+
+## Tốc độ phát clip leo, bám theo VẬN TỐC DỌC THẬT của thân vật lý.
+##
+## Cùng khuôn với `_toc_theo_van_toc()` của clip đi/chạy, và có cùng một lý do:
+## `NguoiChoi.toc_do_leo` chỉnh sống được (mục "CHỈNH SỐNG"), nên phát nguyên
+## tốc là kéo tốc độ leo lên gấp đôi mà tay chân vẫn khua y như cũ.
+##
+## Treo im một chỗ thì vận tốc bằng 0 ⇒ hệ số 0 ⇒ clip đứng hình ở đúng tư thế
+## đang bám. Đó là dáng "treo" miễn phí, không cần clip thứ ba.
+func _toc_leo() -> float:
+	var nc := get_parent()
+	if nc == null or not (nc is CharacterBody3D):
+		return 1.0
+	return clampf(absf((nc as CharacterBody3D).velocity.y) / TOC_CLIP_LEO,
+		0.0, 4.0)
 
 ## Hệ số phát cho clip đi/chạy, tính từ vận tốc thật của thân vật lý.
 ##
@@ -768,6 +805,14 @@ func _dong_tac_cho(trang_thai: String, kieu: String) -> String:
 		var nga := _co("chet_" + kieu)
 		if nga != "":
 			return nga
+	# Leo lên và leo xuống là HAI clip, chọn theo hướng đang đi
+	# (`TrangThaiLeo.ten_dien()` trả "len" / "xuong"). Treo im một chỗ thì
+	# `ten_dien()` giữ nguyên hướng cuối, còn việc đứng hình là do tốc độ phát
+	# rơi về 0 — xem `_toc_leo()`.
+	if trang_thai == "leo" and kieu != "":
+		var bac := _co("leo_" + kieu)
+		if bac != "":
+			return bac
 	if trang_thai == "vo_the" and _co("vo_the") == "":
 		return _co("trung_don")
 	if trang_thai == "di" or trang_thai == "chay_nhanh":
