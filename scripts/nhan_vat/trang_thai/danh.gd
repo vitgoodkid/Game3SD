@@ -162,9 +162,18 @@ func chay(delta: float) -> void:
 ## vung tay lên rồi giữ ở ĐỈNH; người chơi thấy ngay là mình đang nạp, và đối
 ## phương cũng thấy, nên nạp có rủi ro đọc được.
 func _chay_nap(delta: float, t_vung: float) -> void:
-	_t_nap += delta
 	if t < t_vung:
 		return          # còn đang vung tay lên, để timeline chạy bình thường
+	# ĐẾM TỪ LÚC TỚI ĐỈNH, không đếm từ lúc bấm.
+	#
+	# Cú vung tay lên không phải là nạp — người chơi chưa giữ được gì trong
+	# quãng đó, nó chạy hết bằng ấy giây dù có bấm hay không. Đếm cả nó vào
+	# `T_NAP_TOI_DA` là lấy ngân sách nạp đi trả cho phần không ai điều khiển
+	# được, và vũ khí nào vung tay càng lâu thì càng nạp được ít. Với 刃 —
+	# vung tay 0.85s trên ngân sách 1.1s — chỉ còn 0.25s để giữ, tức là cú
+	# gồng gần như không tồn tại. `muc_nap()` cũng đọc con số này, nên đếm sai
+	# thì thanh báo nạp đầy sẵn ngay khi vừa tới đỉnh.
+	_t_nap += delta
 	may.t = t_vung      # tới đỉnh thì đóng băng, giữ nguyên đó
 	_giu_dinh = true
 	if nc.dang_giu_danh() and _t_nap < T_NAP_TOI_DA:

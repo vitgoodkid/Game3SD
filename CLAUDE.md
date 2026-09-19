@@ -50,7 +50,7 @@ Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.
 # kiểm tầng luật — 197 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + combat + giao diện — 342 test, nạp phòng thử thật:
+# kiểm vòng lặp souls + combat + giao diện — 345 test, nạp phòng thử thật:
 # đánh, thể lực, cam kết đòn, i-frame, siêu giáp, đòn phản đỡ, vỡ đỡ, đỡ phản
 # hai bậc, bộ nút (Space lăn/nhảy, Shift chạy), đòn nhảy,
 # state machine quái, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại,
@@ -75,6 +75,10 @@ godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600
 
 # kiểm CSV, KHÔNG cần Godot — chạy được ở bất cứ đâu có Python
 python tools/kiem_csv.py
+
+# ĐO NHỊP ĐÒN TỪ CLIP — sinh ra mấy con số của moveset.csv. Chạy sau mỗi lần
+# đổi file .fbx trong assets/model/dong_tac/, rồi chép bảng nó in ra.
+godot --headless --path . tools/do_nhip_don.tscn
 
 # CHỤP ẢNH giao diện. Không chạy được với --headless (headless không vẽ gì).
 # Chín ảnh ra user://: hud, hud lúc vơi, menu tạm dừng, tuỳ chọn, điều khiển,
@@ -180,14 +184,19 @@ tools/           kiểm tra + sinh dữ liệu
   - **Chuột trái**: nhả trước `NguoiChoi.NGUONG_GIU_NANG` (0.18s) là đòn nhẹ,
     giữ lâu hơn là đòn nặng (giữ tiếp nữa thành đòn nạp). Không còn action
     `don_nang` trong input map.
-  - **Space** (`lan_nhay`): nhả trước `NguoiChoi.NGUONG_GIU_NHAY` (0.16s) là
-    **lăn**, giữ lâu hơn là **nhảy**. Không còn action `nhay` trong input map —
-    `_dem["nhay"]` do `NguoiChoi._process()` nạp vào khi cú giữ chạm ngưỡng.
+  - **Space** (`lan_nhay`): bấm HAI lần trong `NguoiChoi.NGUONG_BAM_DOI`
+    (0.22s) là **lăn**, bấm một lần là **nhảy**. Không còn action `nhay` trong
+    input map — `_dem["nhay"]` do `NguoiChoi._process()` nạp vào khi hết cửa sổ
+    bấm đôi mà không có cú bấm thứ hai.
 
-  Cái giá của cả hai là như nhau và không tránh được: hành động "gõ nhanh" chỉ
-  bắn ra lúc NHẢ. Hành động "giữ" thì bắn ngay lúc chạm ngưỡng, đừng đổi sang
-  đợi nhả — đợi nhả thì nhảy trễ theo đúng thời gian giữ nút và né đòn quét
-  không kịp.
+  Cái giá của chuột trái không tránh được: đòn nhẹ chỉ bắn ra lúc NHẢ, còn đòn
+  nặng bắn ngay lúc chạm ngưỡng giữ. Đừng đổi đòn nặng sang đợi nhả — đợi nhả
+  thì nó trễ theo đúng thời gian giữ nút.
+
+  Cái giá của Space nằm ở chiều ngược lại: **lăn** bắn ra ngay ở cú bấm thứ
+  hai, còn **nhảy** phải đợi hết cửa sổ mới dám gọi là nhảy — trước đó chưa ai
+  biết người chơi có bấm tiếp không. Nhảy vì thế trễ 0.22s, và đó là đánh đổi
+  có chủ ý: lăn là thứ cứu mạng, nhảy thì không.
 - **Shift giữ là chạy** (`chay_nhanh`). Nút giữ thuần, không ngưỡng, không chia
   sẻ với ai — nên chạy là thứ duy nhất trong bộ điều khiển này không có độ trễ.
 - **E (hoặc chuột phải) là đỡ phản, HAI BẬC lồng nhau**: `cua_so_perfect`
@@ -229,8 +238,9 @@ tools/           kiểm tra + sinh dữ liệu
   tắt đi là vũ khí nặng thành bất khả xâm phạm và trận đánh mất hết rủi ro.
 - **Bốn con số quyết định** (mục 5.2 của bản yêu cầu), có test canh khoảng:
   i-frame lăn 0.30–0.40s · **trễ hồi** thể lực 0.25–0.60s · hồi đòn nặng
-  0.45–1.2s tuỳ vũ khí · `HS_SAT_THUONG_NGUOI_CHOI` (quái thường chết trong
-  4–8 đòn nhẹ). Con số thứ hai từng ghi là "khựng 0.6–1.0s tính mỗi lần tiêu"
+  0.45–1.4s tuỳ vũ khí · `HS_SAT_THUONG_NGUOI_CHOI` (quái thường chết trong
+  4–8 đòn nhẹ). Trần thứ ba nới từ 1.2 lên 1.4 khi nhịp đòn chuyển sang đo từ
+  clip: 刃 là cây nặng nhất game và khung thu tay THẬT của nó là 1.33s. Con số thứ hai từng ghi là "khựng 0.6–1.0s tính mỗi lần tiêu"
   và cách tính đó chính là chỗ làm combat khựng cứng — xem mục Thể lực ở trên.
 - **Khi bản yêu cầu và Elden Ring đá nhau thì CẢM GIÁC CHƠI thắng cả hai.**
   Chủ dự án chốt như vậy. `PROMPT_3D.md` mục 5.1/5.2 đã sửa theo con số thật;
@@ -266,16 +276,62 @@ tools/           kiểm tra + sinh dữ liệu
   khác. Đo được, không phải đoán: clip kiếm hai tay giữ CẢ HAI bàn tay trên
   chuôi, nên vector tay phải → tay trái CHÍNH LÀ trục thanh kiếm. Rồi chạy
   `tools/chup_tu_the.tscn` và NHÌN.
+- **ANIMATION LÀM CHỦ, CODE CHẠY THEO.** Chủ dự án chốt đổi chiều ở mốc này.
+  Trước đây `moveset.csv` khai nhịp rồi `ThanMoHinh._toc_do()` co giãn clip cho
+  vừa — cú Bổ bị ép chạy nhanh **2.25 lần**, cú đâm lướt 1.32 lần, mỗi đòn một
+  hệ số — nên động tác đọc ra như tua nhanh mà không con số nào trong repo nói
+  ra điều đó. Giờ ngược lại: nhịp trong CSV được **đo ra từ clip**.
+  - Đo bằng `tools/do_nhip_don.tscn`, **đừng gõ tay**. Nó quét vận tốc tâm lưỡi
+    kiếm dọc clip, tìm quãng lưỡi bổ TỚI TRƯỚC / XUỐNG DƯỚI qua tầm cao thân
+    quái, rồi in ra đúng bốn cột `t_vung` / `t_dam_tu` / `t_dam_den` / `t_hoi`
+    cộng `tam_voi`. Đổi một file `.fbx` thì chạy lại và chép đè.
+  - **Luật sở hữu clip:** vũ khí nào có clip của chính nó — cột `animation` của
+    `moveset.csv` trỏ tới một file có thật — thì clip phát nguyên tốc 1.0×.
+    Vũ khí đang ĐI MƯỢN clip của vũ khí khác thì vẫn bị co giãn như cũ, vì nó
+    có nhịp riêng mà không có dáng riêng. Hiện cả `assets/model/dong_tac/` là
+    clip great sword, tức là của 刃; năm cây kia đang mượn. Thả
+    `kiem_nhe_1.fbx` vào thư mục là 剑 tự đứng ra khỏi diện đi mượn, **không
+    sửa dòng `.gd` nào** — và đó cũng là luật 1: code không biết vũ khí nào tồn
+    tại.
+  - **`ThanMoHinh.CAT_CHET` — phần chết bị NHẢY QUA.** Clip mua sẵn dựng cho
+    phim: clip Bổ nằm chết dí ở đáy cú bổ hơn nửa giây, rồi khép vòng thêm một
+    quãng ở dáng đứng. Nhảy qua chứ không cắt cụt tại đó — đoạn thu tay nằm SAU
+    quãng chết, mà thu tay chính là khung hồi đòn, chỗ đối phương phản công.
+    Mốc trong bảng này tính bằng giây CỦA CLIP GỐC, còn CSV ghi theo giây ĐÃ
+    CẮT; `_clip_tu_don()` là chỗ đổi qua lại.
+  - Clip nào có quãng cắt thì **bám hẳn vào đồng hồ của state mỗi khung** —
+    thả tự chạy là nó bò thẳng vào đoạn nằm im.
+  - Lăn, rút/cất vũ khí cũng lấy số từ clip: `thoi_gian_lan` 0.62 → **1.17s**,
+    `T_RUT_VU_KHI` 0.55 → 0.53s, `T_CAT_VU_KHI` 0.65 → **0.33s**.
+    **Cái chưa theo clip là mấy cửa sổ CHỒNG LÊN động tác** — `iframe_lan`,
+    `cua_so_do_phan`, `cua_so_perfect`, `hoi_lan`. Chúng là con số thiết kế,
+    không phải độ dài của một file. Hệ quả phải biết: cú lăn dài gần gấp đôi mà
+    i-frame giữ nguyên 0.35s, nên phần bất tử tụt từ 56% xuống 30% quãng lăn —
+    lăn cam kết nặng hơn hẳn. Đó là thứ phải chơi thử rồi mới chỉnh.
+- **Cú NẠP dùng CHUNG clip với đòn nặng, không có clip riêng.** Nạp không phải
+  một động tác khác — nó là ĐÚNG cú vung ấy bị giữ lại ở đỉnh. Cho nó clip
+  riêng là bắt người chơi xem hai động tác cho một nhát chém: clip giữ chạy
+  xong, rồi clip vung chạy LẠI TỪ ĐẦU và giơ kiếm lên lần thứ hai, trong khi
+  hộp đòn đã bật từ đầu cú thứ hai. Đã hỏng đúng vậy — `nap.fbx` hoá ra là một
+  clip ĐỨNG THỞ (tay quanh quẩn ở độ cao nghỉ 0.70m suốt 3.5s, kiếm không hề
+  giơ lên), nên gồng đòn nặng là thấy nhân vật đứng thở. `DONG_TAC_DON["nap"]`
+  giờ trỏ vào `"nang"`, và `_ghim_clip()` ghim con trỏ clip lại đúng chỗ
+  `may.t` đang đứng.
+  **`_t_nap` đếm từ lúc TỚI ĐỈNH, không từ lúc bấm** — cú vung tay lên không
+  phải là nạp, và tính nó vào `T_NAP_TOI_DA` thì vũ khí nào vung càng lâu càng
+  nạp được ít. Với 刃 (vung 0.89s trên ngân sách 1.1s) cú gồng gần như không
+  tồn tại.
 - **`than_khoi.gd` thuần là chỗ để NHÌN — giữ cho đúng như vậy.** Đừng gắn hộp
   đòn (hay bất cứ thứ gì tầng luật đọc) vào khớp bị `dien()` xoay. Đã dính một
   lần: hộp đòn bám theo cánh tay, và một thay đổi thuần trang trí làm cả game
   hết trúng đòn mà không báo lỗi gì. Xem mục bẫy cuối `TIEN_DO.md`.
 
 - **Một cú đánh có NĂM ĐOẠN** (`TrangThaiDanh.giai_doan()`) và bốn cờ
-  `bi_khoa()` / `cho_noi()` / `cho_ne()` / `cho_di()`. Mốc lấy từ `moveset.csv`
-  chứ không từ Call Method Track của animation: gắn mốc vào file `.fbx` là
-  chuyển cân bằng game sang cho một file animation giữ, và đổi clip là lệch cả
-  bảng số mà không ai thấy.
+  `bi_khoa()` / `cho_noi()` / `cho_ne()` / `cho_di()`. Mốc lấy từ `moveset.csv`,
+  và **`moveset.csv` thì ĐO RA TỪ CLIP** — xem mục "Animation làm chủ" bên dưới.
+  Vẫn không gắn mốc vào Call Method Track của file `.fbx`: chỗ giữ sự thật là
+  CSV, vì nó đọc được, sửa được và có test canh; animation là chỗ số ấy được
+  đo ra, không phải chỗ nó được cất.
   **`ti_le_cua_so_noi` (0.40) phải NHỎ HƠN `ti_le_cua_so_thu` (0.65)** — quãng
   giữa hai mốc là chỗ chỉ nối được combo chứ chưa né được, và nó là cả quyết
   định "đánh tiếp hay rút ra". Bằng nhau thì lăn luôn thắng vì nó an toàn hơn.

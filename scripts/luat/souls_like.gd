@@ -24,7 +24,18 @@ extends Node
 ## i-frame: lăn xong đứng ì gấp đôi thì vẫn ăn đòn thứ hai của chuỗi.
 const HOI_LAN_TAI := {"nhe": 1.0, "vua": 1.0, "nang": 2.0, "qua_tai": 3.0}
 ## Tổng thời gian một cú lăn (gồm cả phần đã hết bất tử nhưng chưa đứng dậy).
-@export var thoi_gian_lan := 0.62
+##
+## ĐO TỪ CLIP `lan.fbx`, không phải gõ tay — `tools/do_nhip_don.tscn` quét cả
+## bộ xương dọc clip và thấy nó động từ giây 0.00 tới giây 1.17, không có
+## quãng chết nào để cắt. Cú lăn này là NGUYÊN clip.
+##
+## Con số cũ là 0.62s, tức là clip bị ép chạy gần gấp đôi tốc độ. Đó là chỗ
+## chủ dự án chốt đổi chiều: animation làm chủ, code chạy theo.
+##
+## HỆ QUẢ PHẢI BIẾT: `iframe_lan` không đổi theo, nên phần bất tử của cú lăn
+## tụt từ 56% xuống 30% quãng lăn. Cú lăn cam kết nặng hơn hẳn — đó là thứ
+## phải chơi thử rồi mới chỉnh, không phải thứ suy ra được từ bàn phím.
+@export var thoi_gian_lan := 1.17
 
 ## Hành động xong bao lâu thì thể lực bắt đầu hồi lại.
 ##

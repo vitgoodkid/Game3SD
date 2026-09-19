@@ -56,8 +56,12 @@ const NGUONG_GIU_NANG := 0.18
 ##
 ## Muốn bỏ hẳn phần thưởng tốc độ thì để `TOC_DO_KHI_CAT` về 1.0; cơ chế vẫn
 ## chạy, chỉ là không ai buồn dùng nữa.
-const T_RUT_VU_KHI := 0.55
-const T_CAT_VU_KHI := 0.65
+## Đo từ clip (`tools/do_nhip_don.tscn`): `rut_vu_khi.fbx` động từ 0.11s tới
+## 0.64s, `cat_vu_khi.fbx` từ 0.01s tới 0.34s. Hai đầu clip đứng im nên không
+## tính vào — để nguyên thì bấm R xong nhân vật đứng đơ một nhịp trước khi tay
+## bắt đầu với ra sau lưng.
+const T_RUT_VU_KHI := 0.53
+const T_CAT_VU_KHI := 0.33
 ## Cất kiếm rồi thì đi và chạy nhanh hơn bấy nhiêu lần.
 const TOC_DO_KHI_CAT := 1.15
 ## Và chạy TỐN ÍT thể lực hơn bấy nhiêu lần.
@@ -237,8 +241,12 @@ func _dien_hinh(delta: float) -> void:
 	# cách chuyển. Gọi mỗi khung cho rẻ: bên kia tự bỏ qua nếu không đổi.
 	if than.has_method("dat_da_rut"):
 		than.call("dat_da_rut", da_rut)
+	# Mốc thời gian THÔ của state, chưa quy về 0→1. Phần nhìn có animation thật
+	# cần đúng con số này để đặt clip vào chỗ máy trạng thái đang đứng — `td`
+	# đã bị chuẩn hoá nên không dựng lại được (xem `ThanMoHinh._ghim_clip()`).
+	var t_don := may.hien_tai.t if may.hien_tai != null else 0.0
 	than.call("dien", may.ten_hien_tai, td, huong_nhap != Vector3.ZERO, delta,
-		kieu, nap)
+		kieu, nap, t_don)
 
 func _unhandled_input(su_kien: InputEvent) -> void:
 	# Ghi đệm phím TRƯỚC khi đưa cho state: state đang bận hồi đòn vẫn phải

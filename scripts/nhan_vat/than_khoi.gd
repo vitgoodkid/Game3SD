@@ -201,8 +201,11 @@ func _cap_nhat_khien() -> void:
 
 ## Không có animation thật thì xoay khớp bằng tay. Xấu, nhưng đủ để ĐỌC được
 ## đòn đánh — mà đọc được đòn mới là thứ quyết định ở mốc 2.
+## `t_don` chỉ có nghĩa với thân có animation thật (`ThanMoHinh._ghim_clip()`).
+## Thân khối hộp vẽ dáng bằng `tien_do` nên không dùng tới, nhưng vẫn phải khai
+## đủ tham số: `NguoiChoi._dien_hinh()` gọi bằng `call()` chung cho cả hai thân.
 func dien(trang_thai: String, tien_do: float, dang_di: bool, delta: float,
-		kieu: String = "", muc_nap: float = 0.0) -> void:
+		kieu: String = "", muc_nap: float = 0.0, _t_don: float = 0.0) -> void:
 	_muc_nap = muc_nap
 	if kieu == "nap":
 		_nhip_nap += delta * 34.0

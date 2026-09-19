@@ -86,15 +86,50 @@ const DONG_TAC := {
 ## một vòng rồi ĐỨNG CHẾT ở khung cuối. Không lỗi nào nổ ra — nhân vật chỉ đơ
 ## ra giữa lúc đang đi, và trông y như game bị treo.
 const DONG_TAC_LAP := ["dung", "di", "di_lui", "di_trai", "di_phai",
-	"chay", "chay_lui", "chay_trai", "chay_phai", "do_don", "nap"]
+	"chay", "chay_lui", "chay_trai", "chay_phai", "do_don"]
 
 ## Đòn đánh tra theo TÊN ĐÒN chứ không theo trạng thái — bảy loại đòn dùng
 ## chung một state `danh`, mà chúng phải nhìn khác nhau.
+## **`nap` dùng CHUNG clip với `nang`, không có clip riêng.** Cú nạp không
+## phải một động tác khác — nó là ĐÚNG cú vung ấy, bị giữ lại ở đỉnh. Cho nó
+## một clip riêng là bắt người chơi xem HAI động tác cho MỘT nhát chém: clip
+## giữ chạy xong, rồi clip vung chạy LẠI TỪ ĐẦU và giơ kiếm lên lần thứ hai.
+##
+## Đã hỏng đúng như vậy: `nap.fbx` vốn là một clip ĐỨNG THỞ — đo bằng
+## `tools/soi_dong_tac.tscn`, tay phải quanh quẩn ở độ cao NGHỈ 0.70–0.80m
+## suốt 3.5 giây, thanh kiếm không hề giơ lên. Nên gồng đòn nặng là thấy nhân
+## vật đứng thở, nhả ra mới thấy vung. Xem `_ghim_clip()`.
 const DONG_TAC_DON := {
 	"nhe_1": "danh_1", "nhe_2": "danh_2", "nhe_3": "danh_3",
-	"nang": "nang", "nang_nap": "nang", "nap": "nap",
+	"nang": "nang", "nang_nap": "nang", "nap": "nang",
 	"chay": "danh_chay", "nhay": "danh_nhay", "nhay_nang": "danh_nhay",
 	"phan_do": "phan_do",
+}
+
+## QUÃNG CHẾT TRONG CLIP — phần bị NHẢY QUA khi phát.
+##
+## Clip mua sẵn dựng cho phim chứ không cho game, nên giữa chừng chúng nằm
+## chờ. Clip Bổ nằm chết dí ở đáy cú bổ **0.77 giây** trước khi thu tay về, và
+## nếu để nguyên thì mỗi nhát Bổ người chơi đứng hình gần một nhịp thở.
+##
+## Nhảy qua chứ KHÔNG cắt cụt ở đó: đoạn thu tay về thế đứng nằm SAU quãng
+## chết, mà đoạn thu tay chính là khung hồi đòn — chỗ đối phương phản đòn.
+## Cắt cụt là mất luôn khung hồi, và đòn nặng thành không có cái giá nào.
+##
+## Đo bằng `tools/do_nhip_don.tscn`, đừng gõ tay: nó quét vận tốc tâm lưỡi
+## kiếm dọc clip và in ra đúng bảng này. Đổi một file `.fbx` thì chạy lại.
+##
+## Mốc tính bằng giây CỦA CLIP GỐC. `moveset.csv` thì ghi theo giây ĐÃ CẮT —
+## hai hệ quy chiếu khác nhau, `_clip_tu_don()` là chỗ đổi qua lại.
+const CAT_CHET := {
+	# Quãng đầu là chỗ clip tự GIỮ Ở ĐỈNH giữa cú giơ lên và cú bổ xuống.
+	# Nó gánh hai việc: đánh thường thì nhảy qua, còn gồng thì ghim vào đúng
+	# đó (`moveset.csv` khai `t_vung` = 0.89 cho dòng này).
+	# Quãng sau là chỗ thanh kiếm nằm chết dí ở đáy cú bổ hơn nửa giây.
+	# Quãng ba là đuôi clip: lưỡi kiếm đã về đúng chỗ nó đứng ở khung đầu và
+	# đã dừng hẳn, phần còn lại chỉ là clip khép vòng cho ghép lặp được.
+	"nang": [[0.89, 1.17], [2.90, 3.43], [4.24, 4.80]],
+	"phan_do": [[1.70, 1.73]],
 }
 
 ## Hạ tay từ tư thế chữ T xuống cạnh sườn, tính bằng độ.
@@ -568,6 +603,17 @@ func _tim_may(n: Node) -> AnimationPlayer:
 			return k
 	return null
 
+## Tên đòn trong CSV cho một `kieu` của phần nhìn.
+##
+## Cú NẠP không có dòng riêng trong `moveset.csv` — nó là đòn `nang` đang bị
+## giữ lại. Không quy về `nang` thì `VocabDB.don_cua()` không tìm thấy "nap"
+## và **âm thầm trả về dòng `nhe_1`**, nên clip giữ bị co giãn theo nhịp của
+## đòn NHẸ: với 刃 là nhanh gấp 2.3 lần, với 拳 thì đụng trần 4.0 lần và clip
+## chạy hết một vòng rồi lặp lại ngay giữa lúc người chơi còn đang gồng.
+## Không lỗi nào nổ ra — chỉ là cú nạp tự vung thêm một nhát.
+func _don_csv(kieu: String) -> String:
+	return "nang" if kieu == "nap" else kieu
+
 ## Phát đòn đánh NHANH/CHẬM bao nhiêu lần để khớp `moveset.csv`.
 ##
 ## Đây là thứ quyết định "mượt" hơn cả số lượng clip, và cũng là chỗ dễ sai
@@ -581,19 +627,36 @@ func _tim_may(n: Node) -> AnimationPlayer:
 ##
 ## Kéo giãn clip cho vừa khung thời gian của CSV thì lưỡi kiếm và hộp đòn đi
 ## cùng nhau. CSV vẫn là nguồn sự thật; animation bám theo nó.
-func _toc_do(trang_thai: String, kieu: String, _dt: String) -> float:
+func _toc_do(trang_thai: String, kieu: String, dt: String) -> float:
 	if _may_dt == null:
 		return 1.0
 	# Đi / chạy khớp theo VẬN TỐC THẬT, không theo CSV. Xem TOC_CLIP_MAX.
 	if trang_thai == "di" or trang_thai == "chay_nhanh":
-		return _toc_theo_van_toc(_dt)
+		return _toc_theo_van_toc(dt)
 	if trang_thai != "danh":
 		return 1.0
-	var a := _may_dt.get_animation(_dt_dang_phat)
+	# Đo trên clip SẮP phát, không trên clip đang phát: khung hình đổi clip thì
+	# hai cái đó khác nhau, và lấy nhầm cái cũ là hệ số sai đúng một khung —
+	# vừa đủ để cú vung giật một nhát lúc bắt đầu.
+	var a := _may_dt.get_animation(dt)
 	if a == null or a.length < 0.05:
 		return 1.0
-	var m := VocabDB.don_cua(Tui.moveset_dang_dung(), kieu)
+	var m := VocabDB.don_cua(Tui.moveset_dang_dung(), _don_csv(kieu))
 	if m.is_empty():
+		return 1.0
+	# VŨ KHÍ SỞ HỮU CLIP THÌ KHÔNG CO GIÃN GÌ HẾT.
+	#
+	# Đây là chiều đi đúng, và nó ngược hẳn với bản trước. Trước đây CSV khai
+	# nhịp rồi clip bị kéo cho vừa — cú Bổ bị ép chạy nhanh 2.25 lần, cú đâm
+	# lướt 1.32 lần, mỗi đòn một hệ số — nên động tác đọc ra như tua nhanh mà
+	# không ai nhìn con số mà biết được. Giờ nhịp trong `moveset.csv` ĐƯỢC ĐO
+	# RA TỪ clip (`tools/do_nhip_don.tscn`), nên hai bên vốn đã khớp, và việc
+	# phải làm là để yên.
+	#
+	# Chỉ vũ khí ĐI MƯỢN clip của vũ khí khác mới còn bị co giãn: nó có nhịp
+	# riêng mà không có dáng riêng, nên đành kéo dáng của người khác cho vừa
+	# nhịp của mình. Xem `_clip_don()`.
+	if _co(String(m.get("animation", ""))) == dt:
 		return 1.0
 	var lau := float(m.get("t_dam_den", 0.3)) + float(m.get("t_hoi", 0.5))
 	if lau < 0.05:
@@ -631,12 +694,31 @@ func _co(goc: String) -> String:
 		return TIEN_TO_KVK + goc
 	return goc if _may_dt.has_animation(goc) else ""
 
+## Clip cho một đòn. **Cột `animation` của `moveset.csv` nói trước.**
+##
+## Đây là chỗ thi hành luật "vũ khí nào CÓ clip của chính nó thì clip làm chủ".
+## Vũ khí khai một tên clip có file thật thì dùng đúng clip đó và phát nguyên
+## tốc; khai một tên chưa có file thì rơi về bộ clip chung và bị co giãn cho
+## vừa nhịp của nó (xem `_toc_do()`).
+##
+## Vì sao phải qua CSV chứ không tra bảng trong code: cả `assets/model/dong_tac/`
+## hiện là clip great sword, tức là clip của MỘT vũ khí. Năm vũ khí kia đang
+## mượn. Thả `kiem_nhe_1.fbx` vào thư mục là 剑 tự đứng ra khỏi diện đi mượn,
+## không phải sửa dòng `.gd` nào — và đó cũng là luật 1 của dự án: code không
+## được biết vũ khí nào tồn tại.
+func _clip_don(kieu: String) -> String:
+	var m := VocabDB.don_cua(Tui.moveset_dang_dung(), _don_csv(kieu))
+	var rieng := _co(String(m.get("animation", "")))
+	if rieng != "":
+		return rieng
+	return _co(String(DONG_TAC_DON.get(kieu, "")))
+
 ## Tên động tác cho trạng thái hiện tại, "" nếu chưa có file nào hợp.
 func _dong_tac_cho(trang_thai: String, kieu: String) -> String:
 	if _may_dt == null:
 		return ""
 	if trang_thai == "danh":
-		return _co(String(DONG_TAC_DON.get(kieu, "")))
+		return _clip_don(kieu)
 	# Đi/chạy khi ĐANG KHOÁ MỤC TIÊU là đi NGANG hoặc đi LÙI: mặt luôn quay về
 	# con quái (đó là cả điểm của việc khoá), còn chân thì đi theo phím. Phát
 	# clip đi tới cho một người đang lùi là hai chân bước ngược chiều thân —
@@ -710,6 +792,29 @@ func he_so_phat() -> float:
 ## Clip `ten` tự đi bao nhiêu mét mỗi giây trên màn hình (đã tính cỡ model).
 func toc_goc_clip(ten: String) -> float:
 	return float(_toc_goc.get(ten, 0.0)) * _ti_le
+
+## Bàn tay phải đang ở độ cao nào, tính bằng mét trong hệ của thân.
+##
+## Công khai vì đây là cách DUY NHẤT hỏi "thanh kiếm có thật sự giơ lên không"
+## khi đã có clip thật. `goc_tay_phai()` đứng im trong trường hợp đó —
+## `dien()` nhường hẳn cho `AnimationPlayer` và không xoay khớp nữa — nên mọi
+## phép thử canh theo góc tay đều mù, và một clip ĐỨNG THỞ gán nhầm vào cú nạp
+## vẫn qua được hết. Đã dính đúng vậy với `nap.fbx`.
+##
+## Mốc đo của model hiện tại: nghỉ ~0.70m, đỉnh cú bổ ~1.37m, đáy ~0.11m.
+func cao_tay_phai() -> float:
+	if _xuong == null or not _id.has("ban_p"):
+		return 0.0
+	return _xuong.get_bone_global_pose(int(_id["ban_p"])).origin.y
+
+## Clip đang chạy tới giây thứ mấy CỦA CHÍNH NÓ.
+##
+## Công khai để bộ kiểm tra bắt được cú NHẢY LÙI của con trỏ clip: `play()`
+## luôn chạy lại từ khung 0, nên đổi clip giữa một cú đánh là người chơi xem
+## lại đoạn vung tay lần thứ hai. Tên clip thì vẫn đúng, dáng thì vẫn đẹp,
+## chỉ có thứ tự là sai — không có cửa này thì không phép thử nào hỏi được.
+func vi_tri_dong_tac() -> float:
+	return _may_dt.current_animation_position if _may_dt != null else 0.0
 
 ## Clip động tác đang phát, "" nghĩa là đang dùng dáng gõ tay.
 ##
@@ -1032,9 +1137,57 @@ func _tay_buong(k: float, them_t := Vector3.ZERO, them_p := Vector3.ZERO) -> voi
 
 # --- Hoạt ảnh --------------------------------------------------------
 
+## Kéo clip đòn đánh về đúng mốc mà MÁY TRẠNG THÁI đang đứng.
+##
+## `AnimationPlayer.play()` luôn chạy từ khung 0, và với đòn thường thì đúng —
+## `may.t` cũng bắt đầu từ 0. Cú NẠP là chỗ duy nhất `may.t` vào state ở giữa
+## chừng: `TrangThaiDanh._chay_nap()` đẩy thẳng `may.t` tới `t_vung` lúc nhả,
+## vì tay đã giơ lên xong rồi. Không kéo clip theo thì nó giơ kiếm lên LẦN NỮA
+## trong khi hộp đòn đã bật — quái mất máu lúc lưỡi kiếm còn đang đi lên.
+##
+## Hai lúc phải kéo, và chỉ hai lúc:
+##
+##   ĐỔI CLIP    đặt clip vào đúng chỗ rồi thả cho nó tự chạy. Kéo tiếp mỗi
+##               khung là giết luôn 0.12s hoà clip, cú vung giật cục.
+##   ĐANG NẠP    `may.t` bị ghim ở `t_vung` nên clip cũng phải ghim theo. Đây
+##               là chỗ thi hành "vung lên rồi GIỮ Ở ĐỈNH": thả cho clip tự
+##               chạy thì thanh kiếm cứ thế bổ xuống trong khi người chơi vẫn
+##               đang giữ chuột.
+##   CLIP CÓ CẮT clip phải NHẢY QUA quãng chết (xem `CAT_CHET`), mà nhảy thì
+##               phải có người đẩy — thả tự chạy là nó bò thẳng vào đoạn nằm
+##               im. Mấy clip này vì vậy bám hẳn vào đồng hồ của state, và đó
+##               cũng là cách chắc nhất để lưỡi kiếm và hộp đòn không bao giờ
+##               lệch nhau.
+##
+## Đổi `nang` → `nang_nap` lúc nhả KHÔNG đổi clip (cả hai cùng trỏ vào
+## `nang`), nên không có cú kéo nào ở đó — clip chảy thẳng từ chỗ đang ghim
+## vào cú bổ, liền một mạch.
+func _ghim_clip(trang_thai: String, kieu: String, dt: String, t_don: float,
+		toc: float, doi_clip: bool) -> void:
+	if trang_thai != "danh" or _may_dt == null:
+		return
+	if not doi_clip and kieu != "nap" and not CAT_CHET.has(dt):
+		return
+	_may_dt.seek(_clip_tu_don(dt, maxf(t_don, 0.0) * toc), true)
+
+## Giây ĐÃ CẮT của state → giây THẬT trong file clip.
+##
+## Hai hệ quy chiếu, và phải tách bạch: `moveset.csv` đếm thời gian của cú
+## đánh như người chơi cảm nhận — không có quãng nằm chờ nào — còn file `.fbx`
+## thì vẫn còn nguyên mấy quãng ấy. Hàm này cộng trả lại phần đã cắt.
+##
+## Duyệt theo thứ tự và cộng dồn: sau mỗi lần cộng thì `t` đã nằm trong hệ của
+## clip gốc, nên so thẳng được với mốc của quãng cắt kế tiếp.
+func _clip_tu_don(dt: String, t_don: float) -> float:
+	var t := t_don
+	for c in CAT_CHET.get(dt, []):
+		if t >= float(c[0]):
+			t += float(c[1]) - float(c[0])
+	return t
+
 ## Cùng chữ ký với `ThanKhoi.dien()` — xem ghi chú đầu file.
 func dien(trang_thai: String, tien_do: float, dang_di: bool, delta: float,
-		kieu: String = "", muc_nap: float = 0.0) -> void:
+		kieu: String = "", muc_nap: float = 0.0, t_don: float = 0.0) -> void:
 	if _xuong == null:
 		return
 	_muc_nap = muc_nap
@@ -1050,13 +1203,16 @@ func dien(trang_thai: String, tien_do: float, dang_di: bool, delta: float,
 	# xoay chồng là vừa phát animation vừa bẻ khớp, ra một thứ tệ hơn cả hai.
 	var dt := _dong_tac_cho(trang_thai, kieu)
 	if dt != "":
-		if dt != _dt_dang_phat:
+		var toc := _toc_do(trang_thai, kieu, dt)
+		var doi_clip := dt != _dt_dang_phat
+		if doi_clip:
 			_dt_dang_phat = dt
 			_may_dt.play(dt, 0.12)
 		# Đặt MỖI KHUNG chứ không chỉ lúc đổi clip: tốc độ đi thay đổi liên
 		# tục trong khi vẫn là một clip, nên đặt một lần lúc vào là sai ngay
 		# khi người chơi tăng hay giảm tốc.
-		_may_dt.speed_scale = _toc_do(trang_thai, kieu, dt)
+		_may_dt.speed_scale = toc
+		_ghim_clip(trang_thai, kieu, dt, t_don, toc, doi_clip)
 		_xoay_than = 0.0
 		_cao_than = 0.0
 		if _truc != null:

@@ -321,17 +321,24 @@ func _souls() -> void:
 		"trễ hồi thể lực %.2fs nằm trong 0.25–0.60" % SoulsLike.tre_hoi_the_luc)
 	# Canh MỌI vũ khí chứ không riêng cây kiếm. Bản cũ chỉ kiểm 剑, nên khi khung
 	# đòn nặng bị nhân hệ số thì ba vũ khí tụt khỏi khoảng mà test vẫn xanh.
+	#
+	# Trần nới từ 1.2 lên 1.4 khi nhịp đòn chuyển sang ĐO TỪ CLIP
+	# (`tools/do_nhip_don.tscn`). Vũ khí nào có dáng riêng thì khung hồi của nó
+	# là thời gian thu tay THẬT trong file động tác, không còn là con số người
+	# gõ ra — và 刃, cây nặng nhất game, đo ra 1.33s. Bẻ CSV về 1.2 cho vừa
+	# phép thử là quay lại đúng cái chiều vừa bỏ đi: bắt animation chạy theo
+	# code. Khoảng này canh cho số khỏi trôi xa, không phải để định nghĩa số.
 	var deu_trong_khoang := true
 	for m in VocabDB.moveset:
 		if String(m["don"]) != "nang":
 			continue
 		var th := float(m["t_hoi"])
-		if th < 0.45 or th > 1.2:
+		if th < 0.45 or th > 1.4:
 			deu_trong_khoang = false
-			_dung(false, "khung hồi đòn nặng của %s là %.2fs — ngoài 0.45–1.2"
+			_dung(false, "khung hồi đòn nặng của %s là %.2fs — ngoài 0.45–1.4"
 				% [String(m["chu"]), th])
 	if deu_trong_khoang:
-		_dung(true, "khung hồi đòn nặng của cả 5 vũ khí nằm trong 0.45–1.2")
+		_dung(true, "khung hồi đòn nặng của cả 6 vũ khí nằm trong 0.45–1.4")
 
 	# Tải trọng: bốn mức, i-frame giảm dần theo tải.
 	_bang(String(SoulsLike.muc_tai(0.10)["muc"]), "nhe", "dưới 30% là tải nhẹ")

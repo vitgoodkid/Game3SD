@@ -61,6 +61,41 @@ godot --headless --path . tools/soi_quy_dao.tscn    # quỹ đạo bàn tay, cao
 | `nhay` | great sword jump | 0.63s |
 | `lan` | Sprinting Forward Roll | 1.17s — lăn né, cơ chế trung tâm của souls-like |
 
+## CLIP LÀM CHỦ NHỊP, KHÔNG PHẢI NGƯỢC LẠI
+
+Đọc mục này trước khi thay bất cứ file `.fbx` nào ở đây.
+
+Trước đây `data/moveset.csv` khai nhịp đòn rồi `ThanMoHinh._toc_do()` co giãn
+clip cho vừa. Cú Bổ vì thế bị ép chạy nhanh **2.25 lần**, cú đâm lướt 1.32
+lần — động tác đọc ra như tua nhanh, mà không con số nào trong repo nói ra
+điều đó. Giờ chiều ngược lại: **nhịp trong CSV được đo ra từ clip.**
+
+Thay một file ở đây thì phải chạy lại:
+
+```bash
+godot --headless --path . tools/do_nhip_don.tscn
+```
+
+Nó quét vận tốc tâm lưỡi kiếm dọc clip, tìm quãng lưỡi bổ tới trước / xuống
+dưới qua tầm cao thân quái, rồi in ra hai bảng chép thẳng được: bốn cột nhịp
+của `moveset.csv`, và `ThanMoHinh.CAT_CHET`. **Đừng gõ tay mấy con số đó.**
+
+Hai chuyện cái máy ấy dạy được mà mắt không thấy:
+
+- **Chọn clip theo SỐ ĐO, không theo tên** — đã nói ở trên với `great sword
+  run` (là chạy LÙI), và dính lần nữa với `nap`: tên là "power up" mà đo ra là
+  đứng thở.
+- **Clip mua sẵn dựng cho phim, nên giữa chừng chúng nằm chờ.** Clip Bổ nằm
+  chết dí ở đáy cú bổ hơn nửa giây. Mấy quãng ấy vào `CAT_CHET` để bị NHẢY
+  QUA — không phải cắt cụt tại đó, vì đoạn thu tay nằm sau quãng chết mà thu
+  tay chính là khung hồi đòn.
+
+**Luật sở hữu clip:** vũ khí nào có clip của chính nó — cột `animation` của
+`moveset.csv` trỏ tới file có thật — thì phát nguyên tốc 1.0×. Vũ khí đang đi
+mượn thì vẫn bị co giãn. Cả thư mục này hiện là clip great sword, tức là của
+刃; năm cây kia (剑 刀 斧 弓 拳) đang mượn. Thả `kiem_nhe_1.fbx` vào là 剑 tự
+đứng ra khỏi diện đi mượn, không sửa dòng `.gd` nào.
+
 ### Đánh — 7 loại đòn, 7 dáng khác nhau
 
 | Đích | Nguồn | Vì sao cái này |
@@ -69,7 +104,7 @@ godot --headless --path . tools/soi_quy_dao.tscn    # quỹ đạo bàn tay, cao
 | `danh_2` | great sword slash (3) | 1.83s, quét ngang 0.63m |
 | `danh_3` | great sword slash (4) | 1.80s, xoay 179° → kết combo |
 | `nang` | **great sword casting** | 4.80s, tay đi DỌC 1.27m — cú bổ dọc thật |
-| `nap` | great sword power up | 3.50s, tay gần như đứng yên → **giữ** được, lặp được |
+| ~~`nap`~~ | ~~great sword power up~~ | **KHÔNG CÒN DÙNG.** Chọn nhầm: đo lại bằng `tools/do_nhip_don.tscn` thì tay quanh quẩn ở độ cao NGHỈ 0.70–0.80m suốt 3.5s — thanh kiếm không hề giơ lên. Đây là clip ĐỨNG THỞ, không phải clip gồng. Cú nạp giờ dùng chung clip `nang` và bị ghim lại ở đỉnh; xem `ThanMoHinh.DONG_TAC_DON` |
 | `danh_chay` | great sword slide attack | hông thụp xuống 0.25m = trượt tới, đúng đòn lúc đang chạy |
 | `danh_nhay` | great sword jump attack | 2.17s, tay lên 1.42m |
 

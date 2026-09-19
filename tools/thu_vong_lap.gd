@@ -593,25 +593,34 @@ func _phan_nhin() -> void:
 		# Có file động tác thật thì GÓC TAY đứng yên: `dien()` nhường hẳn cho
 		# clip và không xoay khớp nữa. Cùng một câu hỏi thì phải hỏi bằng thứ
 		# tiếng mà phần nhìn đang nói — xem `ThanMoHinh.dong_tac_dang_phat()`.
-		var co_clip := than_nap.has_method("dong_tac_dang_phat")
-		var da_nap_clip := false
-		var clip_sai := ""
+		# Có clip thật thì hỏi bằng ĐỘ CAO BÀN TAY, không hỏi bằng góc khớp:
+		# `dien()` nhường hẳn cho AnimationPlayer nên `goc_tay_phai()` đứng im,
+		# và mọi phép thử canh theo góc đều mù. Bản trước hỏi "clip đang phát
+		# có tên là 'nap' không" — câu đó KHÔNG trả lời được gì về dáng, và
+		# `nap.fbx` hoá ra là một clip ĐỨNG THỞ: tay quanh quẩn ở độ cao nghỉ
+		# suốt 3.5 giây, thanh kiếm không hề giơ lên. Phép thử vẫn xanh, còn
+		# người chơi thì thấy nhân vật đứng thở lúc đang gồng.
+		var co_cao := than_nap.has_method("cao_tay_phai")
+		var clip_nap := ""
+		var cao_max := -999.0
+		var cao_dau := 0.0
 		for i in 48:
 			await get_tree().physics_frame
-			if co_clip and _nc.may.hien_tai.ten_dien() == "nap":
-				var c := String(than_nap.call("dong_tac_dang_phat"))
-				if c == "nap":
-					da_nap_clip = true
-				elif c != "" and clip_sai == "":
-					clip_sai = c
+			if _nc.may.hien_tai.ten_dien() == "nap":
+				if clip_nap == "":
+					clip_nap = String(than_nap.call("dong_tac_dang_phat"))
+					if co_cao:
+						cao_dau = than_nap.call("cao_tay_phai")
+				if co_cao:
+					cao_max = maxf(cao_max, than_nap.call("cao_tay_phai"))
 			var g: float = than_nap.call("goc_tay_phai")
 			if truoc < 900.0 and g > truoc + 0.5:
 				lui = maxf(lui, g - truoc)
 			goc_max = maxf(goc_max, absf(g))
 			truoc = g
-		if da_nap_clip:
-			_bang(clip_sai, "",
-				"nạp đòn: suốt cú nạp chỉ phát clip 'nap', không vung hụt nhát nào")
+		if clip_nap != "" and co_cao:
+			_dung(cao_max > cao_dau + 0.25,
+				"nạp đòn: THẬT SỰ giơ kiếm lên (%.2fm → %.2fm)" % [cao_dau, cao_max])
 		else:
 			_dung(goc_max > 150.0,
 				"nạp đòn: giơ tay lên tới đỉnh (%.0f°)" % goc_max)
@@ -620,12 +629,82 @@ func _phan_nhin() -> void:
 			% lui)
 		_bang(_nc.may.hien_tai.ten_dien(), "nap", "và phần nhìn báo ĐANG NẠP từ đầu")
 
+		# GIỮ Ở ĐỈNH, không phải vung chậm.
+		#
+		# `_chay_nap()` ghim `may.t` lại ở `t_vung` khi tay đã lên tới đỉnh,
+		# và phần nhìn phải ghim theo. Thả cho clip tự chạy thì thanh kiếm cứ
+		# thế bổ xuống trong lúc người chơi vẫn còn đang giữ chuột — cú nạp
+		# mất hẳn cái dáng "đang chờ", mà đó là thứ ĐỐI PHƯƠNG đọc để né.
+		# Không có phép thử này thì gỡ chỗ ghim đi cũng không ai thấy.
+		# Phải giữ TỚI SÁT TRẦN NẠP mới đo được. Clip `nang` tự nó có sẵn một
+		# đoạn đứng yên ở đỉnh (20–40% độ dài clip), nên trong vài khung đầu
+		# thì ghim hay không ghim trông giống hệt nhau — đo ngắn là phép thử
+		# xanh dù chỗ ghim đã bị gỡ. Qua hết đoạn ấy thì clip bắt đầu bổ
+		# xuống, và lúc đó mới lòi ra.
+		# ĐỢI TỚI LÚC ĐỒNG HỒ STATE ĐỨNG LẠI rồi mới đo.
+		#
+		# `_chay_nap()` chỉ ghim `may.t` sau khi tay đã lên tới đỉnh, mà cú
+		# vung tay lên dài bao nhiêu là do CLIP quyết (`t_vung` của
+		# `moveset.csv`, đo từ file động tác). Đếm một số khung cố định rồi đo
+		# là đo trúng đoạn đang giơ tay — tay đang đi lên thì tất nhiên độ cao
+		# đổi, và phép thử đỏ oan. Đổi một file `.fbx` là mốc ấy xê dịch, nên
+		# phải bám vào cái đồng hồ chứ không bám vào số khung.
+		if clip_nap != "" and co_cao:
+			for i in 200:
+				if _nc.may.ten_hien_tai != "danh" \
+						or _nc.may.hien_tai.ten_dien() != "nap":
+					break
+				if _nc.may.hien_tai.get("_giu_dinh"):
+					break
+				await get_tree().physics_frame
+		if clip_nap != "" and co_cao and _nc.may.ten_hien_tai == "danh" \
+				and _nc.may.hien_tai.ten_dien() == "nap":
+			var cao_a: float = than_nap.call("cao_tay_phai")
+			var cao_cuoi := cao_a
+			for i in 22:
+				await get_tree().physics_frame
+				if _nc.may.ten_hien_tai != "danh" \
+						or _nc.may.hien_tai.ten_dien() != "nap":
+					break
+				cao_cuoi = than_nap.call("cao_tay_phai")
+			_dung(absf(cao_cuoi - cao_a) < 0.15,
+				"lên tới đỉnh rồi thì GIỮ NGUYÊN ở đó, không tự bổ xuống (%.2fm → %.2fm)"
+				% [cao_a, cao_cuoi])
+
+		# NHẢ RA LÀ CHÉM TIẾP, KHÔNG DIỄN LẠI TỪ ĐẦU.
+		#
+		# Đây là cái bẫy thật sự của cú nạp, và nó đã nổ một lần: cú nạp có
+		# clip riêng, nên lúc nhả thì `play()` clip đòn nặng và con trỏ về
+		# khung 0 — người chơi xem HAI cú vung tay cho MỘT nhát chém, mà hộp
+		# đòn thì đã bật ngay từ đầu cú thứ hai. Canh bằng hai thứ cùng lúc:
+		# tên clip không được đổi, và con trỏ clip không được lùi.
 		var g_giu: float = than_nap.call("goc_tay_phai")
+		var co_vi_tri := than_nap.has_method("vi_tri_dong_tac")
+		var vi_tri_giu: float = than_nap.call("vi_tri_dong_tac") if co_vi_tri else 0.0
 		await _nut("don_nhe", false)
 		var g_sau: float = than_nap.call("goc_tay_phai")
 		_dung(absf(g_sau - g_giu) < 25.0,
 			"nhả ra thì chém tiếp từ chỗ đang giữ, không nhảy (%.0f° → %.0f°)"
 			% [g_giu, g_sau])
+		# ĐỢI ĐÚNG KHOẢNH KHẮC CHUYỂN, đừng đo ngay lúc nhả nút.
+		#
+		# `_chay_nap()` chỉ xét cú nhả SAU KHI tay đã vung lên tới đỉnh
+		# (`t >= t_vung`), nên nhả sớm thì state còn ở "nap" thêm một quãng —
+		# đo lúc đó là đo đúng cái chưa đổi, và phép thử xanh dù clip vẫn nhảy
+		# về đầu ngay sau đấy. Bản đầu của phép thử này dính đúng vậy.
+		for i in 90:
+			if _nc.may.ten_hien_tai != "danh" or _nc.may.hien_tai.ten_dien() != "nap":
+				break
+			vi_tri_giu = than_nap.call("vi_tri_dong_tac") if co_vi_tri else 0.0
+			await get_tree().physics_frame
+		if clip_nap != "" and _nc.may.ten_hien_tai == "danh":
+			_bang(String(than_nap.call("dong_tac_dang_phat")), clip_nap,
+				"cú nạp và cú chém là MỘT clip, nhả ra không đổi sang clip khác")
+			if co_vi_tri:
+				var vi_tri_sau: float = than_nap.call("vi_tri_dong_tac")
+				_dung(vi_tri_sau >= vi_tri_giu - 0.02,
+					"con trỏ clip đi TIẾP chứ không chạy lại từ đầu (%.2fs → %.2fs)"
+					% [vi_tri_giu, vi_tri_sau])
 		await _cho(2.2)
 		_lam_moi_nguoi_choi()
 

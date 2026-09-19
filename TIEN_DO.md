@@ -45,11 +45,13 @@ Cùng một bệnh ở hai chỗ, vì cùng một khuôn:
   không rồi phân nhánh. Đòi `danh.gd` cho đổi `_don` giữa chừng (file đó đang
   cố tình khoá cứng), và đòi `nhe_1` với `nang` của mỗi vũ khí có `t_vung`
   bằng nhau.
-- **Space.** Cú NHẢY trễ `NGUONG_GIU_NHAY` (0.16s) kể từ lúc bấm. Đáng lo hơn
-  vế trên: nhảy là để né đòn quét ngang của boss, mà né thì sống chết ở timing.
-  Chưa có đòn quét ngang nào của boss để đo thật, nên chưa biết 0.16s có đủ
-  hỏng không — **đo được rồi mới quyết**. Chữa rẻ nhất là hạ con số; chữa hẳn
-  thì phải tách nhảy sang nút riêng, và lúc đó Space về lại nhiệm vụ đơn.
+- **Space.** Khuôn đã đổi từ "gõ/giữ" sang **BẤM ĐÔI = lăn, BẤM ĐƠN = nhảy**
+  (`NGUONG_BAM_DOI` 0.22s). Chiều trễ vì thế lật ngược so với chuột trái: LĂN
+  bắn ra ngay ở cú bấm thứ hai, còn NHẢY phải đợi hết cửa sổ mới dám gọi là
+  nhảy. Đổi như vậy là cố ý — lăn là thứ cứu mạng, nhảy thì không.
+  Cái còn lại đáng lo: nhảy trễ 0.22s mà nhảy là để né đòn quét ngang của
+  boss. Chưa có đòn quét ngang nào của boss để đo thật, nên **đo được rồi mới
+  quyết**. Chữa rẻ nhất là hạ con số; chữa hẳn thì tách nhảy sang nút riêng.
 
 ### 3. Tune bốn con số của mục 5.2
 
@@ -200,13 +202,14 @@ theo" phía trên.
   chữ Hán ở các màn Label xưa nay vẫn là ô vuông.
 
 ### Kiểm tra
-Sáu bước, GitHub Actions chạy cả sáu mỗi lần đẩy code (**645** phép thử tự động
+Sáu bước, GitHub Actions chạy cả sáu mỗi lần đẩy code (**648** phép thử tự động
 cộng một lần chạy game thật) — lệnh đầy đủ ở `CLAUDE.md`, tóm tắt ở đây:
 
 | Lệnh | Kiểm gì |
 |---|---|
+| `godot --headless --path . tools/do_nhip_don.tscn` | KHÔNG phải test — máy ĐO nhịp đòn từ clip, in ra mấy con số của `moveset.csv`. Chạy sau mỗi lần đổi file `.fbx` |
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 197 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 342 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 345 test theo thời gian |
 | `godot --headless --path . tools/thu_dau_game.tscn` | màn đầu game + ĐỔI CẢNH: Chơi mới / Chơi tiếp / Tải ván — 39 test. Bộ duy nhất GHI ĐĨA (cất save của người thật đi rồi trả lại) |
 | `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 67 test |
 | `godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600` | chạy cảnh chơi thật 10 giây, bắt lỗi lúc chạy mà bốn bộ trên không với tới (vòng tròn autoload chẳng hạn). Trỏ THẲNG vào phòng thử vì `main_scene` giờ là cái menu |
@@ -256,11 +259,14 @@ combat**, vì mấy chỗ "cố ý khác" rất dễ bị sửa nhầm về ER r
   lên bằng cách siết dần thời điểm chứ không bằng cách đánh cược.
   `an_don()` trả -2 cho hoàn hảo, -1 cho thường.
 - **Space gánh lăn + nhảy, Shift gánh chạy.** ER trên PC gộp lăn/chạy vào một
-  nút và để nhảy riêng; ở đây gộp lăn/nhảy và tách chạy ra. Cái giá nằm đúng ở
-  `NGUONG_GIU_NHAY` (0.16s): cú NHẢY trễ bấy nhiêu kể từ lúc bấm, vì phải đợi
-  mới biết người chơi định gõ hay định giữ — cùng một đánh đổi đã chấp nhận ở
-  chuột trái. Nhảy vốn để né đòn quét ngang, mà né thì sống chết ở timing, nên
-  nếu tune thấy vướng thì đây là con số đầu tiên phải đụng tới.
+  nút và để nhảy riêng; ở đây gộp lăn/nhảy và tách chạy ra. Phân biệt bằng
+  **số lần bấm**, không bằng thời gian giữ: bấm hai lần trong
+  `NGUONG_BAM_DOI` (0.22s) là LĂN, bấm một lần là NHẢY.
+  Cái giá vì thế rơi vào nhảy chứ không vào lăn — lăn nổ ngay ở cú bấm thứ
+  hai, còn nhảy phải đợi hết cửa sổ mới biết người chơi có bấm tiếp không.
+  Đặt cái giá ở đó là cố ý: lăn là thứ cứu mạng, nhảy thì không. Nhảy vốn để
+  né đòn quét ngang của boss, nên nếu tune thấy vướng thì đây là con số đầu
+  tiên phải đụng tới.
 - **Một nút chuột trái ra cả đòn nhẹ lẫn đòn nặng**, thay vì R1/R2 như ER và
   như bản yêu cầu đầu. Chủ dự án chốt, và chấp nhận cái giá đi kèm: đòn nhẹ
   chỉ bắn ra lúc NHẢ chuột chứ không phải lúc bấm, vì phải đợi mới biết người
