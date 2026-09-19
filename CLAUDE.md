@@ -475,8 +475,13 @@ tools/           kiểm tra + sinh dữ liệu
 
 ## Phòng thử (`phong_thu.gd`)
 
-- **CHỈNH SỐNG combat, y hệt khuôn HUD.** F5 chạy game → dock Scene tab
-  **Remote** → chọn node `NguoiChoi` → kéo số. `toc_do_di` / `toc_do_chay` đã
+- **CHỈNH SỐNG combat, y hệt khuôn HUD — nhưng bằng F6, KHÔNG phải F5.**
+  Mở `scenes/the_gioi/phong_thu.tscn` rồi bấm **F6** (Chạy cảnh hiện tại) →
+  dock Scene tab **Remote** → chọn node `NguoiChoi` → kéo số.
+  F5 chạy `run/main_scene`, mà cái đó là MÀN ĐẦU GAME; từ menu bấm "Chơi mới"
+  là vào `vung_dat.tscn`, tức vùng thật. **Không đường nào trong game dẫn tới
+  phòng thử** — hai bù nhìn, tháp leo, tường thấp đều chỉ có ở `phong_thu.gd`.
+  Nhầm F5 với F6 là đứng giữa vùng thật kéo số rồi tưởng nút hỏng. `toc_do_di` / `toc_do_chay` đã
   export sẵn từ lâu; `he_so_toc_do_danh` (0.2–3.0) và `he_so_toc_do_lan`
   (0.4–2.5) là hai nút mới. Mặc định cả hai đều 1.0 = không đổi gì, nên không
   ảnh hưởng game thật hay bộ test nào.
