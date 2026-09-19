@@ -83,7 +83,12 @@ func thu_hanh_dong() -> bool:
 		return true
 	# ĐỠ đứng cuối vì nó không đọc từ đệm mà đọc phím ĐANG GIỮ: giơ khiên là
 	# một trạng thái duy trì, không phải một cú bấm.
-	if Input.is_action_pressed("do_don"):
+	#
+	# CÙNG MỘT NÚT với parry, và thứ tự trong hàm này chính là chỗ phân xử:
+	# một cú BẤM mới đã bị `lay_dem("do_phan")` ở bậc phòng thủ bắt từ trên
+	# kia rồi, nên xuống tới đây chỉ còn trường hợp ngón tay đã giữ sẵn từ
+	# TRƯỚC — và ngón tay giữ sẵn thì không đáng được một cửa sổ parry.
+	if Input.is_action_pressed("do_phan"):
 		di("do_don")
 		return true
 	return false

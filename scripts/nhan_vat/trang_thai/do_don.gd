@@ -1,6 +1,12 @@
 extends TTNguoiChoi
 
-## Giơ khiên. Giữ Q. Thả ra là về đứng.
+## Giơ khiên. GIỮ CHUỘT PHẢI. Thả ra là về đứng.
+##
+## Không còn phím riêng: đỡ và đỡ phản chung một nút. Vào đây bằng hai đường,
+## cả hai đều là chuột phải —
+##   • bấm ra `do_phan` rồi GIỮ tiếp: hết cửa sổ parry là sang đây (do_phan.gd);
+##   • đang giữ sẵn từ trước lúc vào trạng thái rảnh: `thu_hanh_dong()` bậc
+##     cuối đưa thẳng vào đây, KHÔNG phát một cú parry không ai bấm.
 ##
 ## Giơ khiên thì KHÔNG hồi thể lực (xem NguoiChoi._hoi_the_luc) — đó là giá
 ## của việc đứng thủ. Không có giá này thì đứng giơ khiên là chiến thuật tối
@@ -15,7 +21,7 @@ func ra() -> void:
 	nc.dang_do = false
 
 func chay(delta: float) -> void:
-	if not Input.is_action_pressed("do_don"):
+	if not Input.is_action_pressed("do_phan"):
 		di("dung")
 		return
 	if nc.lay_dem("lan") and nc.hoi_lan <= 0.0:

@@ -228,7 +228,18 @@ func _chay_nap(delta: float, t_vung: float) -> void:
 	# đúng dòng MỚI.
 	may.t = _moc()["t_vung"]
 
-## Rút ra khỏi cú đánh bằng lăn hoặc khiên. Trả về true nếu đã đổi state.
+## Rút ra khỏi cú đánh bằng lăn, parry hoặc khiên. Trả về true nếu đã đổi state.
+##
+## CHỈ MỞ TỪ ĐOẠN 4 (`cho_ne()`), y như lăn — bên gọi đã canh sẵn. Cam kết đòn
+## đánh không bị nới ra: đoạn 1–3 vẫn khoá cứng, bấm gì cũng chỉ vào bộ đệm.
+##
+## Parry từng KHÔNG có mặt ở đây, và đó là một lỗ thật chứ không phải lựa chọn:
+## `cho_doi()` bên dưới vẫn liệt `do_phan` vào danh sách cho phép, nhưng không
+## ai gọi `xin_doi("do_phan")` nên dòng ấy là quyền cấp cho một người không bao
+## giờ tới xin. Hậu quả đo được: bấm parry đúng khung `cho_ne()` mở ra thì cú
+## parry nằm im trong đệm tới khi đòn chạy hết hẳn — trễ 0.20s (nhe_1) tới
+## 0.47s (nang), trong khi cả cửa sổ parry chỉ có 0.24s và bậc hoàn hảo 0.10s.
+## Tức là cú parry bấm đúng nhịp luôn bung ra SAU khi đòn của quái đã trúng.
 func _huy_sang_thu() -> bool:
 	if nc.lay_dem("lan"):
 		if nc.hoi_lan <= 0.0 and nc.du_the_luc():
@@ -238,7 +249,14 @@ func _huy_sang_thu() -> bool:
 		# Không đủ thể lực thì cú bấm coi như mất — giữ lại trong đệm thì nó
 		# nổ ra muộn hơn, đúng lúc người chơi đã đổi ý.
 		return false
-	if Input.is_action_pressed("do_don") and nc.du_the_luc():
+	# Parry TRƯỚC khiên, vì cùng một nút: `lay_dem` chỉ có nội dung khi có một
+	# cú BẤM mới, còn `is_action_pressed` đúng cả với ngón tay giữ sẵn từ trước
+	# cú đánh. Xét khiên trước là nuốt mất cú bấm parry của người đang giữ.
+	if nc.lay_dem("do_phan") and nc.du_the_luc():
+		_tat_hop_don()
+		di("do_phan")
+		return true
+	if Input.is_action_pressed("do_phan") and nc.du_the_luc():
 		_tat_hop_don()
 		di("do_don")
 		return true

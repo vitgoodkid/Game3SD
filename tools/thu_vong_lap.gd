@@ -51,6 +51,7 @@ func _ready() -> void:
 	await _bo_dem_va_uu_tien()
 	await _mp_va_giao_dien()
 	await _sieu_giap_va_phan_do()
+	await _mot_nut_phong_thu()
 	await _phan_nhin()
 	await _let_khi_nap()
 	await _leo_tuong()
@@ -92,12 +93,22 @@ func _cho(giay: float) -> void:
 
 ## Bơm một phím vào như người chơi bấm thật, rồi đợi đủ lâu để nó chạy qua
 ## _unhandled_input. Gọi thẳng hàm thì không kiểm được khâu nối phím.
+##
+## NHẢ RA Ở CUỐI, và đó không phải chi tiết thừa. Bản trước chỉ bơm cú BẤM rồi
+## bỏ đó, nên `Input.is_action_pressed()` của phím ấy còn bật tới hết buổi
+## chạy. Bao lâu nay vô hại vì không ai hỏi phím nào đang giữ; từ khi đỡ và đỡ
+## phản chung một nút thì `do_phan` bị hỏi mỗi khung, và một cú `_bam` bỏ quên
+## sẽ khoá nhân vật đứng giơ khiên suốt phần còn lại của bộ thử.
 func _bam(hanh_dong: String) -> void:
 	var su_kien := InputEventAction.new()
 	su_kien.action = hanh_dong
 	su_kien.pressed = true
 	Input.parse_input_event(su_kien)
 	await get_tree().process_frame
+	var len_ := InputEventAction.new()
+	len_.action = hanh_dong
+	len_.pressed = false
+	Input.parse_input_event(len_)
 	await get_tree().process_frame
 
 ## Giữ một nút bấy nhiêu giây rồi nhả. Cần cho đòn nhẹ/nặng: cả hai đi ra từ
@@ -287,7 +298,7 @@ func _the_luc_va_nut_danh() -> void:
 	_dung(not _nc.co_khien(), "cởi khiên ra thì tay trái trống")
 	await _bam("do_phan")
 	await _hai_khung()
-	_bang(_nc.may.ten_hien_tai, "do_phan", "TAY KHÔNG vẫn bấm E ra đỡ phản")
+	_bang(_nc.may.ten_hien_tai, "do_phan", "TAY KHÔNG vẫn bấm chuột phải ra đỡ phản")
 	_bang(_nc.the_luc, truoc - SoulsLike.THE_LUC_DO_PHAN,
 		"đỡ phản TỐN đúng THE_LUC_DO_PHAN")
 	await _cho(1.0)
@@ -487,8 +498,12 @@ func _sieu_giap_va_phan_do() -> void:
 
 	# --- Đòn phản đỡ ---
 	_dat_khien(true)
-	await _nut("do_don", true)
-	_bang(_nc.may.ten_hien_tai, "do_don", "giơ khiên lên")
+	# MỘT NÚT: bấm ra parry trước, GIỮ tiếp mới thành giơ khiên. Phải đợi hết
+	# cửa sổ parry rồi mới đo, không thì đòn dưới rơi trúng cửa sổ parry và
+	# nhóm này đo nhầm sang cơ chế khác.
+	await _nut("do_phan", true)
+	await _cho(SoulsLike.cua_so_do_phan + 0.06)
+	_bang(_nc.may.ten_hien_tai, "do_don", "giữ chuột phải đủ lâu thì giơ khiên lên")
 	_bang(_nc.cho_phan_do, 0.0, "chưa đỡ được gì thì chưa có cửa sổ phản đỡ")
 	var mau_truoc := _nc.mau
 	_nc.an_don(40, 5.0, _truoc_mat())
@@ -507,16 +522,106 @@ func _sieu_giap_va_phan_do() -> void:
 	await _cho(1.2)
 
 	# --- Vỡ đỡ: đỡ tới cạn thể lực thì choáng ---
-	await _nut("do_don", false)
+	await _nut("do_phan", false)
 	_lam_moi_nguoi_choi()
-	await _nut("do_don", true)
+	await _nut("do_phan", true)
+	await _cho(SoulsLike.cua_so_do_phan + 0.06)
 	_nc.the_luc = 1.0
 	_nc.an_don(90, 5.0, _truoc_mat())
 	await _hai_khung()
 	_bang(_nc.may.ten_hien_tai, "vo_the", "đỡ tới cạn thể lực là VỠ ĐỠ")
-	await _nut("do_don", false)
+	await _nut("do_phan", false)
 	await _cho(SoulsLike.NGAY_SAU_VO + 0.3)
 	_dat_khien(false)
+	_lam_moi_nguoi_choi()
+	_bit_mat_quai(false)
+
+## MỘT NÚT gánh cả đỡ lẫn đỡ phản (chuột phải), và parry cắt được đòn lẫn lăn.
+##
+## Năm thứ nhóm này canh, cả năm đều là chuyện CẢM GIÁC mà không nhóm nào khác
+## với tới: gõ nhanh khác giữ ra sao, ngón tay giữ sẵn có được tặng một cửa sổ
+## parry không, và parry có thật sự cắt được khung hồi đòn với cú lăn không.
+func _mot_nut_phong_thu() -> void:
+	_nhom("Một nút: đỡ + đỡ phản")
+	_bit_mat_quai(true)
+	_lam_moi_nguoi_choi()
+	_dat_khien(true)
+
+	# --- Phím cũ trống THẬT, không phải chỉ đổi nhãn ---
+	_dung(not InputMap.has_action("do_don"),
+		"action 'do_don' không còn — đỡ gộp hẳn vào nút đỡ phản")
+	_bang(GiaoDien.ten_moi_phim("do_phan"), "Chuột phải",
+		"và đỡ/đỡ phản còn đúng MỘT phím")
+
+	# --- GÕ NHANH: parry rồi ĐỨNG NGÂY, đúng hình phạt cũ ---
+	await _bam("do_phan")
+	_bang(_nc.may.ten_hien_tai, "do_phan", "gõ nhanh ra đỡ phản")
+	await _cho(SoulsLike.cua_so_do_phan + 0.06)
+	_bang(_nc.may.ten_hien_tai, "do_phan",
+		"hết cửa sổ parry mà đã nhả nút thì VẪN đứng ngây, chưa ra khiên")
+	await _cho(SoulsLike.hoi_do_phan + 0.12)
+	_bang(_nc.may.ten_hien_tai, "dung", "ngây xong mới về đứng")
+
+	# --- GIỮ: parry rồi LÊN KHIÊN ngay, bỏ qua khung ngây ---
+	_lam_moi_nguoi_choi()
+	await _nut("do_phan", true)
+	_bang(_nc.may.ten_hien_tai, "do_phan", "giữ nút cũng ra đỡ phản trước")
+	await _cho(SoulsLike.cua_so_do_phan + 0.06)
+	_bang(_nc.may.ten_hien_tai, "do_don",
+		"còn giữ thì hết cửa sổ parry là LÊN KHIÊN, bỏ qua khung ngây")
+	_dung(SoulsLike.hoi_do_phan > 0.0,
+		"và khung ngây bỏ qua được là khung có thật (%.2fs)" % SoulsLike.hoi_do_phan)
+
+	# --- Ngón tay GIỮ SẴN từ trước KHÔNG được tặng một cú parry ---
+	_nc.may.doi("dung")
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "do_don",
+		"đang giữ sẵn thì vào thẳng giơ khiên, không phát parry không ai bấm")
+	await _nut("do_phan", false)
+	_bang(_nc.may.ten_hien_tai, "dung", "nhả nút là hạ khiên")
+	_dat_khien(false)
+
+	# --- Parry CẮT được khung hồi đòn, y như lăn ---
+	_lam_moi_nguoi_choi()
+	await _giu("don_nhe", 0.05)
+	var vao_danh := false
+	for i in range(240):
+		await get_tree().physics_frame
+		if _nc.may.ten_hien_tai == "danh":
+			vao_danh = true
+			break
+	_dung(vao_danh, "vung được một đòn nhẹ")
+	var mo_ne := false
+	for i in range(600):
+		await get_tree().physics_frame
+		if _nc.may.ten_hien_tai != "danh":
+			break
+		if bool(_nc.may.hien_tai.call("cho_ne")):
+			mo_ne = true
+			break
+	_dung(mo_ne, "cú đánh chạy tới đoạn 4, cửa sổ rút ra MỞ")
+	_nc.ghi_dem("do_phan")
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "do_phan",
+		"bấm parry ở đó là CẮT đòn ngay, không phải đợi hết animation")
+	await _cho(SoulsLike.cua_so_do_phan + SoulsLike.hoi_do_phan + 0.2)
+
+	# --- Parry CẮT được cú LĂN, kể cả giữa khung bất tử ---
+	_lam_moi_nguoi_choi()
+	_nc.hoi_lan = 0.0
+	_nc.may.doi("lan")
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "lan", "vào cú lăn")
+	_dung(_nc.bat_tu, "và đang trong khung bất tử")
+	_nc.ghi_dem("do_phan")
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "do_phan", "bấm parry giữa cú lăn là CẮT được")
+	_dung(not _nc.bat_tu, "cắt sớm thì mất luôn phần bất tử còn lại")
+	_dung(_nc.hoi_lan > 0.0,
+		"nhưng hoi_lan vẫn nguyên — cắt lăn KHÔNG cho lăn lại sớm hơn (%.2fs)"
+		% _nc.hoi_lan)
+
+	await _cho(SoulsLike.cua_so_do_phan + SoulsLike.hoi_do_phan + 0.2)
 	_lam_moi_nguoi_choi()
 	_bit_mat_quai(false)
 
@@ -2138,21 +2243,28 @@ func _mp_va_giao_dien() -> void:
 	CaiDat.ap_thay_doi()
 	_bang(GiaoDien.ten_phim("tuong_tac"), "G", "bấm Áp dụng thì InputMap đổi thật")
 
-	# Phím THAY THẾ phải còn nguyên: do_phan có cả E lẫn chuột phải, đổi E mà
-	# xoá luôn chuột phải là lấy mất một thứ người chơi không hề yêu cầu.
+	# Phím THAY THẾ phải còn nguyên: khoá mục tiêu có cả chuột giữa lẫn Tab,
+	# đổi cái đầu mà xoá luôn cái sau là lấy mất một thứ người chơi không hề
+	# yêu cầu.
+	#
+	# Nhóm này từng canh trên `do_phan` vì nó có cả E lẫn chuột phải. Từ khi
+	# đỡ và đỡ phản gộp vào MỘT nút thì `do_phan` chỉ còn một phím, nên phép
+	# thử phải dọn sang action khác — chứ không phải bỏ đi.
+	var goc_kmt := GiaoDien.ten_moi_phim("khoa_muc_tieu")
+	_dung(goc_kmt.contains(" · "), "khoá mục tiêu có hai phím (%s)" % goc_kmt)
 	var e2 := InputEventKey.new()
 	e2.physical_keycode = KEY_H
-	CaiDat.dat_phim_nhap("do_phan", e2)
+	CaiDat.dat_phim_nhap("khoa_muc_tieu", e2)
 	CaiDat.ap_thay_doi()
-	var moi_do_phan := GiaoDien.ten_moi_phim("do_phan")
-	_dung(moi_do_phan.contains("H"), "đổi được phím chính của do_phan (%s)" % moi_do_phan)
-	_dung(moi_do_phan.contains("Chuột phải"),
-		"và phím THAY THẾ còn nguyên (%s)" % moi_do_phan)
+	var moi_kmt := GiaoDien.ten_moi_phim("khoa_muc_tieu")
+	_dung(moi_kmt.contains("H"), "đổi được phím chính (%s)" % moi_kmt)
+	_dung(moi_kmt.contains(goc_kmt.split(" · ")[1]),
+		"và phím THAY THẾ còn nguyên (%s)" % moi_kmt)
 
 	# Về mặc định phải dựng lại được TỪ BẢNG GỐC — lúc này InputMap đã bị ghi đè.
 	CaiDat.ve_mac_dinh()
 	_bang(GiaoDien.ten_phim("tuong_tac"), "F", "về mặc định thì phím trở lại như cũ")
-	_bang(GiaoDien.ten_moi_phim("do_phan"), "E · Chuột phải",
+	_bang(GiaoDien.ten_moi_phim("khoa_muc_tieu"), goc_kmt,
 		"cả phím chính lẫn phím thay thế đều trở lại")
 
 	# --- Nút Áp dụng: TỐI khi chưa đổi, SÁNG khi có đổi ---

@@ -97,9 +97,10 @@ Chạy `godot --path .` là vào thẳng phòng thử. Làm được trọn vòn
   khởi đầu.
 - chạy quanh, đổi camera F5, khoá mục tiêu, đánh quái và một boss. Phím đánh:
   **bấm chuột trái** = đòn nhẹ, **giữ chuột trái** = đòn nặng rồi đòn nạp,
-  **E** (hoặc chuột phải) = đỡ phản, bấm sớm = **đỡ phản hoàn hảo**,
+  **chuột phải bấm** = đỡ phản (bấm sớm = **đỡ phản hoàn hảo**),
+  **chuột phải giữ** = giơ khiên → đỡ trúng rồi giữ chuột trái = **đòn phản
+  đỡ**. Một nút gánh cả hai, E và Q trống hẳn.
   Space = lăn (giữ = **nhảy**), **Shift** giữ = chạy,
-  Q = giơ khiên → đỡ trúng rồi giữ chuột trái = **đòn phản đỡ**,
   R = cất/rút vũ khí (chạy nhanh hơn, tốn ít thể lực hơn, nhưng không đánh được)
 - **đòn nhảy**: đánh lúc đang ở trên không ra một moveset riêng, bấm = nhẹ,
   giữ = nặng. Mỗi lần rời đất đúng một đòn.
@@ -202,14 +203,14 @@ theo" phía trên.
   chữ Hán ở các màn Label xưa nay vẫn là ô vuông.
 
 ### Kiểm tra
-Bảy bước, GitHub Actions chạy cả bảy mỗi lần đẩy code (**663** phép thử tự động
+Bảy bước, GitHub Actions chạy cả bảy mỗi lần đẩy code (**682** phép thử tự động
 cộng một lần chạy game thật) — lệnh đầy đủ ở `CLAUDE.md`, tóm tắt ở đây:
 
 | Lệnh | Kiểm gì |
 |---|---|
 | `godot --headless --path . tools/do_nhip_don.tscn` | KHÔNG phải test — máy ĐO nhịp đòn từ clip, in ra mấy con số của `moveset.csv`. Chạy sau mỗi lần đổi file `.fbx` |
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 197 test trong một khung hình |
-| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 360 test theo thời gian |
+| `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 379 test theo thời gian |
 | `godot --headless --path . tools/thu_dau_game.tscn` | màn đầu game + ĐỔI CẢNH: Chơi mới / Chơi tiếp / Tải ván — 39 test. Bộ duy nhất GHI ĐĨA (cất save của người thật đi rồi trả lại) |
 | `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 67 test |
 | `godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600` | chạy cảnh chơi thật 10 giây, bắt lỗi lúc chạy mà bốn bộ trên không với tới (vòng tròn autoload chẳng hạn). Trỏ THẲNG vào phòng thử vì `main_scene` giờ là cái menu |
@@ -259,6 +260,29 @@ combat**, vì mấy chỗ "cố ý khác" rất dễ bị sửa nhầm về ER r
   sớm quá vẫn rơi vào parry thường: tập bấm sớm không bị phạt, người chơi tiến
   lên bằng cách siết dần thời điểm chứ không bằng cách đánh cược.
   `an_don()` trả -2 cho hoàn hảo, -1 cho thường.
+- **CHUỘT PHẢI gánh cả đỡ lẫn đỡ phản — một nút, kiểu Sekiro chứ không phải
+  ER.** ER tách hẳn: giữ L1 là đỡ, gõ L2 là parry, hai nút hai tay. Chủ dự án
+  chốt gộp vào một, và nhận luôn cái đi kèm: parry HỤT mà còn giữ nút thì
+  khiên lên NGAY, không qua khung ngây `hoi_do_phan` (0.45s).
+  Nghe thì như bỏ mất hình phạt của parry hụt, nhưng không: hình phạt chỉ
+  ĐỔI HÌNH, và chỗ thi hành nằm ở `an_don()` — đỡ chỉ chặn được khi tay trái
+  CÓ khiên, mà vũ khí hai tay (刃, đúng cây khởi đầu) làm
+  `Tui.tay_trai_dang_cam()` trả null. Ai cầm hai tay mà parry hụt rồi giữ
+  tiếp thì đứng đó ăn gần trọn đòn và mất thêm thể lực — nặng ngang, có khi
+  hơn, đứng ngây. Còn ai có khiên thì đúng là mua được cái mượt ấy bằng một
+  khe tay trái.
+  Chỗ phân xử "bấm mới" với "giữ sẵn" là THỨ TỰ trong `thu_hanh_dong()`, không
+  phải một cái cờ: cú bấm mới bị `lay_dem("do_phan")` bắt ở bậc phòng thủ, nên
+  xuống tới bậc cuối (`is_action_pressed`) thì chỉ còn ngón tay đã giữ từ
+  trước — và ngón tay giữ sẵn không đáng được một cửa sổ parry.
+  E và Q vì thế trống hẳn, action `do_don` bị xoá khỏi input map (state vẫn
+  tên `do_don`, đừng lẫn).
+- **Parry cắt được cả đòn đánh lẫn cú lăn**, và hai chỗ hai luật:
+  đòn đánh chỉ cắt từ đoạn 4 (`cho_ne()`) — cam kết đòn không bị nới; cú lăn
+  cắt được ở bất cứ đoạn nào, kể cả giữa i-frame. Vế sau là chủ dự án chốt:
+  cắt sớm là tự bỏ phần bất tử còn lại để đổi lấy cửa sổ parry, một quyết định
+  có giá chứ không phải lỗ hổng, và `hoi_lan` đặt ở `vao()` nên cắt giữa chừng
+  vẫn không cho lăn lại sớm hơn.
 - **Space gánh lăn + nhảy, Shift gánh chạy.** ER trên PC gộp lăn/chạy vào một
   nút và để nhảy riêng; ở đây gộp lăn/nhảy và tách chạy ra. Phân biệt bằng
   **số lần bấm**, không bằng thời gian giữ: bấm hai lần trong
@@ -350,9 +374,11 @@ Esc để bỏ. Hai điều cố ý:
 
 - **Esc không gán được.** Nó là đường thoát; gán nhầm một lần là mất luôn cách
   mở menu để sửa lại.
-- **Override thay CHỖ ĐẦU, giữ nguyên phím thay thế.** `do_phan` có cả E lẫn
-  chuột phải; đổi E mà xoá luôn chuột phải là lấy mất thứ người chơi không hề
-  yêu cầu. Cài được nhờ `_phim_goc` — bản chụp sự kiện gốc của mọi action lúc
+- **Override thay CHỖ ĐẦU, giữ nguyên phím thay thế.** `khoa_muc_tieu` có cả
+  chuột giữa lẫn Tab; đổi cái đầu mà xoá luôn cái sau là lấy mất thứ người
+  chơi không hề yêu cầu. (Phép thử này từng canh trên `do_phan` vì nó có cả E
+  lẫn chuột phải — từ khi đỡ và đỡ phản gộp vào một nút thì `do_phan` chỉ còn
+  một phím, nên phép thử dọn sang action khác chứ không bỏ đi.) Cài được nhờ `_phim_goc` — bản chụp sự kiện gốc của mọi action lúc
   khởi động. Không có nó thì "về mặc định" không dựng lại được gì, vì InputMap
   lúc ấy đã bị ghi đè mất rồi.
 
@@ -829,7 +855,8 @@ Ghi lại để không ai tưởng là quên:
   | lăn | Space gõ nhanh | Space gõ nhanh |
   | chạy | Space giữ | **Shift giữ** |
   | nhảy | F | **Space giữ** |
-  | đỡ phản | chuột phải / R | **E** / chuột phải |
+  | đỡ phản | chuột phải / R | **chuột phải bấm** |
+  | giơ khiên | Q | **chuột phải giữ** |
   | tương tác | E | **F** |
 
   Hai action đổi tên theo: `lan_chay` → **`lan_nhay`**, và action `nhay` bị gỡ

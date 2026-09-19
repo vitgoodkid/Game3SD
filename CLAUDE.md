@@ -50,9 +50,9 @@ Cần Godot 4.7 (trên máy chủ dự án: `E:\Gamez\Godot_v4.7.2-stable_win64.
 # kiểm tầng luật — 197 test trong một khung hình, thoát mã 1 nếu hỏng
 godot --headless --path . tools/kiem_tra.tscn
 
-# kiểm vòng lặp souls + combat + giao diện — 360 test, nạp phòng thử thật:
+# kiểm vòng lặp souls + combat + giao diện — 379 test, nạp phòng thử thật:
 # đánh, thể lực, cam kết đòn, i-frame, siêu giáp, đòn phản đỡ, vỡ đỡ, đỡ phản
-# hai bậc, bộ nút (Space lăn/nhảy, Shift chạy), đòn nhảy,
+# hai bậc, MỘT NÚT đỡ+parry và parry cắt đòn/cắt lăn, bộ nút (Space lăn/nhảy, Shift chạy), đòn nhảy,
 # state machine quái, chết, rơi vũng hồn, đứng dậy ở bia, quái sống lại,
 # MP, tuỳ chọn, minimap, màn tạm dừng, theme và font.
 # Chạy mất ~45 giây vì phải đợi thật.
@@ -212,15 +212,46 @@ tools/           kiểm tra + sinh dữ liệu
   có chủ ý: lăn là thứ cứu mạng, nhảy thì không.
 - **Shift giữ là chạy** (`chay_nhanh`). Nút giữ thuần, không ngưỡng, không chia
   sẻ với ai — nên chạy là thứ duy nhất trong bộ điều khiển này không có độ trễ.
-- **E (hoặc chuột phải) là đỡ phản, HAI BẬC lồng nhau**: `cua_so_perfect`
-  (0.10s đầu) là **hoàn hảo** — quái ngây `NGAY_SAU_PERFECT`, hoàn lại thể lực;
-  hết khoảng đó tới `cua_so_do_phan` (0.24s) là parry thường. Lồng nhau chứ
-  không tách rời là cố ý: bấm sớm quá vẫn ăn parry thường, nên tập bấm sớm
-  không bị phạt. `an_don()` trả **-2** cho hoàn hảo, **-1** cho thường; chỗ nào
-  không quan tâm bậc cứ kiểm tra `< 0` như cũ.
-  **KHÔNG cần khiên** — ER cấm parry tay không, chủ dự án chốt cho được.
-  Q giơ khiên; đỡ trúng rồi bấm đòn nặng trong `cua_so_phan_do` giây là ra
-  **đòn phản đỡ** (cái này vẫn cần khiên).
+- **CHUỘT PHẢI là CẢ đỡ LẪN đỡ phản — một nút, khuôn "gõ nhanh / giữ" thứ ba.**
+  Chủ dự án chốt gộp; E và Q giờ **không gán gì**, và action `do_don` đã bị
+  **xoá hẳn** khỏi input map (còn state tên `do_don` thì giữ nguyên — đừng lẫn
+  hai thứ đó). Mọi chỗ code từng hỏi `is_action_pressed("do_don")` giờ hỏi
+  `"do_phan"`.
+  - **Bấm ra là parry, HAI BẬC lồng nhau**: `cua_so_perfect` (0.10s đầu) là
+    **hoàn hảo** — quái ngây `NGAY_SAU_PERFECT`, hoàn lại thể lực; hết khoảng
+    đó tới `cua_so_do_phan` (0.24s) là parry thường. Lồng nhau chứ không tách
+    rời là cố ý: bấm sớm quá vẫn ăn parry thường, nên tập bấm sớm không bị
+    phạt. `an_don()` trả **-2** cho hoàn hảo, **-1** cho thường; chỗ nào không
+    quan tâm bậc cứ kiểm tra `< 0` như cũ.
+  - **Còn GIỮ khi hết `cua_so_do_phan` thì đi thẳng sang `do_don`, KHÔNG qua
+    khung ngây** (`do_phan.gd`). Đó là chỗ cây gậy đổi đầu: gõ nhanh là đánh
+    cược — hụt thì đứng ngây `hoi_do_phan` (0.45s), đủ ăn trọn một đòn nặng;
+    giữ là chơi chắc — hụt thì khiên lên đỡ.
+    Giữ **không phải** parry miễn phí, và chỗ thi hành nằm ở `an_don()` chứ
+    không ở `do_phan.gd`: đỡ chỉ chặn được khi tay trái CÓ khiên, mà vũ khí
+    hai tay (刃 — đúng cây khởi đầu) làm `Tui.tay_trai_dang_cam()` trả null.
+    Với họ, giữ tiếp nghĩa là đứng đó ăn gần trọn đòn và mất thêm thể lực.
+  - **Ngón tay giữ SẴN từ trước không được tặng một cửa sổ parry.** Phân xử
+    bằng thứ tự trong `thu_hanh_dong()`: cú BẤM mới bị `lay_dem("do_phan")`
+    bắt ở bậc phòng thủ, nên xuống tới bậc cuối (`is_action_pressed`) thì chỉ
+    còn trường hợp đã giữ từ trước ⇒ vào thẳng `do_don`.
+  - **KHÔNG cần khiên để parry** — ER cấm parry tay không, chủ dự án chốt cho
+    được. Đỡ trúng rồi bấm đòn nặng trong `cua_so_phan_do` giây là ra **đòn
+    phản đỡ** (cái này vẫn cần khiên).
+- **Parry CẮT được đòn đánh và CẮT được cú lăn.** Hai chỗ, hai luật khác nhau:
+  - **Đòn đánh: chỉ từ đoạn 4** (`cho_ne()`), ngang hàng lăn và khiên, qua
+    `TrangThaiDanh._huy_sang_thu()`. Cam kết đòn đánh KHÔNG bị nới: đoạn 1–3
+    vẫn khoá cứng. Trước đây parry không có mặt trong hàm đó, và đấy là lỗ
+    thật chứ không phải lựa chọn — `cho_doi()` vẫn liệt `do_phan` vào danh
+    sách cho phép nhưng không ai gọi `xin_doi("do_phan")`, nên cú parry nằm
+    trong đệm tới khi đòn hết hẳn: **trễ 0.20s (nhe_1) tới 0.47s (nang)**,
+    trong khi cả cửa sổ parry chỉ 0.24s. Tức là parry bấm đúng nhịp luôn bung
+    ra SAU khi đòn quái đã trúng.
+  - **Cú lăn: bất cứ đoạn nào**, kể cả giữa i-frame (`lan.gd`). Cắt sớm là tự
+    bỏ phần bất tử còn lại để đổi lấy cửa sổ parry — quyết định có giá, không
+    phải lỗ hổng. Thứ chặn nó thành "bất tử miễn phí" đã nằm sẵn: `hoi_lan`
+    đặt ở `vao()` chứ không ở `ra()`, nên cắt giữa chừng không cho lăn lại
+    sớm hơn một phần trăm giây nào.
 - **Đòn nhảy hai bậc**: đánh lúc `NguoiChoi.tren_khong()` ra `nhay` (bấm) hoặc
   `nhay_nang` (giữ) thay cho đòn thường. **Mỗi lần rời đất đúng MỘT đòn** —
   `con_don_tren_khong()` / `dung_don_tren_khong()`, đặt lại khi chạm đất. Không
@@ -254,7 +285,9 @@ tools/           kiểm tra + sinh dữ liệu
 - **Bấm F đi qua `NguoiChoi.TRANG_THAI_TUONG_TAC`** — danh sách CHO PHÉP, nên
   trạng thái mới mặc định là không tương tác được. Chiều an toàn: vũng hồn mọc
   ngay dưới cái xác, và nếu xác bấm F được thì chết chẳng mất gì.
-  (Action vẫn tên `tuong_tac`; phím đổi từ E sang F vì E đã dọn sang parry.)
+  (Action vẫn tên `tuong_tac`; phím đổi từ E sang F hồi E còn là parry.
+  Giờ E trống hẳn — nhưng F ở lại, đổi ngược là lại một đợt đi sửa
+  dòng mời.)
 - **Hình vũ khí đọc từ CỘT `mo_hinh` của `nguyen_lieu.csv`**, không từ bảng
   gán cứng trong code. Bảng cũ `ThanKhoi.HINH_VU_KHI` gán chết năm chữ 剑刀斧弓拳
   và phá luật 1; nó còn đó làm khối hộp dự phòng cho vũ khí CHƯA có model, nhưng

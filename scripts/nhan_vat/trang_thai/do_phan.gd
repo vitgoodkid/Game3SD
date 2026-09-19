@@ -20,6 +20,17 @@ extends TTNguoiChoi
 ##
 ## KHÔNG cần khiên. Elden Ring cấm parry tay không; chủ dự án chốt cho được —
 ## xem mục "Cố ý KHÁC" trong TIEN_DO.md.
+##
+## MỘT NÚT GÁNH CẢ ĐỠ LẪN PARRY (chuột phải). Bấm ra là vào đây; còn GIỮ
+## nguyên ngón tay khi hết `cua_so_do_phan` thì đi thẳng sang `do_don` —
+## KHÔNG qua khung ngây. Đó là chỗ cây gậy đổi đầu: gõ nhanh là đánh cược,
+## hụt thì đứng ngây `hoi_do_phan` giây; giữ là chơi an toàn, hụt thì khiên
+## lên đỡ.
+##
+## Giữ KHÔNG phải là parry miễn phí, và chỗ thi hành nằm ở `an_don()` chứ
+## không ở đây: `do_don` chỉ chặn được khi tay trái CÓ khiên, mà vũ khí hai
+## tay (刃 — đúng cây khởi đầu) làm `Tui.tay_trai_dang_cam()` trả null. Với
+## họ, giữ tiếp nghĩa là đứng nguyên đó ăn gần trọn đòn và mất thêm thể lực.
 
 func vao(_du_lieu: Dictionary = {}) -> void:
 	nc.dang_do = false
@@ -39,6 +50,14 @@ func chay(delta: float) -> void:
 		nc.do_phan_hoan_hao = false
 	if t >= SoulsLike.cua_so_do_phan:
 		nc.dang_do_phan = false
+		# CÒN GIỮ NÚT ⇒ LÊN KHIÊN NGAY, bỏ qua khung ngây.
+		#
+		# Hỏi phím ĐANG GIỮ chứ không hỏi bộ đệm: đệm chỉ có nội dung khi có
+		# một cú BẤM mới, mà ở đây ngón tay chưa hề rời nút kể từ cú bấm đã
+		# mở ra chính cú parry này.
+		if Input.is_action_pressed("do_phan"):
+			di("do_don")
+			return
 	if t >= SoulsLike.cua_so_do_phan + SoulsLike.hoi_do_phan:
 		di("dung")
 

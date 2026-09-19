@@ -54,6 +54,17 @@ func chay(delta: float) -> void:
 	if t >= _iframe:
 		nc.bat_tu = false
 
+	# PARRY CẮT ĐƯỢC CÚ LĂN, ở bất cứ đoạn nào — chủ dự án chốt.
+	#
+	# Cắt lúc còn i-frame là người chơi TỰ BỎ phần bất tử còn lại để đổi lấy
+	# cửa sổ parry. Đó là một quyết định có giá, không phải lỗ hổng, và cái
+	# chặn nó khỏi thành "bất tử miễn phí" đã nằm sẵn ở `vao()`: `hoi_lan` đặt
+	# ngay lúc vào chứ không lúc ra, nên cắt giữa chừng KHÔNG cho lăn lại sớm
+	# hơn một phần trăm giây nào.
+	if nc.lay_dem("do_phan") and nc.du_the_luc():
+		di("do_phan")
+		return
+
 	# Chậm dần về cuối cú lăn — lăn với tốc độ đều trông như trượt băng.
 	var giam := clampf(1.0 - (t / _dai) * 0.65, 0.2, 1.0)
 	nc.dat_toc_ngang(_huong, _toc * giam)
@@ -68,8 +79,10 @@ func chay(delta: float) -> void:
 func tien_do() -> float:
 	return clampf(t / maxf(_dai, 0.01), 0.0, 1.0)
 
-## Cam kết: đang lăn thì chỉ trúng đòn / chết mới cắt được. Không cho huỷ lăn
-## bằng cách bấm đánh — nếu cho thì lăn thành nút "bất tử miễn phí".
+## Cam kết: từ NGOÀI vào thì chỉ trúng đòn / chết mới cắt được. Không cho huỷ
+## lăn bằng cách bấm đánh — nếu cho thì lăn thành nút "bất tử miễn phí".
+## (Parry cắt được, nhưng nó đi đường khác: chính `chay()` ở trên tự quyết,
+## không qua `xin_doi()`.)
 func cho_doi(ten: String) -> bool:
 	return ten in ["trung_don", "chet", "vo_the", "dung"]
 
