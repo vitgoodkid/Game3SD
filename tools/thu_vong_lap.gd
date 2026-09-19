@@ -809,8 +809,19 @@ func _phan_nhin() -> void:
 			_bang(String(than_nap.call("dong_tac_dang_phat")), clip_nap,
 				"cú nạp và cú chém là MỘT clip, nhả ra không đổi sang clip khác")
 			if co_vi_tri:
+				# NGƯỠNG 0.2s, không phải 0.02s — con số này có lý do.
+				#
+				# Bản đầu để 0.02 và nó ĐỎ trên CI trong khi xanh ở máy khác:
+				# đo được 1.79s → 1.77s, lùi đúng một nhịp làm tròn. Cú nhả
+				# GHIM lại con trỏ theo `may.t`, nên lùi vài phần trăm giây là
+				# chuyện hai khung hình lệch nhau, không phải chuyện cơ chế —
+				# và một ngưỡng chặt tới mức đó chỉ đang đo độ ổn định của cái
+				# máy chạy test.
+				#
+				# Thứ phép thử này canh là clip NHẢY VỀ ĐẦU. Về đầu nghĩa là
+				# tụt gần 1.8 giây, nên 0.2 vẫn bắt được nó thừa sức.
 				var vi_tri_sau: float = than_nap.call("vi_tri_dong_tac")
-				_dung(vi_tri_sau >= vi_tri_giu - 0.02,
+				_dung(vi_tri_sau >= vi_tri_giu - 0.2,
 					"con trỏ clip đi TIẾP chứ không chạy lại từ đầu (%.2fs → %.2fs)"
 					% [vi_tri_giu, vi_tri_sau])
 		await _cho(2.2)
