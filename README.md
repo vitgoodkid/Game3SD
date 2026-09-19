@@ -134,6 +134,7 @@ godot --headless --path . tools/thu_dau_game.tscn  # 39 test màn đầu game + 
 godot --headless --path . tools/thu_the_gioi.tscn  # 67 test thế giới + nội dung
 godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600
 python tools/kiem_csv.py                           # kiểm CSV, không cần Godot
+python tools/kiem_nhap.py                          # đợt --import đã chạy trọn chưa
 ```
 
 **663 phép thử**, phải xanh hết trước khi commit. `--quit-after` là bước không
@@ -146,7 +147,10 @@ cái menu đứng yên thì không bắt được gì.
 trước và trả lại nguyên vẹn lúc xong.
 
 Kéo code mới về thì chạy `godot --headless --path . --import` TRƯỚC, không thì
-Godot chưa biết `class_name` mới và nó **treo** chứ không báo lỗi.
+Godot chưa biết `class_name` mới và nó **treo** chứ không báo lỗi. Nhập xong
+chạy `python tools/kiem_nhap.py`: trình nhập của Godot có lúc tự đổ giữa chừng
+và để lại một `.godot/` dựng dở, mà dựng dở thì không lỗi nào nổ — chỉ có mấy
+phép thử phần nhìn đỏ lên vì thiếu font, thiếu clip.
 
 ## Giao diện
 

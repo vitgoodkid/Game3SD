@@ -202,7 +202,7 @@ theo" phía trên.
   chữ Hán ở các màn Label xưa nay vẫn là ô vuông.
 
 ### Kiểm tra
-Sáu bước, GitHub Actions chạy cả sáu mỗi lần đẩy code (**663** phép thử tự động
+Bảy bước, GitHub Actions chạy cả bảy mỗi lần đẩy code (**663** phép thử tự động
 cộng một lần chạy game thật) — lệnh đầy đủ ở `CLAUDE.md`, tóm tắt ở đây:
 
 | Lệnh | Kiểm gì |
@@ -214,6 +214,7 @@ cộng một lần chạy game thật) — lệnh đầy đủ ở `CLAUDE.md`, 
 | `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 67 test |
 | `godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600` | chạy cảnh chơi thật 10 giây, bắt lỗi lúc chạy mà bốn bộ trên không với tới (vòng tròn autoload chẳng hạn). Trỏ THẲNG vào phòng thử vì `main_scene` giờ là cái menu |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
+| `python tools/kiem_nhap.py` | đợt `--import` đã chạy TRỌN chưa — mọi file `.import` phải có đủ file đích. Không cần Godot. Có vì một đợt nhập đổ giữa chừng trông y hệt một đợt nhập xong |
 
 Mỗi bộ sinh ra vì bộ trước không với tới: tầng luật chạy trong một khung hình
 và không nạp cảnh nào; `thu_vong_lap` nạp được một cảnh nhưng bị buộc vào đúng
@@ -979,3 +980,30 @@ Ghi lại để không ai tưởng là quên:
   thế nằm lọt hẳn ngoài mép phải màn hình, và không lỗi nào nổ ra — chỉ là góc
   phải trên trống trơn. Cách né: tự tính vị trí theo `get_viewport_rect()` mỗi
   khung, và như thế đổi cỡ cửa sổ cũng theo kịp.
+
+- **Đợt nhập tài nguyên đổ giữa chừng, mà CI báo xanh.** Trình nhập của Godot
+  tự đổ trên máy CI (`ERROR: FATAL: Index p_index = -1 is out of bounds
+  (size() = 44)` ở `cowdata.h`, kèm một lời than `propagate_notification()`
+  gọi từ thread sai, rồi signal 4). Lỗi nằm trong engine chứ không trong repo:
+  nhập nguội ba lần liên tiếp trên máy khác đều sạch 84/84 cảnh, và đúng cây
+  code ấy đã qua CI ở lần đẩy trước.
+
+  Cái đáng ghi không phải cú đổ, mà là **nó trôi qua được**. Lệnh trong
+  workflow là `godot ... --import 2>&1 | tee nhap.log`, và mã thoát của một
+  ống dẫn là mã của lệnh CUỐI — tức là của `tee`, luôn 0. Godot đổ lõi
+  (`timeout: the monitored command dumped core` nằm ngay trong log) mà bước
+  vẫn xanh, nên bốn bộ kiểm tra chạy tiếp trên một dự án mới nhập được vài
+  file CSV.
+
+  Đọc ra thì đánh lừa hoàn toàn: ba phép thử đỏ lên, cả ba đều ở PHẦN NHÌN —
+  "mặc khiên vào thì thân VẼ khiên ra", "dạt ngang thì phát clip đi ngang"
+  (trả về chuỗi rỗng), "nạp đòn: giơ tay lên tới đỉnh (0°)". Ba thứ đó trông
+  y hệt một thay đổi vừa làm hỏng phần hình, trong khi thật ra chỉ là không
+  có font và không có clip nào được nhập. Tổng số phép thử cũng tụt 360 → 300
+  mà không ai để ý.
+
+  Hai chỗ vá, cả hai đều cần: `set -o pipefail` để mã thoát đi được ra ngoài,
+  và `tools/kiem_nhap.py` — phép kiểm **dương**, đếm rằng mọi file `.import`
+  có đủ file đích trong `.godot/imported/`. Phép kiểm dương là thứ quan
+  trọng hơn: mã thoát nói "tôi không báo lỗi", còn đếm file thì nói "tài
+  nguyên có thật ở đó".

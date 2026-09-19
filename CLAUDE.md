@@ -76,6 +76,10 @@ godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600
 # kiểm CSV, KHÔNG cần Godot — chạy được ở bất cứ đâu có Python
 python tools/kiem_csv.py
 
+# kiểm ĐỢT NHẬP đã chạy TRỌN hay chưa, cũng không cần Godot. Chạy sau
+# `--import`; mọi file .import phải có đủ file đích trong .godot/imported/.
+python tools/kiem_nhap.py
+
 # ĐO NHỊP ĐÒN TỪ CLIP — sinh ra mấy con số của moveset.csv. Chạy sau mỗi lần
 # đổi file .fbx trong assets/model/dong_tac/, rồi chép bảng nó in ra.
 godot --headless --path . tools/do_nhip_don.tscn
@@ -86,11 +90,11 @@ godot --headless --path . tools/do_nhip_don.tscn
 godot --path . tools/chup_man_hinh.tscn
 ```
 
-GitHub Actions chạy cả sáu mỗi lần đẩy code (`.github/workflows/kiem_tra.yml`).
+GitHub Actions chạy cả bảy mỗi lần đẩy code (`.github/workflows/kiem_tra.yml`).
 **Không có Godot thì vẫn sửa được CSV và tầng luật** — đẩy lên rồi đọc kết quả
 Actions.
 
-Năm cái bẫy đã gặp:
+Sáu cái bẫy đã gặp:
 
 - Nếu script của scene chính không biên dịch được, Godot headless **treo vô hạn**
   chứ không báo lỗi. Luôn bọc lệnh chạy bằng `timeout`.
@@ -102,6 +106,15 @@ Năm cái bẫy đã gặp:
   cục (`.godot/`) không nằm trong git, nên `class_name` mới kéo về Godot chưa
   biết — và nó treo đúng như bẫy đầu tiên, không báo gì cả:
   `timeout 300 godot --headless --path . --import`
+- **Đợt nhập ĐỔ GIỮA CHỪNG trông y hệt đợt nhập thành công.** Trình nhập của
+  Godot có lúc tự đổ (`Index p_index = -1 is out of bounds`, signal 4 — lỗi
+  trong engine, không trong repo), để lại một `.godot/` mới dựng được vài
+  file. Không lỗi nào của repo nổ ra, nhưng thiếu font và thiếu clip thì mấy
+  phép thử phần NHÌN đỏ lên, và đọc ra giống hệt vừa làm hỏng gameplay. Đã
+  dính đúng vậy trên CI, còn bị `| tee` nuốt mất mã thoát nên bước nhập báo
+  xanh. Hai chỗ canh: `set -o pipefail` trong workflow, và
+  `tools/kiem_nhap.py` — phép kiểm DƯƠNG, đếm đủ file đích chứ không tin vào
+  mã thoát.
 - **Autoload KHÔNG được nhắc tên một `class_name` mà file của lớp đó gọi
   ngược lại autoload.** Godot phải phân giải lớp ngay lúc nạp autoload, mà
   autoload thì chưa đăng ký xong ⇒ gãy, và gãy rồi thì **mọi autoload sau nó

@@ -46,7 +46,26 @@ jobs:
       - name: Nhập tài nguyên
         # Lần chạy đầu Godot phải dựng .godot/ — tách riêng để lỗi nhập tài
         # nguyên không lẫn vào lỗi của bộ kiểm tra.
-        run: timeout 600 ./godot --headless --path . --import 2>&1 | tee nhap.log
+        #
+        # `set -o pipefail` KHÔNG được bỏ. Không có nó thì mã thoát của bước
+        # này là mã của `tee`, tức là luôn 0 — và một lần Godot ĐỔ GIỮA CHỪNG
+        # (signal 4, "Index p_index = -1 is out of bounds", lỗi nằm trong
+        # trình nhập của engine chứ không trong repo) đã trôi qua đúng chỗ
+        # này: CI chạy tiếp với một dự án mới nhập được vài file, rồi ba phép
+        # thử phần NHÌN đỏ lên vì thiếu font và thiếu clip. Đọc ra thì giống
+        # hệt vừa làm hỏng gameplay, trong khi không file nào trong repo sai.
+        #
+        # Chạy lại một lần nếu đổ: cú đổ đó không tái hiện được (nhập nguội ba
+        # lần liên tiếp trên máy khác đều sạch), và lần sau nhặt tiếp chỗ còn
+        # dở từ phần cache đã dựng xong. Đổ cả hai lần thì mới là chuyện thật
+        # và bước này đỏ.
+        run: |
+          set -o pipefail
+          nhap() { timeout 600 ./godot --headless --path . --import 2>&1 | tee -a nhap.log; }
+          nhap || {
+            echo "::warning::Đợt nhập đầu đổ giữa chừng — chạy lại lần hai"
+            nhap
+          }
 
       - name: Không được có lỗi biên dịch script
         run: |
@@ -57,6 +76,13 @@ jobs:
             grep -E "SCRIPT ERROR|Parse Error|Failed to load script" -A2 nhap.log
             exit 1
           fi
+
+      - name: Nhập đủ, không sót tài nguyên nào
+        # Mã thoát 0 CHƯA đủ để nói đợt nhập đã chạy trọn — xem ghi chú ở
+        # bước trên. Đây là phép kiểm dương: mọi file `.import` phải có đủ
+        # file đích trong `.godot/imported/`. Thiếu một cái là dừng ngay tại
+        # đây, thay vì để bộ kiểm tra đỏ ở một chỗ chẳng liên quan gì.
+        run: python3 tools/kiem_nhap.py
 
       - name: Chạy bộ kiểm tra
         # Bộ kiểm tra tự thoát mã 1 nếu có cái hỏng (xem tools/kiem_tra.gd).
