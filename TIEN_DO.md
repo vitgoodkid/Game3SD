@@ -203,7 +203,7 @@ theo" phía trên.
   chữ Hán ở các màn Label xưa nay vẫn là ô vuông.
 
 ### Kiểm tra
-Bảy bước, GitHub Actions chạy cả bảy mỗi lần đẩy code (**682** phép thử tự động
+Bảy bước, GitHub Actions chạy cả bảy mỗi lần đẩy code (**691** phép thử tự động
 cộng một lần chạy game thật) — lệnh đầy đủ ở `CLAUDE.md`, tóm tắt ở đây:
 
 | Lệnh | Kiểm gì |
@@ -212,7 +212,7 @@ cộng một lần chạy game thật) — lệnh đầy đủ ở `CLAUDE.md`, 
 | `godot --headless --path . tools/kiem_tra.tscn` | tầng luật, 197 test trong một khung hình |
 | `godot --headless --path . tools/thu_vong_lap.tscn` | vòng lặp souls + combat + GIAO DIỆN trong phòng thử thật, 379 test theo thời gian |
 | `godot --headless --path . tools/thu_dau_game.tscn` | màn đầu game + ĐỔI CẢNH: Chơi mới / Chơi tiếp / Tải ván — 39 test. Bộ duy nhất GHI ĐĨA (cất save của người thật đi rồi trả lại) |
-| `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无 — 67 test |
+| `godot --headless --path . tools/thu_the_gioi.tscn` | thế giới + nội dung: địa hình, streaming, 7 vùng, vùng bị xoá, NPC/cốt truyện, âm thanh, boss 无, HÀNG CHỜ dựng ô — 76 test |
 | `godot --headless --path . scenes/the_gioi/phong_thu.tscn --quit-after 600` | chạy cảnh chơi thật 10 giây, bắt lỗi lúc chạy mà bốn bộ trên không với tới (vòng tròn autoload chẳng hạn). Trỏ THẲNG vào phòng thử vì `main_scene` giờ là cái menu |
 | `python tools/kiem_csv.py` | CSV, không cần Godot |
 | `python tools/kiem_nhap.py` | đợt `--import` đã chạy TRỌN chưa — mọi file `.import` phải có đủ file đích. Không cần Godot. Có vì một đợt nhập đổ giữa chừng trông y hệt một đợt nhập xong |
@@ -1034,3 +1034,34 @@ Ghi lại để không ai tưởng là quên:
   có đủ file đích trong `.godot/imported/`. Phép kiểm dương là thứ quan
   trọng hơn: mã thoát nói "tôi không báo lỗi", còn đếm file thì nói "tài
   nguyên có thật ở đó".
+
+
+- **Một `await get_tree().process_frame` KHÔNG đủ để `_process` chạy.** Tín
+  hiệu `process_frame` bắn ra TRƯỚC khi SceneTree gọi `_process` của các node,
+  nên await một lần rồi đo là đo đúng cái trạng thái chưa đổi. Dính lúc viết
+  phép thử cho hàng chờ dựng ô: dịch người chơi sang ô bên cạnh, await một
+  khung, thấy `_o_cuoi` vẫn là ô cũ và hàng chờ rỗng — đọc ra y hệt "streaming
+  không chạy", trong khi nó chỉ chưa tới lượt. Mất một vòng đi dò mới thấy.
+  Cách né: `_khung()` trong `thu_the_gioi.gd` await HAI lần. `thu_vong_lap.gd`
+  đã có sẵn `_hai_khung()` cùng lý do — nhưng nó await một `process_frame` rồi
+  hai `physics_frame`, nên bài học ấy chưa từng được viết ra thành chữ.
+
+- **Dựng ô địa hình: 33 ms mỗi 64m, và không ai để ý suốt mấy mốc.** Bản đầu
+  của `_cap_nhat_o()` dựng thẳng mọi ô còn thiếu ngay trong `_process`. Băng
+  qua một ranh giới ô là năm ô mới — đo được 33 ms (đất 3.1 ms + rải prop
+  3.5 ms mỗi ô), tức BỐN tick vật lý 120Hz bị nuốt trong một khung hình.
+
+  Vì sao trôi lâu thế: vùng hiện tại chỉ rộng 320m nên người chơi hiếm khi
+  băng ranh giới, mà bộ kiểm tra thì DỊCH CHUYỂN người chơi chứ không đi bộ —
+  cả hai đường đều không bày cái khựng ra. Nó chỉ thành vấn đề khi map rộng
+  ra, lúc đó cứ mươi giây chạy là một cú.
+
+  Sửa bằng hàng chờ + ngân sách mỗi khung (`VungDat.NGAN_SACH_MS`), khung tệ
+  nhất còn **3.7 ms**. Chỗ tinh tế là ranh giới ĐI BỘ / DỊCH CHUYỂN: đi bộ thì
+  ô mới gần nhất cách ≥64m nên hoãn là miễn phí, còn dịch chuyển thì ô dưới
+  chân biến mất ngay và hoãn là rơi xuyên sàn. Một dòng `if not
+  _o_dang_co.has(o): nap_het()` gánh cả phân biệt đó.
+
+  KHÔNG dùng thread: `WorkerThreadPool` nhanh hơn nữa, nhưng cây node của
+  Godot không đụng được từ thread phụ, mà hỏng kiểu đó thì im lặng — đúng loại
+  bẫy cả file này đang đi ghi lại.

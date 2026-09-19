@@ -24,6 +24,22 @@ const CANH_BOSS := preload("res://scenes/quai/boss.tscn")
 ## 5×5 ô = 320×320m — xa hơn tầm nhìn qua sương, nên không thấy mép.
 const BAN_KINH_O := 2
 
+## Ngân sách dựng ô mỗi khung hình, tính bằng mili giây.
+##
+## VÌ SAO PHẢI CÓ. Băng qua MỘT ranh giới ô là năm ô mới cùng lúc, và bản
+## trước dựng cả năm trong một khung hình. Đo được **33 ms** (đất 3.1 ms +
+## rải prop 3.5 ms mỗi ô). Nhịp vật lý là 120Hz — 8.33 ms một tick — nên cứ
+## mỗi 64m đi được là BỐN tick bị nuốt trong một khung. Vùng bây giờ nhỏ nên
+## ít khi băng ranh giới; map rộng ra thì cứ mươi giây chạy là một cú khựng,
+## và khựng giữa lúc đánh nhau là thứ souls-like không tha.
+##
+## 2.0 ms là ngân sách "không ai thấy" ở 60fps. Nó KHÔNG cắt được giữa chừng
+## một bước — bước nhỏ nhất (rải prop cho một ô) vẫn ~3.5 ms — nên tác dụng
+## thật của nó là **mỗi khung hình đúng MỘT bước**, thay vì mười bước dồn vào
+## một chỗ. Hạ xuống 0 cũng không nhanh hơn được nữa; nâng lên là gom nhiều
+## bước lại, tức là quay về phía cái khựng cũ.
+const NGAN_SACH_MS := 2.0
+
 ## Bia đá của vùng: chỗ đứng, tính theo mét quanh gốc vùng. Mục 7.6 đòi 3-5 bia
 ## mỗi khu; ba cái là mức tối thiểu để đường về không quá xa.
 const CHOT_BIA := [
@@ -45,6 +61,12 @@ var _v := {}
 var _o_dang_co := {}
 var _nc: Node3D = null
 var _o_cuoi := Vector2i(9999, 9999)
+## Hai hàng chờ, và chúng TÁCH NHAU có lý do: đất phải có trước prop. Dựng
+## xong đất một ô rồi mới quay lại rải cây cho nó thì cái vỡ tệ nhất — người
+## chơi rơi xuyên xuống vực vì ô chưa có đất — không bao giờ xảy ra. Cái giá
+## là cây mọc ra sau đất một nhịp, ở cách ít nhất 64m, trong sương.
+var _hang_dat: Array[Vector2i] = []
+var _hang_prop: Array[Vector2i] = []
 
 func _ready() -> void:
 	add_to_group("vung_dat")
@@ -78,38 +100,107 @@ func _process(_delta: float) -> void:
 
 # --- Streaming -------------------------------------------------------
 
-## Nạp ô quanh người chơi, huỷ ô đã đi xa. Chỉ làm việc khi người chơi ĐỔI Ô —
-## quét lại danh sách mỗi khung hình là việc thừa, mà ô thì 64m mới đổi một lần.
+## Xếp lại hàng chờ khi người chơi ĐỔI Ô, rồi mỗi khung hình dựng dần theo
+## ngân sách. Quét lại danh sách mỗi khung là việc thừa — ô thì 64m mới đổi
+## một lần — nhưng RÚT hàng chờ thì phải làm mỗi khung.
 func _cap_nhat_o() -> void:
-	var o := Vector2i(
-		int(floor(_nc.global_position.x / DiaHinh.CANH_O)),
-		int(floor(_nc.global_position.z / DiaHinh.CANH_O)))
-	if o == _o_cuoi:
-		return
-	_o_cuoi = o
+	var o := _o_cua(_nc.global_position)
+	if o != _o_cuoi:
+		_o_cuoi = o
+		_xep_hang(o)
+	_chay_hang()
 
+func _o_cua(v: Vector3) -> Vector2i:
+	return Vector2i(int(floor(v.x / DiaHinh.CANH_O)),
+		int(floor(v.z / DiaHinh.CANH_O)))
+
+func _xep_hang(o: Vector2i) -> void:
 	var can := {}
 	for dz in range(-BAN_KINH_O, BAN_KINH_O + 1):
 		for dx in range(-BAN_KINH_O, BAN_KINH_O + 1):
 			can[Vector2i(o.x + dx, o.y + dz)] = true
 
-	for k in can.keys():
-		if not _o_dang_co.has(k):
-			_nap_o(k)
+	# Huỷ thì làm NGAY, không xếp hàng: `queue_free()` rẻ, mà giữ lại ô đã đi
+	# xa là đúng cái lỗi kinh điển bộ kiểm tra đang canh.
 	for k in _o_dang_co.keys():
 		if not can.has(k):
 			_o_dang_co[k].queue_free()
 			_o_dang_co.erase(k)
+	# Quay đầu giữa đường thì không phải trả tiền cho quãng mình không đi nữa.
+	_hang_dat = _hang_dat.filter(func(k: Vector2i) -> bool: return can.has(k))
+	_hang_prop = _hang_prop.filter(func(k: Vector2i) -> bool: return can.has(k))
 
-func _nap_o(k: Vector2i) -> void:
+	for k in can.keys():
+		if not _o_dang_co.has(k) and not _hang_dat.has(k):
+			_hang_dat.append(k)
+	# Gần người chơi dựng trước. Không có dòng này thì hàng chờ rút theo thứ
+	# tự Dictionary, và ô ngay trước mặt có thể nằm cuối hàng.
+	_hang_dat.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		return (a - o).length_squared() < (b - o).length_squared())
+
+	# CHÂN NGƯỜI CHƠI KHÔNG ĐƯỢC HỞ ĐẤT.
+	#
+	# Đây là chỗ phân đôi cả cơ chế, và ranh giới là ĐI BỘ hay DỊCH CHUYỂN:
+	#   • đi bộ — ô mới gần nhất cách ít nhất 64m, mà chạy nhanh nhất trong
+	#     game là 9.6 m/s (7.4 × 1.30 lúc cất vũ khí), tức còn gần BẢY GIÂY.
+	#     Hàng chờ rút hết trong khoảng một phần năm giây, nên hoãn là miễn phí.
+	#   • dịch chuyển — nhảy cảnh, hồi sinh ở bia, du hành, nạp save. Ô dưới
+	#     chân biến mất NGAY, và hoãn lúc đó là rơi xuyên xuống vực.
+	# Nên: hở đất thì dựng hết tại chỗ, còn lại thì xếp hàng.
+	if not _o_dang_co.has(o):
+		nap_het()
+
+## Rút hàng chờ theo ngân sách. Luôn làm ÍT NHẤT một bước — không có luật đó
+## thì một khung hình nặng sẵn sẽ đẩy hàng chờ sang khung sau mãi mãi.
+func _chay_hang() -> void:
+	if _hang_dat.is_empty() and _hang_prop.is_empty():
+		return
+	var han := Time.get_ticks_usec() + int(NGAN_SACH_MS * 1000.0)
+	while true:
+		if not _hang_dat.is_empty():
+			_dung_dat(_hang_dat.pop_front())
+		elif not _hang_prop.is_empty():
+			_rai_prop(_hang_prop.pop_front())
+		else:
+			return
+		if Time.get_ticks_usec() >= han:
+			return
+
+func _dung_dat(k: Vector2i) -> void:
 	var o := dia_hinh.dung_o(k.x, k.y)
-	RaiVat.rai(o, dia_hinh, k.x, k.y, _v)
 	dia_hinh.add_child(o)
 	_o_dang_co[k] = o
+	_hang_prop.append(k)
+
+func _rai_prop(k: Vector2i) -> void:
+	var o: Node3D = _o_dang_co.get(k)
+	if o == null or not is_instance_valid(o):
+		return          # ô bị huỷ mất giữa lúc còn nằm trong hàng
+	RaiVat.rai(o, dia_hinh, k.x, k.y, _v)
+
+## Dựng hết những gì đang chờ, NGAY LẬP TỨC.
+##
+## Hai bên gọi, và cả hai đều không đợi được: chỗ hở đất dưới chân người chơi
+## ở `_xep_hang()`, và bộ kiểm tra — nó dịch chuyển người chơi rồi đo ngay ở
+## khung sau, đúng kiểu "dịch chuyển" mà hàng chờ cố ý không phục vụ.
+func nap_het() -> void:
+	while not _hang_dat.is_empty():
+		_dung_dat(_hang_dat.pop_front())
+	while not _hang_prop.is_empty():
+		_rai_prop(_hang_prop.pop_front())
 
 ## Bao nhiêu ô địa hình đang nạp. Dùng cho bộ kiểm tra.
 func so_o_dang_co() -> int:
 	return _o_dang_co.size()
+
+## Bao nhiêu BƯỚC còn nằm trong hàng chờ. Dùng cho bộ kiểm tra.
+##
+## Ô chưa có đất tốn HAI bước (dựng đất, rồi rải prop), ô đã có đất tốn một.
+## Cộng thẳng hai mảng lại là đếm sai: dựng xong đất một ô chỉ chuyển nó từ
+## mảng này sang mảng kia, nên con số đứng im trong khi việc vẫn đang chạy —
+## và một phép thử "mỗi khung rút được ít nhất một bước" sẽ đỏ oan vì thế.
+func so_buoc_cho() -> int:
+	return _hang_dat.size() * 2 + _hang_prop.size()
 
 # --- Chốt chặn -------------------------------------------------------
 

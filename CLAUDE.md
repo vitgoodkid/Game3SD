@@ -63,9 +63,9 @@ godot --headless --path . tools/thu_vong_lap.tscn
 # vào một cảnh. Nó GHI ĐĨA nhưng cất save của người thật đi rồi trả lại.
 godot --headless --path . tools/thu_dau_game.tscn
 
-# kiểm thế giới + nội dung — 67 test, sinh một vùng thật từ CSV rồi đi lại:
+# kiểm thế giới + nội dung — 76 test, sinh một vùng thật từ CSV rồi đi lại:
 # địa hình, rải cây đá, streaming ô, bảy bảng màu, vùng bị xoá, chuỗi du hành,
-# NPC và cốt truyện, âm thanh, 18 loài, boss ẩn 无
+# NPC và cốt truyện, âm thanh, 18 loài, boss ẩn 无, HÀNG CHỜ dựng ô
 godot --headless --path . tools/thu_the_gioi.tscn
 
 # chạy thử game 10 giây, bắt lỗi lúc chạy. Trỏ THẲNG vào cảnh chơi: từ khi có
@@ -425,6 +425,25 @@ tools/           kiểm tra + sinh dữ liệu
   hẹn giờ tự gỡ băng bằng chúng là tự khoá mình: càng dừng sâu thì đồng hồ gỡ
   băng càng chạy chậm. Phòng thử tắt nó (`KhungDung.bat = false`) trừ nhóm đi
   kiểm chính nó — bật suốt thì mọi phép chờ sau một cú đánh đều dài ra.
+- **Dựng ô địa hình đi qua HÀNG CHỜ, không dựng thẳng.** Băng qua một ranh
+  giới ô là năm ô mới cùng lúc, và dựng cả năm trong một khung hình đo được
+  **33 ms** — bốn tick vật lý 120Hz bị nuốt, cứ mỗi 64m. Giờ xếp hàng và rút
+  theo `VungDat.NGAN_SACH_MS`: khung tệ nhất **3.7 ms**, trải ra bảy tám khung.
+  - **HAI hàng, đất trước prop.** Dựng đất xong một ô rồi mới quay lại rải cây
+    cho nó, nên cái vỡ tệ nhất — rơi xuyên xuống vực vì ô chưa có đất — không
+    xảy ra được. Giá phải trả: cây mọc sau đất một nhịp, ở cách ≥64m, trong
+    sương.
+  - **ĐI BỘ thì hoãn, DỊCH CHUYỂN thì dựng ngay.** Ranh giới nằm ở một dòng:
+    `if not _o_dang_co.has(o): nap_het()`. Đi bộ thì ô mới gần nhất cách ≥64m
+    mà chạy nhanh nhất 9.6 m/s ⇒ còn gần bảy giây, hoãn là miễn phí. Dịch
+    chuyển (nhảy cảnh, hồi sinh ở bia, du hành, nạp save) thì ô dưới chân biến
+    mất NGAY — hoãn lúc đó là rơi xuyên sàn.
+  - `nap_het()` cũng là cửa cho bộ kiểm tra: nó dịch chuyển người chơi rồi đo
+    ở khung sau, không đợi hàng chờ được.
+  - **Ngân sách NHỎ HƠN một bước là có chủ ý** (2.0 ms so với ~3.5 ms). Tác
+    dụng thật của nó là "mỗi khung đúng MỘT bước", không phải cắt bước làm
+    đôi — bước không cắt được. Nâng ngân sách lên là gom nhiều bước lại, tức
+    là đi ngược về phía cái khựng cũ.
 - **Camera bám ở `_physics_process`, KHÔNG ở `_process`.** Nhân vật là
   `CharacterBody3D`: vị trí chỉ đổi ở nhịp vật lý. Camera chạy theo nhịp màn
   hình thì nhân vật GIẬT so với khung hình — và quay màn hình lại thì không

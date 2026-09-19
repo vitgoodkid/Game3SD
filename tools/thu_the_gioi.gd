@@ -63,6 +63,17 @@ func _nhom(ten: String) -> void:
 func _cho(giay: float) -> void:
 	await get_tree().create_timer(giay).timeout
 
+## Đợi cho `_process` của MỌI node chạy xong đúng một lượt.
+##
+## HAI lần await, không phải một. Tín hiệu `process_frame` bắn ra TRƯỚC khi
+## SceneTree gọi `_process` của các node, nên một lần await thì đo được đúng
+## cái trạng thái chưa đổi. Đã dính: dịch người chơi sang ô bên cạnh rồi đo
+## ngay, thấy `_o_cuoi` vẫn là ô cũ và hàng chờ rỗng — trông y hệt streaming
+## không chạy, trong khi nó chỉ chưa tới lượt.
+func _khung() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+
 # --- Địa hình --------------------------------------------------------
 
 func _dia_hinh() -> void:
@@ -153,6 +164,9 @@ func _rai_vat() -> void:
 
 # --- Streaming -------------------------------------------------------
 
+## Băng qua một ranh giới ô là nạp một CỘT ô mới — bấy nhiêu cái.
+const BUOC_MOI_LAN := VungDat.BAN_KINH_O * 2 + 1
+
 func _streaming() -> void:
 	_nhom("Streaming ô địa hình")
 	var can := (VungDat.BAN_KINH_O * 2 + 1) * (VungDat.BAN_KINH_O * 2 + 1)
@@ -171,6 +185,55 @@ func _streaming() -> void:
 	await _cho(0.4)
 	_bang(_v.so_o_dang_co(), can, "quay về: vẫn đúng từng ấy ô")
 	_bang(_v.dia_hinh.cao_tai(20.0, 20.0), truoc, "và đất ở chỗ cũ y nguyên")
+
+	# --- DỊCH CHUYỂN thì dựng NGAY, không xếp hàng ---
+	#
+	# Hai cú nhảy ở trên đều là dịch chuyển, nên chúng đi đường `nap_het()`.
+	# Đo ở đây cho rõ, vì đó là vế đối của cả phần xếp hàng bên dưới: hở đất
+	# dưới chân thì không được phép hoãn.
+	_bang(_v.so_buoc_cho(), 0, "dịch chuyển xong là hàng chờ RỖNG — đất có ngay")
+
+	# --- ĐI BỘ qua ranh giới thì XẾP HÀNG ---
+	#
+	# Dịch đúng MỘT ô: ô dưới chân đã nạp sẵn (nó nằm trong lưới 5×5 cũ), nên
+	# đây là đường đi bộ chứ không phải dịch chuyển. Năm ô mới phải nằm chờ
+	# chứ không được dựng hết trong một khung — 33 ms cho năm ô là bốn tick
+	# vật lý 120Hz bị nuốt, và đó đúng là cái đợt này đi sửa.
+	var o_truoc := _v.so_o_dang_co()
+	_nc.global_position += Vector3(DiaHinh.CANH_O, 0.0, 0.0)
+	await _khung()
+	_dung(_v.so_buoc_cho() > 0,
+		"đi bộ sang ô bên cạnh: việc nằm trong HÀNG CHỜ (%d bước)" % _v.so_buoc_cho())
+	_dung(_v.so_o_dang_co() < o_truoc + BUOC_MOI_LAN,
+		"và chưa dựng hết năm ô mới trong một khung (%d ô)" % _v.so_o_dang_co())
+
+	# Rút dần chứ không đứng im: ngân sách nhỏ hơn một bước nên mỗi khung
+	# đúng một bước, nhưng KHÔNG ĐƯỢC là không bước nào.
+	var cho_truoc := _v.so_buoc_cho()
+	await _khung()
+	_dung(_v.so_buoc_cho() < cho_truoc,
+		"mỗi khung hình rút được ít nhất một bước (%d → %d)"
+		% [cho_truoc, _v.so_buoc_cho()])
+
+	await _cho(0.6)
+	_bang(_v.so_buoc_cho(), 0, "để yên một lúc thì hàng chờ rút HẾT")
+	_bang(_v.so_o_dang_co(), can, "và lưới lại đủ ô")
+
+	# --- QUAY ĐẦU giữa đường thì bỏ phần không đi nữa ---
+	#
+	# Không có luật này thì đi tới đi lui vài lần là hàng chờ phình ra toàn ô
+	# đã không cần, và mỗi khung vẫn cắm cúi dựng chúng.
+	_nc.global_position += Vector3(DiaHinh.CANH_O, 0.0, 0.0)
+	await _khung()
+	var cho_di := _v.so_buoc_cho()
+	_dung(cho_di > 0, "đi tiếp một ô nữa: lại có việc xếp hàng (%d)" % cho_di)
+	_nc.global_position -= Vector3(DiaHinh.CANH_O, 0.0, 0.0)
+	await _khung()
+	_dung(_v.so_buoc_cho() < cho_di,
+		"quay đầu lại thì bỏ bớt việc không cần nữa (%d → %d)"
+		% [cho_di, _v.so_buoc_cho()])
+	await _cho(0.6)
+	_bang(_v.so_o_dang_co(), can, "và vẫn về đúng lưới cũ")
 
 # --- Chốt chặn -------------------------------------------------------
 
