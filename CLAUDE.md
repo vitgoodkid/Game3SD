@@ -321,7 +321,10 @@ tools/           kiểm tra + sinh dữ liệu
   `assets/model/nhan_vat_chinh.fbx`, rig Mixamo 58 xương, da `katz.jpg`).
   Quái vẫn là khối hộp (`than_quai.gd`).
   43 clip đang chạy, **hai bộ**: cầm kiếm ở `assets/model/dong_tac/` (32 clip),
-  tay không ở `dong_tac/khong_vu_khi/` (11 clip, dùng khi đã cất vũ khí).
+  tay không ở `dong_tac/khong_vu_khi/` (11 clip, dùng khi đã cất **hoặc chưa
+  trang bị** vũ khí). Chỉ khi `Tui.vu_khi_dang_cam()` thật sự có món đồ mới
+  được dùng bộ cầm kiếm; cờ `da_rut` một mình không đủ, vì ván mới bắt đầu với
+  ô vũ khí trống.
   Trạng thái nào thiếu clip thì tự quay về dáng gõ tay trong file — hiện chỉ
   còn `uong` (uống bình).
   `NguoiChoi._dien_hinh()` hỏi thân theo HÀM `dien()` chứ không ép kiểu, nên
