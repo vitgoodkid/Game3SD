@@ -56,14 +56,16 @@ const XUONG := {
 ## Thư mục chứa file động tác tải từ Mixamo. Tên file quyết định động tác đó
 ## dùng cho trạng thái nào — xem `DONG_TAC`.
 const THU_MUC_DONG_TAC := "res://assets/model/dong_tac/"
-## Bộ động tác thứ hai: lúc ĐÃ CẤT vũ khí.
+## Bộ động tác thứ hai: lúc ĐÃ CẤT hoặc CHƯA TRANG BỊ vũ khí.
 ##
 ## Cất kiếm rồi mà vẫn chạy bằng dáng ôm kiếm hai tay thì phần thưởng của phím
 ## R (nhanh hơn 30%, tốn ít thể lực hơn) không có mặt nào để đọc — người chơi
 ## chỉ thấy con số trong thanh thể lực đổi, mà không ai nhìn thanh thể lực lúc
 ## đang chạy. Đổi hẳn dáng đi thì mắt đọc ra ngay "giờ đang rảnh tay".
 ##
-## Thiếu file nào ở đây thì tự mượn bộ cầm kiếm — nên bộ này không cần đủ.
+## Khi đã trang bị nhưng đang cất, thiếu file nào ở đây thì tạm mượn bộ cầm
+## kiếm. Còn chưa trang bị gì thì KHÔNG được mượn: chỉ có vũ khí thật sự mới
+## được dùng dáng cầm kiếm; thiếu clip tay không thì rơi về dáng gõ bằng code.
 const THU_MUC_KHONG_VU_KHI := "res://assets/model/dong_tac/khong_vu_khi/"
 ## Tiền tố cho clip của bộ không vũ khí, để hai bộ ở chung một thư viện.
 const TIEN_TO_KVK := "kvk_"
@@ -758,14 +760,22 @@ func _toc_theo_van_toc(dt: String) -> float:
 
 ## Tên clip THẬT cho một động tác, "" nếu không có file nào.
 ##
-## Đây là chỗ bộ KHÔNG VŨ KHÍ chen vào. Đã cất kiếm thì thử clip tay không
-## trước; thiếu thì mượn clip cầm kiếm. Mượn tạm được vì hai bộ cùng bộ xương
-## — chỉ hơi thừa cái dáng ôm kiếm, còn hơn đứng đơ.
+## Đây là chỗ bộ KHÔNG VŨ KHÍ chen vào. Hai trường hợp dùng nó:
+## - Có vũ khí nhưng đã cất: thử clip tay không trước; thiếu thì được mượn clip
+##   cầm kiếm, vì món đồ vẫn đang trang bị và các động tác rút/cất cần thấy nó.
+## - Không trang bị vũ khí: chỉ dùng clip tay không; thiếu thì trả "" để rơi
+##   về dáng gõ bằng code. Tuyệt đối không mượn dáng cầm một thanh kiếm không
+##   tồn tại trên người.
 func _co(goc: String) -> String:
 	if _may_dt == null or goc == "":
 		return ""
-	if not _da_rut and _may_dt.has_animation(TIEN_TO_KVK + goc):
-		return TIEN_TO_KVK + goc
+	var co_vu_khi := Tui.vu_khi_dang_cam() != null
+	if not _da_rut or not co_vu_khi:
+		var tay_khong := TIEN_TO_KVK + goc
+		if _may_dt.has_animation(tay_khong):
+			return tay_khong
+		if not co_vu_khi:
+			return ""
 	return goc if _may_dt.has_animation(goc) else ""
 
 ## Clip cho một đòn. **Cột `animation` của `moveset.csv` nói trước.**
