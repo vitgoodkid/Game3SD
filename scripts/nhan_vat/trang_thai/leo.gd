@@ -21,7 +21,8 @@ extends TTNguoiChoi
 ## CÒN ĂN ĐÒN thì `cho_doi()` cho qua `trung_don` — chủ dự án chốt: bám tường
 ## không được là chỗ trốn an toàn giữa trận.
 
-## Thể lực tiêu mỗi giây khi đang bám. Cùng thang với chạy
+## Thể lực tiêu mỗi giây khi di chuyển trên tường; bám yên không tiêu.
+## Cùng thang với chạy
 ## (`SoulsLike.THE_LUC_CHAY_MOI_GIAY`), rẻ hơn một chút vì leo vốn đã chậm.
 const THE_LUC_MOI_GIAY := 9.0
 ## Dạt ngang chậm hơn leo dọc bấy nhiêu lần — người thật bò ngang bao giờ cũng
@@ -79,8 +80,6 @@ func chay(delta: float) -> void:
 		return
 
 	# --- Cạn thể lực thì tuột ---
-	nc.the_luc = maxf(0.0, nc.the_luc - THE_LUC_MOI_GIAY * delta)
-	nc.doi_the_luc.emit(nc.the_luc, nc.the_luc_max)
 	if nc.the_luc <= 0.0:
 		_roi()
 		return
@@ -127,6 +126,15 @@ func chay(delta: float) -> void:
 	var v_ngang := ngang * doc * toc * HS_DAT_NGANG
 	nc.velocity.x = v_ngang.x
 	nc.velocity.z = v_ngang.z
+
+	# Chỉ tiêu khi leo lên / xuống / dạt ngang. Xét SAU khi đặt đủ ba trục
+	# vận tốc để không tính nhầm trọng lực hay chuyển động của khung trước.
+	if not nc.velocity.is_zero_approx():
+		nc.the_luc = maxf(0.0, nc.the_luc - THE_LUC_MOI_GIAY * delta)
+		nc.doi_the_luc.emit(nc.the_luc, nc.the_luc_max)
+		if nc.the_luc <= 0.0:
+			_roi()
+			return
 
 	# --- Chạm đất trong lúc đang tụt xuống thì thôi bám ---
 	if nc.is_on_floor() and vao_tuong <= 0.0:
@@ -196,8 +204,8 @@ func ten_dien() -> String:
 func tien_do() -> float:
 	return clampf(_t_treo / T_TREO, 0.0, 1.0) if _dang_treo else 0.0
 
-## Bám tường thì không hồi thể lực. Cùng luật với chạy và giơ khiên: đang gắng
-## sức thì không có chuyện hồi.
+## Bám tường thì không hồi thể lực, kể cả lúc bám yên: nghỉ tay chỉ giữ
+## nguyên lượng còn lại, không nạp lại thể lực giữa chừng.
 func cho_hoi_the_luc() -> bool:
 	return false
 
