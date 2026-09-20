@@ -205,6 +205,34 @@ func _choi_moi() -> void:
 		"vào thẳng VÙNG THẬT, không phải phòng thử")
 	_dung(get_tree().get_first_node_in_group("nguoi_choi") != null,
 		"có người chơi trong vùng")
+	var nc := get_tree().get_first_node_in_group("nguoi_choi")
+	var than = nc.get_node_or_null("Than") if nc != null else null
+	_dung(Tui.vu_khi_dang_cam() == null, "ván mới chưa trang bị vũ khí")
+	var clip_tay_khong := String(than.call("dong_tac_dang_phat")) \
+		if than != null and than.has_method("dong_tac_dang_phat") else ""
+	_bang(clip_tay_khong, ThanMoHinh.TIEN_TO_KVK + "dung",
+		"chưa trang bị thì mặc định phát animation TAY KHÔNG")
+
+	# Trang bị là ranh giới duy nhất cho phép dùng bộ cầm kiếm. Thử cả hai chiều
+	# để canh lỗi cũ: cờ `da_rut` mặc định true từng làm người tay trắng vẫn ôm
+	# một thanh kiếm tưởng tượng.
+	var vk := SinhMonDo.sinh_theo_loai("vukhi", dau, 26092026)
+	_dung(vk != null, "sinh được vũ khí để thử đổi bộ animation")
+	if vk != null:
+		Tui.nhat(vk)
+		_dung(Tui.mac_vao(vk, "vu_khi"), "trang bị được vũ khí")
+		await _khung()
+		var clip_co_vu_khi := String(than.call("dong_tac_dang_phat")) \
+			if than != null and than.has_method("dong_tac_dang_phat") else ""
+		_bang(clip_co_vu_khi, "dung",
+			"trang bị vũ khí mới chuyển sang animation CẦM KIẾM")
+		Tui.bo(vk)
+		await _khung()
+		var clip_thao_ra := String(than.call("dong_tac_dang_phat")) \
+			if than != null and than.has_method("dong_tac_dang_phat") else ""
+		_bang(clip_thao_ra, ThanMoHinh.TIEN_TO_KVK + "dung",
+			"tháo vũ khí thì trở lại animation TAY KHÔNG")
+		_dung(Tui.kho.is_empty(), "dọn món thử xong, ván mới vẫn có túi rỗng")
 	_dung(get_tree().get_nodes_in_group("man_dau_game").is_empty(),
 		"màn đầu game đã biến mất cùng cảnh cũ")
 	_dung(not get_tree().paused, "vào ván là game chạy, không còn dừng")
