@@ -1198,7 +1198,7 @@ func _leo_tuong() -> void:
 	_dung(_nc.global_position.y > y_dau + 0.5,
 		"giữ phím thì trèo LÊN (%.2fm → %.2fm)"
 		% [y_dau, _nc.global_position.y])
-	_dung(_nc.the_luc < tl_dau, "và bám tường thì TỐN thể lực (%.0f → %.0f)"
+	_dung(_nc.the_luc < tl_dau, "và leo lên thì TỐN thể lực (%.0f → %.0f)"
 		% [tl_dau, _nc.the_luc])
 
 	# --- Tới đỉnh thì tự trèo lên mặt trên ---
@@ -1212,19 +1212,75 @@ func _leo_tuong() -> void:
 		% _nc.global_position.y)
 	await _nut("di_truoc", false)
 
-	# --- Cạn thể lực thì tuột ---
-	_lam_moi_nguoi_choi()
-	_dat_truoc_thap()
-	_nc.global_position.z = 18.4
-	_nc.may.doi("leo", {"phap": Vector3(0, 0, 1)})
-	await _hai_khung()
+	# --- Treo im giữa tường: không mất và cũng không hồi thể lực ---
+	# Dùng nửa thanh và đợi qua trễ hồi: ghim ở mức tối đa sẽ không bắt được
+	# lỗi vô tình cho hồi khi bám. Đứng cao để không thoát leo vì chạm sàn.
+	await _bam_giua_thap()
+	_nc.the_luc = _nc.the_luc_max * 0.5
+	var tl_treo := _nc.the_luc
+	var vi_tri_treo := _nc.global_position
+	await _cho(SoulsLike.tre_hoi_the_luc + 0.2)
+	_dung(_nc.may.ten_hien_tai == "leo" and not _nc.is_on_floor(),
+		"không giữ phím vẫn BÁM giữa tường, chân không chạm sàn")
+	_bang(_nc.the_luc, tl_treo, "treo im không mất và không hồi thể lực")
+	_dung(_nc.global_position.distance_to(vi_tri_treo) < 0.01,
+		"treo im thì vị trí không trôi")
+
+	# --- Cả bốn hướng đều phải chuyển động thật rồi mới đo thể lực ---
+	for ca in [
+		{"phim": "di_truoc", "huong": Vector3.UP, "ten": "LÊN"},
+		{"phim": "di_sau", "huong": Vector3.DOWN, "ten": "XUỐNG"},
+		{"phim": "di_trai", "huong": Vector3.LEFT, "ten": "TRÁI"},
+		{"phim": "di_phai", "huong": Vector3.RIGHT, "ten": "PHẢI"},
+	]:
+		await _bam_giua_thap()
+		_nc.the_luc = _nc.the_luc_max * 0.5
+		var tl_truoc := _nc.the_luc
+		var vi_tri_truoc := _nc.global_position
+		var phim: String = ca["phim"]
+		var huong: Vector3 = ca["huong"]
+		var ten: String = ca["ten"]
+		await _nut(phim, true)
+		await _cho(0.25)
+		await _nut(phim, false)
+		_dung(_nc.may.ten_hien_tai == "leo"
+			and (_nc.global_position - vi_tri_truoc).dot(huong) > 0.15,
+			"leo %s dịch chuyển thật trên mặt tường" % ten)
+		_dung(_nc.the_luc < tl_truoc,
+			"leo %s thì mất thể lực (%.2f → %.2f)"
+			% [ten, tl_truoc, _nc.the_luc])
+
+		# Nhả phím sau khi đang leo phải ngừng trừ ngay, kể cả sau khi leo ngang.
+		var tl_sau := _nc.the_luc
+		var vi_tri_sau := _nc.global_position
+		await _cho(SoulsLike.tre_hoi_the_luc + 0.2)
+		_bang(_nc.may.ten_hien_tai, "leo", "nhả phím %s vẫn bám tường" % ten)
+		_bang(_nc.the_luc, tl_sau,
+			"nhả phím %s thì thể lực giữ nguyên, không hồi" % ten)
+		_dung(_nc.global_position.distance_to(vi_tri_sau) < 0.01,
+			"nhả phím %s thì đứng yên trên tường" % ten)
+
+	# --- Leo tới cạn thể lực thì tuột, không phải thoát vì chạm sàn ---
+	await _bam_giua_thap()
 	_nc.the_luc = 2.0
+	await _nut("di_truoc", true)
 	var tuot := 0
 	while _nc.may.ten_hien_tai == "leo" and tuot < 200:
 		tuot += 1
 		await get_tree().physics_frame
-	_dung(_nc.may.ten_hien_tai != "leo",
-		"cạn thể lực thì TUỘT khỏi tường (%s)" % _nc.may.ten_hien_tai)
+	_bang(_nc.the_luc, 0.0, "leo thật sự tiêu CẠN thể lực")
+	_bang(_nc.may.ten_hien_tai, "nhay", "cạn thể lực thì TUỘT khỏi tường")
+	_dung(not _nc.is_on_floor() and _nc.global_position.y > 1.0,
+		"tuột lúc còn ở trên cao, không phải thoát leo vì chạm sàn")
+	await _nut("di_truoc", false)
+	await _hai_khung()
+	_dung(_nc.velocity.y < 0.0, "sau khi cạn thể lực thì rơi xuống thật")
+
+	# Mốc cạn vẫn được xét khi không giữ phím, không bị lọt qua nhánh treo im.
+	await _bam_giua_thap()
+	_nc.the_luc = 0.0
+	await _hai_khung()
+	_bang(_nc.may.ten_hien_tai, "nhay", "treo im nhưng đã cạn thể lực vẫn tuột")
 
 	# --- Ăn đòn khi đang bám thì rơi ---
 	#
@@ -1265,6 +1321,19 @@ func _leo_tuong() -> void:
 
 	_lam_moi_nguoi_choi()
 	_nc.global_position = Vector3(0, 0.2, 4)
+	await _hai_khung()
+
+## Bám giữa tháp để thử thể lực mà không dính sàn hoặc chạm tới mép trên.
+## Cần một nhịp vật lý trên không TRƯỚC khi vào leo: dịch chuyển vị trí không
+## xoá cờ is_on_floor() của nhịp cũ, nên vào leo ngay có thể thoát về dung.
+func _bam_giua_thap() -> void:
+	_lam_moi_nguoi_choi()
+	_dat_truoc_thap()
+	_nc.global_position = Vector3(10, 2.0, 18.4)
+	_nc.velocity = Vector3.ZERO
+	_nc.may.doi("nhay", {"roi": true})
+	await _hai_khung()
+	_nc.may.doi("leo", {"phap": Vector3(0, 0, 1)})
 	await _hai_khung()
 
 ## Đặt nhân vật ngay trước mặt bắc của tháp leo, quay mặt vào nó.
