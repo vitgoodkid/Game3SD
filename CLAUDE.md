@@ -279,8 +279,10 @@ tools/           kiểm tra + sinh dữ liệu
     đu người qua mép — đoạn này là code dịch thân, đi hai chặng lên-rồi-vào
     chứ không nội suy thẳng một đường, vì đường thẳng thì nửa người lút vào
     trong khối đá suốt cú trèo.
-  - Giá phải trả: **tốn thể lực theo giây** (cạn thì tuột), và **ăn đòn thì
-    rơi** — không có vế sau thì bám tường thành chỗ trốn an toàn giữa trận.
+  - Giá phải trả: **chỉ tốn thể lực theo giây khi leo lên / xuống / dạt
+    ngang** (cạn thì tuột). **Bám yên giữ nguyên thể lực, không tiêu và cũng
+    không hồi.** **Ăn đòn thì rơi** — không có vế sau thì bám tường thành chỗ
+    trốn an toàn giữa trận.
     `cho_doi()` chặn `lan` / `danh`: lăn giữa lưng chừng tường là rơi xuyên sàn.
 - **Bấm F đi qua `NguoiChoi.TRANG_THAI_TUONG_TAC`** — danh sách CHO PHÉP, nên
   trạng thái mới mặc định là không tương tác được. Chiều an toàn: vũng hồn mọc
